@@ -9,7 +9,7 @@ import { Invoice } from '@/types'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.clover' })
 
 const PLAN_MAP: Record<string, string> = {
   [process.env.STRIPE_PRICE_STARTER ?? '']: 'starter',

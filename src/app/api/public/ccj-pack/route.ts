@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.acacia' as any }) // eslint-disable-line
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.acacia' as any }) // eslint-disable-line
 
 function calcInterest(principal: number, dueDate: string) {
   const days = Math.max(0, Math.floor((Date.now() - new Date(dueDate).getTime()) / 86400000))

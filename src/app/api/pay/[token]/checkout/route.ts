@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { calculateInterest } from '@/lib/interest'
 import { Invoice } from '@/types'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.acacia' as any })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.acacia' as any })
 
 // Public — no auth required
 export async function POST(_: NextRequest, { params }: { params: Promise<{ token: string }> }) {
