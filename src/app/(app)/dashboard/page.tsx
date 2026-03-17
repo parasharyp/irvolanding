@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, useMotionValue, useSpring, useInView, animate, AnimatePresence } from 'framer-motion'
+
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import {
   TrendingUp, AlertTriangle, DollarSign, Clock, RefreshCw, CheckCircle, Zap,
@@ -37,23 +38,6 @@ interface CashflowData {
 
 interface RiskClient extends Client { outstanding: number }
 
-// ─── Cursor glow (same system as homepage) ────────────────────────────────────
-function CursorGlow() {
-  const mx = useMotionValue(0); const my = useMotionValue(0)
-  const sx = useSpring(mx, { stiffness: 60, damping: 22 })
-  const sy = useSpring(my, { stiffness: 60, damping: 22 })
-  useEffect(() => {
-    const h = (e: MouseEvent) => { mx.set(e.clientX); my.set(e.clientY) }
-    window.addEventListener('mousemove', h)
-    return () => window.removeEventListener('mousemove', h)
-  }, [mx, my])
-  return (
-    <motion.div
-      style={{ x: sx, y: sy, position: 'fixed', top: 0, left: 0, width: 480, height: 480, borderRadius: '50%', pointerEvents: 'none', zIndex: 0, translateX: '-50%', translateY: '-50%', background: 'radial-gradient(circle, rgba(71,201,229,0.055) 0%, transparent 70%)' }}
-    />
-  )
-}
-
 // ─── Live clock ───────────────────────────────────────────────────────────────
 function LiveClock() {
   const [time, setTime] = useState('')
@@ -62,7 +46,7 @@ function LiveClock() {
     tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
   }, [])
   return (
-    <span style={{ fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 13, color: '#47c9e5', letterSpacing: '0.05em' }}>{time}</span>
+    <span style={{ fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 11, color: '#00e5bf', letterSpacing: '0.08em', fontWeight: 500 }}>{time}</span>
   )
 }
 
@@ -96,25 +80,19 @@ function KpiCard({ label, numValue, icon: Icon, accent, prefix, suffix, decimals
     <motion.div
       variants={fadeInUp}
       whileHover={cardHover}
-      style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '22px 22px 20px', cursor: 'default', position: 'relative', overflow: 'hidden' }}
+      style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', borderTop: `2px solid ${accent}`, padding: '20px 20px 18px', cursor: 'default', position: 'relative' }}
     >
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${accent}, transparent)` }} />
-      <div style={{ position: 'absolute', bottom: -24, right: -24, width: 80, height: 80, borderRadius: '50%', background: `${accent}08` }} />
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-        <p style={{ fontSize: 10, color: '#4a4a4a', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</p>
-        <div style={{ width: 34, height: 34, borderRadius: 8, background: `${accent}14`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={16} color={accent} />
-        </div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+        <p style={{ fontSize: 9, color: '#3a3a3a', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.9px' }}>{label}</p>
+        <Icon size={13} color={accent} strokeWidth={1.5} />
       </div>
-      <p style={{ fontSize: 28, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-1px', lineHeight: 1 }}>
+      <p style={{ fontSize: 26, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-1px', lineHeight: 1 }}>
         <AnimatedNumber value={numValue} prefix={prefix ?? ''} suffix={suffix ?? ''} decimals={decimals ?? 0} />
       </p>
       {trend && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10 }}>
-          <motion.div animate={{ y: trend === 'up' ? [0, -2, 0] : [0, 2, 0] }} transition={{ duration: 2, repeat: Infinity }}>
-            <ArrowUpRight size={12} color={trend === 'up' ? '#36bd5f' : trend === 'down' ? '#e54747' : '#5e5e5e'} style={{ transform: trend === 'down' ? 'rotate(90deg)' : undefined }} />
-          </motion.div>
-          <span style={{ fontSize: 11, color: trend === 'up' ? '#36bd5f' : trend === 'down' ? '#e54747' : '#5e5e5e' }}>
+          <ArrowUpRight size={11} color={trend === 'up' ? '#36bd5f' : trend === 'down' ? '#e54747' : '#3a3a3a'} style={{ transform: trend === 'down' ? 'rotate(90deg)' : undefined }} />
+          <span style={{ fontSize: 10, color: trend === 'up' ? '#36bd5f' : trend === 'down' ? '#e54747' : '#3a3a3a', fontWeight: 600 }}>
             {trend === 'up' ? 'Increasing' : trend === 'down' ? 'Declining' : 'Stable'}
           </span>
         </div>
@@ -128,13 +106,13 @@ function SectionCard({ children, title, subtitle, action }: { children: React.Re
   return (
     <motion.div
       variants={fadeInUp}
-      whileHover={{ boxShadow: '0 8px 40px rgba(0,0,0,0.4)', transition: { duration: 0.25 } }}
-      style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 24 }}
+      whileHover={cardHover}
+      style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', padding: 22 }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
         <div>
-          <h2 style={{ fontSize: 12, fontWeight: 800, color: '#555555', margin: 0, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{title}</h2>
-          {subtitle && <p style={{ fontSize: 11, color: '#363636', margin: '3px 0 0' }}>{subtitle}</p>}
+          <h2 style={{ fontSize: 9, fontWeight: 700, color: '#333', margin: 0, textTransform: 'uppercase', letterSpacing: '0.9px' }}>{title}</h2>
+          {subtitle && <p style={{ fontSize: 10, color: '#252525', margin: '3px 0 0', fontWeight: 600 }}>{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -146,7 +124,7 @@ function SectionCard({ children, title, subtitle, action }: { children: React.Re
 // ─── Pipeline funnel bar ──────────────────────────────────────────────────────
 const PIPELINE_STAGES = [
   { key: 'draft', label: 'Draft', color: '#3a3a3a' },
-  { key: 'pending', label: 'Pending', color: '#e2b742' },
+  { key: 'pending', label: 'Pending', color: '#d4a017' },
   { key: 'overdue', label: 'Overdue', color: '#e54747' },
   { key: 'escalated', label: 'Escalated', color: '#c23a3a' },
   { key: 'paid', label: 'Paid', color: '#36bd5f' },
@@ -348,7 +326,7 @@ export default function DashboardPage() {
   })()
 
   const kpis = data ? [
-    { label: 'Outstanding', numValue: data.outstanding_balance, icon: DollarSign, accent: '#47c9e5', prefix: '£', trend: 'neutral' as const },
+    { label: 'Outstanding', numValue: data.outstanding_balance, icon: DollarSign, accent: '#00e5bf', prefix: '£', trend: 'neutral' as const },
     { label: 'Overdue Invoices', numValue: data.overdue_count, icon: AlertTriangle, accent: '#e54747', trend: data.overdue_count > 3 ? 'down' as const : 'neutral' as const },
     { label: 'Interest Recoverable', numValue: data.interest_recoverable, icon: TrendingUp, accent: '#36bd5f', prefix: '£', trend: 'up' as const },
     { label: 'Avg Days Late', numValue: data.avg_days_late, icon: Clock, accent: '#e2b742', suffix: 'd', trend: data.avg_days_late > 30 ? 'down' as const : 'neutral' as const },
@@ -362,57 +340,55 @@ export default function DashboardPage() {
       initial="hidden"
       animate="visible"
       exit="exit"
-      style={{ fontFamily: "'Raleway', Helvetica, Arial, sans-serif", position: 'relative' }}
+      style={{ fontFamily: "'Raleway', Helvetica, Arial, sans-serif" }}
     >
-      <CursorGlow />
-
       {/* ── Header ── */}
       <motion.div
-        initial={{ opacity: 0, y: -16 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, paddingBottom: 22, borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', gap: 12 }}
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.5px' }}>Command Centre</h1>
             <motion.div
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{ duration: 2.5, repeat: Infinity }}
-              style={{ width: 7, height: 7, borderRadius: '50%', background: '#36bd5f', boxShadow: '0 0 8px #36bd5f' }}
+              animate={{ opacity: [1, 0.4, 1] }}
+              transition={{ duration: 2.2, repeat: Infinity }}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5bf' }}
             />
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.5px' }}>Command Centre</h1>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <p style={{ color: '#3a3a3a', fontSize: 12, margin: 0 }}>Real-time payment intelligence</p>
-            <span style={{ color: '#2a2a2a', margin: '0 4px' }}>·</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 16 }}>
+            <p style={{ color: '#2e2e2e', fontSize: 11, margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Real-time payment intelligence</p>
+            <span style={{ color: '#1e1e1e' }}>—</span>
             <LiveClock />
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <motion.a
             href="/invoices"
             whileHover={btnHover}
             whileTap={btnTap}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', color: '#aaaaaa', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '8px 18px', fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', color: '#555', border: '1px solid rgba(255,255,255,0.09)', padding: '7px 16px', fontSize: 11, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', letterSpacing: '0.03em', textTransform: 'uppercase' }}
           >
-            <FileText size={13} /> View All Invoices
+            <FileText size={12} strokeWidth={1.5} /> All Invoices
           </motion.a>
           <motion.button
             onClick={recompute}
             disabled={recomputing}
             whileHover={btnHover}
             whileTap={btnTap}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#47c9e5', color: '#080808', border: 'none', borderRadius: 100, padding: '9px 20px', fontSize: 12, fontWeight: 800, cursor: 'pointer', opacity: recomputing ? 0.7 : 1, fontFamily: 'inherit' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#00e5bf', color: '#080808', border: 'none', padding: '8px 18px', fontSize: 11, fontWeight: 800, cursor: 'pointer', opacity: recomputing ? 0.7 : 1, fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.05em' }}
           >
             <motion.span
               animate={recomputing ? { rotate: 360 } : { rotate: 0 }}
               transition={{ duration: 0.9, repeat: recomputing ? Infinity : 0, ease: 'linear' }}
               style={{ display: 'flex' }}
             >
-              <RefreshCw size={13} />
+              <RefreshCw size={12} strokeWidth={2} />
             </motion.span>
-            {recomputing ? 'Refreshing…' : 'Refresh Intel'}
+            {recomputing ? 'Refreshing…' : 'Refresh'}
           </motion.button>
         </div>
       </motion.div>
@@ -428,9 +404,13 @@ export default function DashboardPage() {
             {/* ── 6 KPI cards ── */}
             <motion.div
               variants={staggerContainer}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 14, marginBottom: 20 }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 0, marginBottom: 20, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none' }}
             >
-              {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+              {kpis.map((k) => (
+                <div key={k.label} style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+                  <KpiCard {...k} />
+                </div>
+              ))}
             </motion.div>
 
             {/* ── Pipeline funnel (full width) ── */}
@@ -439,7 +419,7 @@ export default function DashboardPage() {
                 title="Invoice Pipeline"
                 subtitle={`${data?.total_invoices ?? 0} invoices total`}
                 action={
-                  <span style={{ fontSize: 11, color: '#3a3a3a' }}>Status breakdown</span>
+                  <span style={{ fontSize: 10, color: '#2a2a2a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status breakdown</span>
                 }
               >
                 <PipelineFunnel pipeline={data?.pipeline ?? {}} />
@@ -447,18 +427,19 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* ── Charts + Activity row ── */}
-            <motion.div variants={staggerContainer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 360px', gap: 16, marginBottom: 20 }}>
+            <motion.div variants={staggerContainer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 340px', gap: 0, marginBottom: 20, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none' }}>
 
               {/* Invoice Trend chart */}
+              <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
               <SectionCard
                 title="Invoice Trend — 6 months"
                 action={
-                  <div style={{ display: 'flex', gap: 4 }}>
+                  <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(255,255,255,0.08)' }}>
                     {(['trend', 'amount'] as const).map((t) => (
                       <button
                         key={t}
                         onClick={() => setActiveTab(t)}
-                        style={{ fontSize: 10, fontWeight: 700, textTransform: 'capitalize', padding: '3px 10px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: activeTab === t ? '#47c9e5' : 'rgba(255,255,255,0.05)', color: activeTab === t ? '#080808' : '#555555', transition: 'all 0.2s' }}
+                        style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 10px', border: 'none', borderRight: t === 'trend' ? '1px solid rgba(255,255,255,0.08)' : 'none', cursor: 'pointer', fontFamily: 'inherit', background: activeTab === t ? '#00e5bf' : 'transparent', color: activeTab === t ? '#080808' : '#444', transition: 'all 0.15s' }}
                       >
                         {t === 'trend' ? 'Count' : 'Value'}
                       </button>
@@ -477,8 +458,10 @@ export default function DashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </SectionCard>
+              </div>
 
               {/* Cashflow forecast */}
+              <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
               <SectionCard title="90-Day Cashflow Forecast">
                 {forecast && (
                   <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -492,10 +475,10 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 + i * 0.1 }}
-                        style={{ flex: 1, background: 'rgba(71,201,229,0.05)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(71,201,229,0.08)' }}
+                        style={{ flex: 1, borderTop: '2px solid rgba(0,229,191,0.4)', padding: '10px 12px', background: 'rgba(0,229,191,0.03)' }}
                       >
-                        <p style={{ fontSize: 9, color: '#444', margin: '0 0 4px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</p>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: '#47c9e5', margin: 0 }}>{formatCurrency(value)}</p>
+                        <p style={{ fontSize: 9, color: '#333', margin: '0 0 4px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: '#00e5bf', margin: 0 }}>{formatCurrency(value)}</p>
                       </motion.div>
                     ))}
                   </div>
@@ -504,39 +487,43 @@ export default function DashboardPage() {
                   <AreaChart data={forecastSeries}>
                     <defs>
                       <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#47c9e5" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#47c9e5" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#00e5bf" stopOpacity={0.18} />
+                        <stop offset="95%" stopColor="#00e5bf" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#444' }} interval="preserveStartEnd" />
                     <YAxis hide />
                     <Tooltip {...ChartTooltip} formatter={(v: unknown) => formatCurrency(Number(v))} />
-                    <Area type="monotone" dataKey="amount" stroke="#47c9e5" strokeWidth={2} fill="url(#cg)" name="Cumulative" />
+                    <Area type="monotone" dataKey="amount" stroke="#00e5bf" strokeWidth={1.5} fill="url(#cg)" name="Cumulative" />
                   </AreaChart>
                 </ResponsiveContainer>
               </SectionCard>
+              </div>
 
               {/* Activity feed */}
-              <SectionCard title="Live Activity" subtitle="Recent events">
-                <ActivityFeed events={data?.activity_feed ?? []} />
-              </SectionCard>
+              <div style={{ borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+                <SectionCard title="Live Activity" subtitle="Recent events">
+                  <ActivityFeed events={data?.activity_feed ?? []} />
+                </SectionCard>
+              </div>
             </motion.div>
 
             {/* ── Bottom row: risk clients + upcoming + recent ── */}
-            <motion.div variants={staggerContainer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+            <motion.div variants={staggerContainer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none', marginTop: 20 }}>
 
               {/* High-risk clients */}
+              <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
               <SectionCard
                 title="High-Risk Clients"
-                action={<a href="/clients" style={{ fontSize: 11, color: '#47c9e5', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>All <ExternalLink size={10} /></a>}
+                action={<a href="/clients" style={{ fontSize: 9, color: '#555', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>All <ExternalLink size={9} /></a>}
               >
                 {riskClients.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '28px 0' }}>
-                    <Users size={28} color="#2a2a2a" style={{ marginBottom: 8 }} />
-                    <p style={{ color: '#3a3a3a', fontSize: 12, margin: 0 }}>No high-risk clients detected</p>
+                    <Users size={22} color="#1e1e1e" style={{ marginBottom: 8 }} />
+                    <p style={{ color: '#2e2e2e', fontSize: 11, margin: 0, fontWeight: 600 }}>No high-risk clients detected</p>
                   </div>
                 ) : (
-                  <motion.div variants={staggerContainer} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <motion.div variants={staggerContainer} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {riskClients.map((c) => {
                       const tier = TIER_COLOURS[c.risk_tier as RiskTier]
                       return (
@@ -545,15 +532,15 @@ export default function DashboardPage() {
                           href={`/clients`}
                           variants={fadeInUp}
                           whileHover={{ x: 2, backgroundColor: 'rgba(255,255,255,0.02)', transition: { duration: 0.15 } }}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)', textDecoration: 'none' }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', textDecoration: 'none' }}
                         >
                           <div>
-                            <p style={{ margin: 0, fontWeight: 700, color: '#d0d0d0', fontSize: 13 }}>{c.name}</p>
-                            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#3a3a3a' }}>{formatCurrency(c.outstanding)} outstanding</p>
+                            <p style={{ margin: 0, fontWeight: 700, color: '#d0d0d0', fontSize: 12 }}>{c.name}</p>
+                            <p style={{ margin: '2px 0 0', fontSize: 10, color: '#2e2e2e', fontWeight: 600 }}>{formatCurrency(c.outstanding)} outstanding</p>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <span style={{ display: 'inline-block', background: tier.bg, color: tier.text, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100 }}>{tier.label}</span>
-                            <p style={{ margin: '3px 0 0', fontSize: 12, fontWeight: 800, color: '#aaa' }}>{c.risk_score}/100</p>
+                            <span style={{ display: 'inline-block', background: tier.bg, color: tier.text, fontSize: 9, fontWeight: 700, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tier.label}</span>
+                            <p style={{ margin: '3px 0 0', fontSize: 11, fontWeight: 800, color: '#555' }}>{c.risk_score}/100</p>
                           </div>
                         </motion.a>
                       )
@@ -561,26 +548,30 @@ export default function DashboardPage() {
                   </motion.div>
                 )}
               </SectionCard>
+              </div>
 
               {/* Upcoming due dates */}
+              <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
               <SectionCard
                 title="Upcoming Due"
                 subtitle="Next 14 days"
-                action={<Calendar size={14} color="#3a3a3a" />}
+                action={<Calendar size={12} color="#2e2e2e" strokeWidth={1.5} />}
               >
                 <UpcomingDue invoices={data?.upcoming_due ?? []} />
               </SectionCard>
+              </div>
 
               {/* Recent invoices */}
+              <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
               <SectionCard
                 title="Recent Invoices"
-                action={<a href="/invoices" style={{ fontSize: 11, color: '#47c9e5', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>All <ExternalLink size={10} /></a>}
+                action={<a href="/invoices" style={{ fontSize: 9, color: '#555', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>All <ExternalLink size={9} /></a>}
               >
                 {(data?.recent_invoices ?? []).length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '28px 0' }}>
-                    <FileText size={28} color="#2a2a2a" style={{ marginBottom: 8 }} />
-                    <p style={{ color: '#3a3a3a', fontSize: 12, margin: 0 }}>
-                      No invoices yet. <a href="/invoices" style={{ color: '#47c9e5' }}>Add one →</a>
+                    <FileText size={22} color="#1e1e1e" style={{ marginBottom: 8 }} />
+                    <p style={{ color: '#2e2e2e', fontSize: 11, margin: 0, fontWeight: 600 }}>
+                      No invoices yet. <a href="/invoices" style={{ color: '#00e5bf' }}>Add one →</a>
                     </p>
                   </div>
                 ) : (
@@ -590,15 +581,15 @@ export default function DashboardPage() {
                         key={inv.id}
                         href={`/invoices/${inv.id}`}
                         variants={fadeInUp}
-                        whileHover={{ x: 3, backgroundColor: 'rgba(71,201,229,0.03)', transition: { duration: 0.15 } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 6px', borderBottom: '1px solid rgba(255,255,255,0.04)', textDecoration: 'none', borderRadius: 4 }}
+                        whileHover={{ x: 2, backgroundColor: 'rgba(255,255,255,0.02)', transition: { duration: 0.15 } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', textDecoration: 'none' }}
                       >
                         <div>
-                          <p style={{ margin: 0, fontWeight: 700, color: '#d0d0d0', fontSize: 13 }}>{inv.invoice_number}</p>
-                          <p style={{ margin: '2px 0 0', fontSize: 11, color: '#3a3a3a' }}>Due {formatDate(inv.due_date)}</p>
+                          <p style={{ margin: 0, fontWeight: 700, color: '#d0d0d0', fontSize: 12 }}>{inv.invoice_number}</p>
+                          <p style={{ margin: '2px 0 0', fontSize: 10, color: '#2e2e2e', fontWeight: 600 }}>Due {formatDate(inv.due_date)}</p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span style={{ fontWeight: 700, fontSize: 13, color: '#c0c0c0' }}>{formatCurrency(Number(inv.amount), inv.currency)}</span>
+                          <span style={{ fontWeight: 700, fontSize: 12, color: '#aaa' }}>{formatCurrency(Number(inv.amount), inv.currency)}</span>
                           <InvoiceStatusBadge status={inv.status} />
                         </div>
                       </motion.a>
@@ -606,6 +597,7 @@ export default function DashboardPage() {
                   </motion.div>
                 )}
               </SectionCard>
+              </div>
             </motion.div>
 
           </motion.div>

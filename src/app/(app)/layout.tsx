@@ -20,10 +20,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : { data: null }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#1a1a1a' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#080808' }}>
       <Sidebar plan={(org?.plan ?? 'starter') as OrgPlan} orgName={org?.name} />
-      <main style={{ flex: 1, overflowY: 'auto', background: '#1a1a1a' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '36px 40px' }}>
+      <main style={{ flex: 1, overflowY: 'auto', background: '#080808' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 36px' }}>
           {children}
         </div>
       </main>
