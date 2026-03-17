@@ -7,7 +7,7 @@ import { determineReminderStage, DEFAULT_TEMPLATES, renderTemplate } from '@/lib
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Invoice } from '@/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder")
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

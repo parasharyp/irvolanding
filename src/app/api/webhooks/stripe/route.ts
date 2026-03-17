@@ -7,7 +7,7 @@ import { generateLegalDemandLetter } from '@/lib/legal-letter'
 import { generateCcjPack } from '@/lib/ccj-pack'
 import { Invoice } from '@/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder")
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.clover' })
 
