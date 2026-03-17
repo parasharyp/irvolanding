@@ -248,10 +248,10 @@ export default function SignupPage() {
         <div style={{ ...gridBg, position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
         {/* Wordmark */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, userSelect: 'none' }}>
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, userSelect: 'none', textDecoration: 'none' }}>
           <div style={{ width: 2, height: 22, background: '#00e5bf', flexShrink: 0 }} />
           <span style={{ fontSize: 24, fontWeight: 900, letterSpacing: '2px', color: '#e8e8e8', fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif', lineHeight: 1, whiteSpace: 'nowrap' }}>IRVO</span>
-        </div>
+        </Link>
 
         {/* Center content */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
@@ -284,6 +284,7 @@ export default function SignupPage() {
 
       {/* Right panel */}
       <div
+        className="auth-right-panel"
         style={{
           width: '45%',
           background: '#0c0c0c',

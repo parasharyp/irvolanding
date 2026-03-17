@@ -208,7 +208,7 @@ export default function InvoiceDetailPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Summary + Client */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="r-grid-2" style={{ gap: 12 }}>
           <SectionCard title="Invoice Summary">
             <div style={{ marginBottom: 16 }}>
               <p style={{ fontSize: 10, color: '#444', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Amount</p>
@@ -236,7 +236,7 @@ export default function InvoiceDetailPage() {
         <AnimatePresence>
           {prediction && invoice.status !== 'paid' && (
             <SectionCard title="Payment Prediction" accentColor="#00e5bf">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+              <div className="r-grid-3" style={{ gap: 24 }}>
                 <div>
                   <p style={{ fontSize: 11, color: '#444', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Predicted Date</p>
                   <p style={{ fontSize: 18, fontWeight: 800, color: '#e8e8e8', margin: 0 }}>{formatDate(prediction.predicted_payment_date)}</p>
@@ -269,7 +269,7 @@ export default function InvoiceDetailPage() {
         {/* Interest */}
         {interest && (
           <SectionCard title="Statutory Interest" accentColor="#e2b742">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="r-grid-4" style={{ gap: 0, borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
               {[
                 { label: 'Days Overdue', value: String(interest.days_overdue) },
                 { label: 'Interest Rate', value: `${(interest.interest_rate * 100).toFixed(1)}% p.a.` },

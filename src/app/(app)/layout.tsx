@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/layout/Sidebar'
+import AppNavigationWrapper from '@/components/layout/AppNavigationWrapper'
 import { OrgPlan } from '@/types'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -20,13 +20,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : { data: null }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#080808' }}>
-      <Sidebar plan={(org?.plan ?? 'starter') as OrgPlan} orgName={org?.name} />
-      <main style={{ flex: 1, overflowY: 'auto', background: '#080808' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 36px' }}>
-          {children}
-        </div>
-      </main>
-    </div>
+    <AppNavigationWrapper plan={(org?.plan ?? 'starter') as OrgPlan} orgName={org?.name}>
+      {children}
+    </AppNavigationWrapper>
   )
 }

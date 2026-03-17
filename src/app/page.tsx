@@ -8,7 +8,7 @@ import {
 } from 'framer-motion'
 import {
   Shield, FileText, CheckCircle, ArrowRight, Zap, BarChart3,
-  Star, X, Gavel, Scale, AlertTriangle, TrendingUp, Clock,
+  Star, X, Gavel, Scale, AlertTriangle, TrendingUp, Clock, Menu,
 } from 'lucide-react'
 
 /* ─── Design tokens ───────────────────────────────────────────── */
@@ -91,7 +91,7 @@ function CycleWord() {
   const [idx, setIdx] = useState(0)
   useEffect(() => { const t = setInterval(() => setIdx((i) => (i + 1) % WORDS.length), 2200); return () => clearInterval(t) }, [])
   return (
-    <span style={{ position: 'relative', display: 'inline-block', minWidth: 260 }}>
+    <span style={{ position: 'relative', display: 'inline-block', minWidth: 'min(260px, 72vw)' }}>
       <AnimatePresence mode="wait">
         <motion.span
           key={idx}
@@ -216,14 +216,14 @@ function EscalationModal({ service, onClose }: { service: EscService; onClose: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.7px', margin: '0 0 10px', borderBottom: `1px solid ${T.border}`, paddingBottom: 8 }}>Your Details</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="hp-modal-grid-2">
               <Field label="Your Name / Business" value={form.creditorName} onChange={set('creditorName')} placeholder="Jane Smith Design" required />
               <Field label="Your Email" value={form.creditorEmail} onChange={set('creditorEmail')} type="email" placeholder="jane@example.com" required />
             </div>
           </div>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.7px', margin: '0 0 10px', borderBottom: `1px solid ${T.border}`, paddingBottom: 8 }}>Client Details</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div className="hp-modal-grid-2" style={{ marginBottom: 12 }}>
               <Field label="Client Name" value={form.clientName} onChange={set('clientName')} placeholder="John Williams" required />
               <Field label={isLegal ? 'Client Email' : 'Client Email (optional)'} value={form.clientEmail} onChange={set('clientEmail')} type="email" placeholder="john@company.com" required={isLegal} />
             </div>
@@ -231,12 +231,12 @@ function EscalationModal({ service, onClose }: { service: EscService; onClose: (
           </div>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.7px', margin: '0 0 10px', borderBottom: `1px solid ${T.border}`, paddingBottom: 8 }}>Invoice Details</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div className="hp-modal-grid-3" style={{ marginBottom: 12 }}>
               <Field label="Invoice Number" value={form.invoiceNumber} onChange={set('invoiceNumber')} placeholder="INV-001" required />
               <Field label="Amount (£)" value={form.invoiceAmount} onChange={set('invoiceAmount')} type="number" placeholder="2500" required />
               <Field label="Invoice Date" value={form.invoiceDate} onChange={set('invoiceDate')} type="date" required />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="hp-modal-grid-2">
               <Field label="Due Date" value={form.dueDate} onChange={set('dueDate')} type="date" required />
               <Field label="Services (optional)" value={form.description} onChange={set('description')} placeholder="Web design services" />
             </div>
@@ -299,7 +299,7 @@ function InterestCalculator() {
   const fmt = (n: number) => `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   return (
-    <section style={{ padding: '100px 32px', background: T.surface }}>
+    <section className="hp-section-pad" style={{ background: T.surface }}>
       <div style={{ maxWidth: 1160, margin: '0 auto' }}>
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 64 }}>
@@ -320,7 +320,7 @@ function InterestCalculator() {
           style={{ border: `1px solid ${T.border}`, background: T.bg }}
         >
           {/* Inputs row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${T.border}` }}>
+          <div className="r-grid-2" style={{ borderBottom: `1px solid ${T.border}` }}>
             <div style={{ padding: '32px 36px', borderRight: `1px solid ${T.border}` }}>
               <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>
                 Invoice Amount
@@ -360,7 +360,7 @@ function InterestCalculator() {
           </div>
 
           {/* Results row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', borderBottom: `1px solid ${T.border}` }}>
+          <div className="r-grid-4" style={{ borderBottom: `1px solid ${T.border}` }}>
             {[
               { label: 'Invoice Principal', value: hasResult ? fmt(principal) : '—', note: 'Original amount', dim: true },
               { label: 'Statutory Interest', value: hasResult ? `+${fmt(interest)}` : '—', note: `13% p.a. × ${daysNum} days`, dim: false },
@@ -452,6 +452,30 @@ export default function LandingPage() {
       <Cursor />
       <ScrollBar />
 
+      {/* ── Mobile nav overlay ───────────────────────────────────── */}
+      <div className={`mobile-nav-overlay${mobileMenu ? ' open' : ''}`}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+          <Logo size={28} />
+          <button onClick={() => setMobileMenu(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 8, touchAction: 'manipulation' }}>
+            <X size={22} />
+          </button>
+        </div>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+          {NAV.map((item) => (
+            <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={() => setMobileMenu(false)}
+              style={{ fontSize: 22, fontWeight: 700, color: T.text2, textDecoration: 'none', padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>
+              {item}
+            </a>
+          ))}
+        </nav>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 32 }}>
+          <Link href="/login" onClick={() => setMobileMenu(false)} style={{ fontSize: 15, color: T.text2, textDecoration: 'none', fontWeight: 500, padding: '12px 0', textAlign: 'center', border: `1px solid ${T.border}`, borderRadius: 8 }}>Sign in</Link>
+          <Link href="/signup" onClick={() => setMobileMenu(false)} style={{ background: T.text, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 0', borderRadius: 100, textDecoration: 'none', textAlign: 'center', letterSpacing: '-0.2px' }}>
+            Get started
+          </Link>
+        </div>
+      </div>
+
       {/* ── NAV ─────────────────────────────────────────────────── */}
       <motion.header
         animate={{ borderBottomColor: scrolled ? T.border : 'transparent', background: scrolled ? 'rgba(4,4,4,0.92)' : 'transparent', backdropFilter: scrolled ? 'blur(20px)' : 'none' }}
@@ -460,12 +484,12 @@ export default function LandingPage() {
       >
         <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
           <Logo size={32} />
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <nav className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
             {NAV.map((item) => (
               <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{item}</motion.a>
             ))}
           </nav>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link href="/login" style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
             <Magnetic>
               <Link href="/signup" style={{ background: T.text, color: T.bg, fontSize: 13, fontWeight: 700, padding: '8px 20px', borderRadius: 100, textDecoration: 'none', display: 'inline-block', letterSpacing: '-0.2px' }}>
@@ -473,11 +497,14 @@ export default function LandingPage() {
               </Link>
             </Magnetic>
           </div>
+          <button className="mobile-only" onClick={() => setMobileMenu(true)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, padding: 8, touchAction: 'manipulation' }}>
+            <Menu size={22} />
+          </button>
         </div>
       </motion.header>
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '120px 32px 80px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section className="hp-hero-pad" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         {/* Subtle grid */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)', backgroundSize: '80px 80px', pointerEvents: 'none' }} />
 
@@ -489,7 +516,7 @@ export default function LandingPage() {
             UK statutory debt recovery, automated
           </motion.div>
 
-          <h1 style={{ fontSize: 'clamp(52px, 8vw, 96px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-3px', margin: '0 0 32px', maxWidth: 860 }}>
+          <h1 style={{ fontSize: 'clamp(40px, 8vw, 96px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-3px', margin: '0 0 32px', maxWidth: 860 }}>
             Built for{' '}
             <CycleWord />
             <br />
@@ -548,7 +575,7 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── FEATURES ─────────────────────────────────────────────── */}
-      <section id="features" style={{ padding: '120px 32px' }}>
+      <section id="features" className="hp-section-pad" style={{ }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ marginBottom: 80 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Features</p>
@@ -558,7 +585,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Feature grid with dividing lines */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
             {FEATURES.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -578,8 +605,8 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── STATS ────────────────────────────────────────────────── */}
-      <section style={{ padding: '100px 32px' }}>
-        <div style={{ maxWidth: 1160, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+      <section className="hp-section-pad" style={{ }}>
+        <div className="r-grid-4" style={{ maxWidth: 1160, margin: '0 auto', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
           {STATS.map((s) => (
             <div key={s.label} style={{ padding: '48px 36px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
               <p style={{ fontSize: 'clamp(40px, 5vw, 58px)', fontWeight: 900, color: T.text, margin: '0 0 8px', letterSpacing: '-2px', fontVariantNumeric: 'tabular-nums' }}>
@@ -594,8 +621,8 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── LAW SECTION ──────────────────────────────────────────── */}
-      <section style={{ padding: '120px 32px', background: T.surface }}>
-        <div style={{ maxWidth: 1160, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+      <section className="hp-section-pad" style={{ background: T.surface }}>
+        <div className="hp-law-grid" style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 20px' }}>Legal basis</p>
             <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1.5px', margin: '0 0 24px', lineHeight: 1.1 }}>
@@ -634,13 +661,13 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ padding: '120px 32px' }}>
+      <section id="how-it-works" className="hp-section-pad" style={{ }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 72 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Process</p>
             <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, lineHeight: 1.1 }}>Set up once. Runs forever.</h2>
           </motion.div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-4" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
             {STEPS.map((step, i) => (
               <motion.div
                 key={step.n}
@@ -660,12 +687,12 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── TESTIMONIALS ─────────────────────────────────────────── */}
-      <section style={{ padding: '120px 32px', background: T.surface }}>
+      <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 64 }}>
             What people say
           </motion.p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={{ gap: 0, borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
             {TESTIMONIALS.map((t, i) => (
               <motion.div
                 key={t.name}
@@ -690,9 +717,9 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── PRICING ──────────────────────────────────────────────── */}
-      <section id="pricing" style={{ padding: '120px 32px' }}>
+      <section id="pricing" className="hp-section-pad" style={{ }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 64, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="hp-pricing-header" style={{ marginBottom: 64 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Pricing</p>
               <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, lineHeight: 1.1 }}>Simple, transparent plans.</h2>
@@ -707,7 +734,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
             {PRICING.map((plan, i) => (
               <motion.div
                 key={plan.name}
@@ -743,7 +770,7 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── ESCALATION SERVICES ──────────────────────────────────── */}
-      <section style={{ padding: '120px 32px', background: T.surface }}>
+      <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 72 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
@@ -758,7 +785,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="hp-esc-grid" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
             {/* Legal Demand */}
             <motion.div
               initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -858,7 +885,7 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
-      <section style={{ padding: '160px 32px', textAlign: 'center' }}>
+      <section className="hp-cta-pad" style={{ textAlign: 'center' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
             <h2 style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: 900, letterSpacing: '-2.5px', lineHeight: 1.0, margin: '0 0 32px', color: T.text }}>
@@ -881,7 +908,7 @@ export default function LandingPage() {
       {/* ── FOOTER ───────────────────────────────────────────────── */}
       <footer style={{ padding: '64px 32px', background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 64 }}>
+          <div className="r-grid-footer" style={{ marginBottom: 64 }}>
             <div>
               <div style={{ marginBottom: 16 }}>
                 <Logo size={24} />
@@ -896,16 +923,36 @@ export default function LandingPage() {
               </div>
             </div>
             {[
-              { title: 'Product', links: ['Features', 'Pricing', 'How It Works'] },
-              { title: 'Legal', links: ['Privacy Policy', 'Terms of Service'] },
-              { title: 'Company', links: ['About', 'Contact', 'hello@irvo.co.uk'] },
+              {
+              title: 'Product',
+              links: [
+                { label: 'Features', href: '#features' },
+                { label: 'Pricing', href: '#pricing' },
+                { label: 'How It Works', href: '#how-it-works' },
+              ],
+            },
+            {
+              title: 'Legal',
+              links: [
+                { label: 'Privacy Policy', href: '#' },
+                { label: 'Terms of Service', href: '#' },
+              ],
+            },
+            {
+              title: 'Company',
+              links: [
+                { label: 'About', href: '#' },
+                { label: 'Contact', href: '#' },
+                { label: 'hello@irvo.co.uk', href: 'mailto:hello@irvo.co.uk' },
+              ],
+            },
             ].map(({ title, links }) => (
               <div key={title}>
                 <h4 style={{ color: T.text3, fontWeight: 700, fontSize: 10, marginBottom: 20, letterSpacing: '0.8px', textTransform: 'uppercase' }}>{title}</h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {links.map((item) => (
-                    <li key={item}>
-                      <motion.a href="#" whileHover={{ color: T.text }} style={{ color: T.text2, textDecoration: 'none', fontSize: 13, display: 'inline-block', transition: 'color 0.15s' }}>{item}</motion.a>
+                  {links.map(({ label, href }) => (
+                    <li key={label}>
+                      <motion.a href={href} whileHover={{ color: T.text }} style={{ color: T.text2, textDecoration: 'none', fontSize: 13, display: 'inline-block', transition: 'color 0.15s' }}>{label}</motion.a>
                     </li>
                   ))}
                 </ul>

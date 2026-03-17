@@ -98,7 +98,7 @@ export default function ClientsPage() {
   return (
     <div style={{ fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: '#e8e8e8', margin: 0, letterSpacing: '-0.03em' }}>Clients</h1>
           <p style={{ color: '#444', fontSize: 13, marginTop: 4 }}>{clients.length} clients on record</p>
@@ -112,7 +112,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Table */}
-      <div style={{ border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+      <div className="table-scroll" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
         {loading ? (
           <div>
             {[...Array(4)].map((_, i) => (

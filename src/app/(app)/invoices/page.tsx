@@ -141,7 +141,7 @@ export default function InvoicesPage() {
     <motion.div variants={pageVariants} initial="hidden" animate="visible" exit="exit" style={{ fontFamily: "'Raleway', Helvetica, Arial, sans-serif" }}>
 
       {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, paddingBottom: 22, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, paddingBottom: 22, borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', gap: 12 }}>
         <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
           <h1 style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.5px' }}>Invoices</h1>
           <p style={{ color: '#2e2e2e', fontSize: 11, marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{invoices.length} total</p>
@@ -170,7 +170,8 @@ export default function InvoicesPage() {
       {/* ── Stats bar ── */}
       <motion.div
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none', marginBottom: 20 }}
+        className="r-grid-4 wall-grid"
+        style={{ marginBottom: 20 }}
       >
         {[
           { label: 'Outstanding', value: formatCurrency(stats.outstanding), icon: Clock, accent: '#00e5bf', sub: `${invoices.filter(i => i.status !== 'paid').length} invoices` },
@@ -190,7 +191,7 @@ export default function InvoicesPage() {
       </motion.div>
 
       {/* ── Filters ── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Search */}
         <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
           <Search size={12} color="#333" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
@@ -203,7 +204,7 @@ export default function InvoicesPage() {
         </div>
 
         {/* Status pill tabs */}
-        <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto' }}>
           {STATUSES.map((s, i) => (
             <button
               key={s}
@@ -244,7 +245,8 @@ export default function InvoicesPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        style={{ border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}
+        className="table-scroll"
+        style={{ border: '1px solid rgba(255,255,255,0.07)' }}
       >
         {loading ? (
           <div>

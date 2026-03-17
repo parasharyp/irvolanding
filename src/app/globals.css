@@ -1,17 +1,199 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
+  --background: #040404;
+  --foreground: #e8e8e8;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist);
+/* ── Base resets ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Prevent horizontal overflow from blowing out the page */
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #040404;
+  color: #e8e8e8;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Remove tap delay on iOS */
+button, a { touch-action: manipulation; }
+
+/* Prevent iOS from adding styling to inputs */
+input, textarea, select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ── Responsive grids ─────────────────────────────────────── */
+.r-grid-2     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.r-grid-3     { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.r-grid-4     { display: grid; grid-template-columns: repeat(4, 1fr); }
+.r-grid-6     { display: grid; grid-template-columns: repeat(6, 1fr); }
+.r-grid-chart { display: grid; grid-template-columns: 1fr 1fr 340px; }
+.r-grid-footer { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+
+/* Shared-wall borders */
+.wall-grid { border: 1px solid rgba(255,255,255,0.07); border-right: none; gap: 0 !important; }
+.wall-grid > * { border-right: 1px solid rgba(255,255,255,0.07); }
+
+/* ── Table scroll ─────────────────────────────────────────── */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll table { min-width: 580px; }
+
+/* ── Visibility helpers ───────────────────────────────────── */
+.mobile-only { display: none !important; }
+
+/* ── Homepage layout helpers (base / desktop) ─────────────── */
+.hp-section-pad  { padding: 120px 32px; }
+.hp-hero-pad     { padding: 120px 32px 80px; }
+.hp-cta-pad      { padding: 160px 32px; }
+.hp-law-grid     { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.hp-esc-grid     { display: grid; grid-template-columns: 1fr 1fr; }
+.hp-modal-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.hp-modal-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.hp-pricing-header { display: flex; align-items: flex-end; justify-content: space-between; }
+
+/* ── App shell ────────────────────────────────────────────── */
+.app-mobile-header { display: none; }
+.sidebar-close-btn { display: none; }
+
+/* Sidebar: sticky on desktop */
+.sidebar-root {
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+}
+
+/* ── Homepage mobile nav overlay ──────────────────────────── */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #040404;
+  z-index: 200;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-nav-overlay.open { display: flex; }
+
+/* ── iPhone notch safe areas ──────────────────────────────── */
+@supports (padding: env(safe-area-inset-top)) {
+  .app-mobile-header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(52px + env(safe-area-inset-top));
+  }
+  .app-main {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* TABLET — 768px                                              */
+/* ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Grid collapse */
+  .r-grid-2     { grid-template-columns: 1fr; }
+  .r-grid-3     { grid-template-columns: 1fr; gap: 12px; }
+  .r-grid-4     { grid-template-columns: 1fr 1fr; }
+  .r-grid-6     { grid-template-columns: 1fr 1fr; }
+  .r-grid-chart { grid-template-columns: 1fr; }
+  .r-grid-footer { grid-template-columns: 1fr 1fr; gap: 32px; }
+
+  /* Wall grids: switch to bottom borders on mobile */
+  .wall-grid { border: none !important; border-right: none !important; }
+  .wall-grid > * {
+    border: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  }
+
+  /* Visibility */
+  .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  /* Mobile header bar */
+  .app-mobile-header { display: flex !important; }
+  .sidebar-close-btn { display: flex !important; }
+
+  /* Sidebar becomes a fixed drawer */
+  .sidebar-root {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100dvh !important; /* dvh = dynamic viewport height, handles iOS address bar */
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 260px !important;
+  }
+  .sidebar-root.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 8px 0 48px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Main content: pad top for fixed header */
+  .app-main > div {
+    padding: 72px 16px 32px !important;
+    max-width: 100% !important;
+  }
+
+  /* iOS input zoom fix: bump font-size to 16px on mobile so Safari doesn't auto-zoom */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Auth pages: right panel fills screen when left panel hides */
+  .auth-right-panel {
+    width: 100% !important;
+    border-left: none !important;
+    min-height: 100dvh;
+    padding: 40px 24px !important;
+  }
+
+  /* Pay page */
+  .pay-main { padding: 32px 16px 64px !important; }
+
+  /* ── Homepage section padding */
+  .hp-section-pad { padding: 64px 20px !important; }
+  .hp-hero-pad { padding: 100px 20px 60px !important; }
+  .hp-cta-pad { padding: 80px 20px !important; }
+
+  /* ── Homepage 2-col grids that use inline styles → collapse */
+  .hp-law-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .hp-esc-grid { grid-template-columns: 1fr !important; }
+
+  /* ── EscalationModal form grids */
+  .hp-modal-grid-2 { display: grid; grid-template-columns: 1fr !important; }
+  .hp-modal-grid-3 { display: grid; grid-template-columns: 1fr !important; }
+
+  /* ── Pricing header: stack vertically */
+  .hp-pricing-header { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* PHONE — 480px                                               */
+/* ═══════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .r-grid-4     { grid-template-columns: 1fr; }
+  .r-grid-6     { grid-template-columns: 1fr 1fr; }
+  .r-grid-footer { grid-template-columns: 1fr; gap: 24px; }
+
+  /* Hide the Days column (5th) in invoice table on small screens */
+  .table-scroll th:nth-child(5),
+  .table-scroll td:nth-child(5) { display: none; }
+
+  /* Tighter page padding */
+  .app-main > div {
+    padding: 68px 12px 24px !important;
+  }
 }

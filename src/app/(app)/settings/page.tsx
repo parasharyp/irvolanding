@@ -209,7 +209,7 @@ function SettingsContent() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none' }}>
+            <div className="r-grid-3 wall-grid" style={{ gap: 0 }}>
               {PLANS.map(({ key, name, price, period, desc, accent }, i) => {
                 const isCurrent = org?.plan === key
                 return (

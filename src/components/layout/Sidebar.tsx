@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, FileText, Users, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Settings, LogOut, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { OrgPlan } from '@/types'
@@ -23,9 +23,16 @@ const PLAN_LABEL: Record<OrgPlan, string> = {
 interface SidebarProps {
   plan?: OrgPlan
   orgName?: string
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export default function Sidebar({ plan = 'starter', orgName }: SidebarProps) {
+export default function Sidebar({
+  plan = 'starter',
+  orgName,
+  mobileOpen = false,
+  onMobileClose,
+}: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -37,10 +44,8 @@ export default function Sidebar({ plan = 'starter', orgName }: SidebarProps) {
   }
 
   return (
-    <motion.aside
-      initial={{ x: -240, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    <aside
+      className={`sidebar-root${mobileOpen ? ' sidebar-open' : ''}`}
       style={{
         width: 220,
         flexShrink: 0,
@@ -50,10 +55,28 @@ export default function Sidebar({ plan = 'starter', orgName }: SidebarProps) {
         display: 'flex',
         flexDirection: 'column',
         fontFamily: "'Raleway', Helvetica, Arial, sans-serif",
-        position: 'sticky',
-        top: 0,
+        overflowY: 'auto',
       }}
     >
+      {/* Mobile close button */}
+      <button
+        className="sidebar-close-btn"
+        onClick={onMobileClose}
+        style={{
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#555',
+          padding: '14px 16px 0',
+          touchAction: 'manipulation',
+        }}
+      >
+        <X size={18} />
+      </button>
+
       {/* Logo */}
       <div style={{ padding: '24px 22px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <motion.div
@@ -130,6 +153,7 @@ export default function Sidebar({ plan = 'starter', orgName }: SidebarProps) {
                 )}
                 <Link
                   href={href}
+                  onClick={onMobileClose}
                   style={{
                     position: 'relative',
                     display: 'flex',
@@ -143,6 +167,7 @@ export default function Sidebar({ plan = 'starter', orgName }: SidebarProps) {
                     color: active ? '#ffffff' : '#404040',
                     zIndex: 1,
                     transition: 'color 0.15s',
+                    minHeight: 44,
                   }}
                 >
                   <Icon size={14} strokeWidth={active ? 2.5 : 1.5} />
@@ -187,12 +212,13 @@ export default function Sidebar({ plan = 'starter', orgName }: SidebarProps) {
             color: '#2e2e2e',
             fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif',
             transition: 'color 0.15s',
+            minHeight: 44,
           }}
         >
           <LogOut size={14} strokeWidth={1.5} />
           Sign out
         </motion.button>
       </div>
-    </motion.aside>
+    </aside>
   )
 }

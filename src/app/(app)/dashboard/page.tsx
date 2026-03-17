@@ -266,7 +266,7 @@ function UpcomingDue({ invoices }: { invoices: Invoice[] }) {
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function Skeleton() {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+    <div className="r-grid-3" style={{ gap: 16 }}>
       {[...Array(9)].map((_, i) => (
         <motion.div
           key={i}
@@ -404,7 +404,8 @@ export default function DashboardPage() {
             {/* ── 6 KPI cards ── */}
             <motion.div
               variants={staggerContainer}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 0, marginBottom: 20, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none' }}
+              className="r-grid-6 wall-grid"
+              style={{ marginBottom: 20 }}
             >
               {kpis.map((k) => (
                 <div key={k.label} style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
@@ -427,7 +428,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* ── Charts + Activity row ── */}
-            <motion.div variants={staggerContainer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 340px', gap: 0, marginBottom: 20, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none' }}>
+            <motion.div variants={staggerContainer} className="r-grid-chart wall-grid" style={{ marginBottom: 20 }}>
 
               {/* Invoice Trend chart */}
               <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
@@ -509,7 +510,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* ── Bottom row: risk clients + upcoming + recent ── */}
-            <motion.div variants={staggerContainer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, border: '1px solid rgba(255,255,255,0.07)', borderRight: 'none', marginTop: 20 }}>
+            <motion.div variants={staggerContainer} className="r-grid-3 wall-grid" style={{ marginTop: 20 }}>
 
               {/* High-risk clients */}
               <div style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>

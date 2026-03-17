@@ -48,7 +48,7 @@ function LiveInterest({ principal, dueDateStr }: { principal: number; dueDateStr
       <motion.div
         animate={{ scale: [1, 1.005, 1] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ fontSize: 44, fontWeight: 800, color: '#e2b742', letterSpacing: '-1px', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
+        style={{ fontSize: 'clamp(30px, 9vw, 44px)', fontWeight: 800, color: '#e2b742', letterSpacing: '-1px', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
       >
         {fmt(interest, 4)}
       </motion.div>
@@ -193,7 +193,7 @@ function Portal() {
     return (
       <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}>
-          <Shield size={32} color="#47c9e5" />
+          <Shield size={32} color="#00e5bf" />
         </motion.div>
       </div>
     )
@@ -238,31 +238,32 @@ function Portal() {
       <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }} />
 
       {/* Top bar */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Shield size={18} color="#47c9e5" />
-            <span style={{ fontWeight: 800, fontSize: 14, color: '#ffffff' }}>Irvo</span>
+      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          {/* | IRVO logo */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+            <div style={{ width: 2, height: 16, background: '#00e5bf' }} />
+            <span style={{ fontWeight: 900, fontSize: 15, color: '#ffffff', letterSpacing: '2px', fontFamily: "'Raleway', sans-serif" }}>IRVO</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(229,71,71,0.1)', border: '1px solid rgba(229,71,71,0.2)', borderRadius: 100, padding: '5px 14px' }}>
-            <AlertTriangle size={11} color="#e54747" />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#e54747', letterSpacing: '0.5px' }}>OFFICIAL PAYMENT NOTICE</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(229,71,71,0.08)', border: '1px solid rgba(229,71,71,0.18)', padding: '5px 12px', flexShrink: 0 }}>
+            <AlertTriangle size={10} color="#e54747" />
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#e54747', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>OFFICIAL PAYMENT NOTICE</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <Lock size={12} color="#5e5e5e" />
-            <span style={{ fontSize: 11, color: '#4e4e4e', fontWeight: 600 }}>Secure · Stripe Protected</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            <Lock size={11} color="#444" />
+            <span style={{ fontSize: 10, color: '#444', fontWeight: 600, whiteSpace: 'nowrap' }}>Stripe Secured</span>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '48px 24px 80px' }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 16px 80px' }}>
 
         {/* From / invoice badge */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} style={{ textAlign: 'center', marginBottom: 40 }}>
           <p style={{ fontSize: 13, color: '#5e5e5e', margin: '0 0 8px', fontWeight: 600 }}>Payment request from</p>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: '#ffffff', margin: '0 0 16px', letterSpacing: '-0.5px' }}>{org_name}</h1>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(71,201,229,0.08)', border: '1px solid rgba(71,201,229,0.15)', borderRadius: 100, padding: '6px 16px' }}>
-            <span style={{ fontSize: 12, color: '#47c9e5', fontWeight: 700 }}>Invoice {invoice.invoice_number}</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(0,229,191,0.08)', border: '1px solid rgba(0,229,191,0.15)', borderRadius: 100, padding: '6px 16px' }}>
+            <span style={{ fontSize: 12, color: '#00e5bf', fontWeight: 700 }}>Invoice {invoice.invoice_number}</span>
             <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#3e3e3e', display: 'inline-block' }} />
             {client && <span style={{ fontSize: 12, color: '#5e5e5e', fontWeight: 600 }}>{client.name}{client.company ? ` · ${client.company}` : ''}</span>}
           </div>
@@ -281,7 +282,7 @@ function Portal() {
             <p style={{ fontSize: 11, fontWeight: 700, color: '#5e5e5e', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 10px' }}>Total Now Due</p>
             <motion.div
               key={Math.floor(totalNow * 100)}
-              style={{ fontSize: 68, fontWeight: 800, color: '#ffffff', letterSpacing: '-2px', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}
+              style={{ fontSize: 'clamp(36px, 12vw, 68px)', fontWeight: 800, color: '#ffffff', letterSpacing: '-2px', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}
             >
               {fmt(totalNow)}
             </motion.div>
@@ -335,7 +336,7 @@ function Portal() {
           {/* Total row */}
           <div style={{ padding: '20px 28px', background: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 15, fontWeight: 800, color: '#ffffff' }}>Total Due Now</span>
-            <span style={{ fontSize: 22, fontWeight: 800, color: '#47c9e5', fontVariantNumeric: 'tabular-nums' }}>{fmt(totalNow)}</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#00e5bf', fontVariantNumeric: 'tabular-nums' }}>{fmt(totalNow)}</span>
           </div>
         </motion.div>
 
@@ -347,9 +348,9 @@ function Portal() {
           <motion.button
             onClick={pay}
             disabled={paying}
-            whileHover={{ scale: 1.02, boxShadow: '0 0 60px rgba(71,201,229,0.5), 0 20px 60px rgba(0,0,0,0.5)' }}
+            whileHover={{ scale: 1.02, boxShadow: '0 0 60px rgba(0,229,191,0.4), 0 20px 60px rgba(0,0,0,0.5)' }}
             whileTap={{ scale: 0.98 }}
-            style={{ width: '100%', background: paying ? '#2a2a2a' : 'linear-gradient(135deg, #47c9e5 0%, #309bee 100%)', border: 'none', borderRadius: 14, padding: '22px 32px', fontSize: 18, fontWeight: 800, color: '#fff', cursor: paying ? 'default' : 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, transition: 'background 0.3s' }}
+            style={{ width: '100%', background: paying ? '#2a2a2a' : 'linear-gradient(135deg, #00e5bf 0%, #00b8a0 100%)', border: 'none', borderRadius: 14, padding: '22px 32px', fontSize: 18, fontWeight: 800, color: '#040404', cursor: paying ? 'default' : 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, transition: 'background 0.3s' }}
           >
             {paying ? (
               <>
@@ -435,8 +436,8 @@ function Portal() {
             { step: '03', title: 'No further action needed', desc: 'All reminder sequences and interest accrual stop immediately.' },
           ].map(({ step, title, desc }) => (
             <div key={step} style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'flex-start' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(71,201,229,0.1)', border: '1px solid rgba(71,201,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: '#47c9e5' }}>{step}</span>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,229,191,0.1)', border: '1px solid rgba(0,229,191,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#00e5bf' }}>{step}</span>
               </div>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 700, color: '#9e9e9e' }}>{title}</p>
@@ -469,7 +470,7 @@ export default function PaymentPortalPage() {
     <Suspense fallback={
       <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}>
-          <Shield size={32} color="#47c9e5" />
+          <Shield size={32} color="#00e5bf" />
         </motion.div>
       </div>
     }>
