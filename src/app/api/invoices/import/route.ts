@@ -3,6 +3,7 @@ import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { unauthorized } from '@/lib/api-error'
+import { checkCsvImportRateLimit } from '@/lib/ratelimit'
 
 const CsvRowSchema = z.object({
   invoice_number: z.string().min(1),
@@ -21,6 +22,14 @@ export async function POST(request: NextRequest) {
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id
   if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
+
+  const importLimit = await checkCsvImportRateLimit(orgId)
+  if (!importLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Import rate limit exceeded. Maximum 3 imports per hour.' },
+      { status: 429, headers: { 'Retry-After': String(importLimit.resetAt - Math.floor(Date.now() / 1000)) } }
+    )
+  }
 
   const formData = await request.formData()
   const file = formData.get('file') as File | null

@@ -3,9 +3,11 @@ import Stripe from 'stripe'
 import { z } from 'zod'
 import { checkPublicRateLimit } from '@/lib/ratelimit'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
-  apiVersion: '2026-02-25.acacia' as never,
-})
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not configured')
+  return new Stripe(key, { apiVersion: '2026-02-25.acacia' as never })
+}
 
 const Schema = z.object({
   creditorName: z.string().min(1).max(200),
@@ -60,6 +62,13 @@ export async function POST(req: NextRequest) {
   const { creditorName, creditorEmail, clientName, clientEmail, clientCompany, invoiceNumber, invoiceAmount, invoiceDate, dueDate, description } = parsed.data
   const interest = calcInterest(invoiceAmount, dueDate)
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+  let stripe: Stripe
+  try {
+    stripe = getStripe()
+  } catch {
+    return NextResponse.json({ error: 'Payment processing unavailable' }, { status: 503 })
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',

@@ -11,10 +11,15 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return unauthorized()
 
+  const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
+  const orgId = userData?.organization_id
+  if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
+
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .select('*')
     .eq('id', id)
+    .eq('organization_id', orgId)
     .single()
 
   if (invoiceError || !invoice) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })

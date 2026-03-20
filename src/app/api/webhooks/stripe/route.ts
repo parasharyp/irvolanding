@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { calculateInterest } from '@/lib/interest'
 import { generateLegalDemandLetter } from '@/lib/legal-letter'
 import { generateCcjPack } from '@/lib/ccj-pack'
+import { isWebhookAlreadyProcessed } from '@/lib/ratelimit'
 import { Invoice } from '@/types'
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
@@ -37,6 +38,11 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     // invalid signature
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  }
+
+  // Idempotency guard — Stripe may retry webhooks; skip if already processed
+  if (await isWebhookAlreadyProcessed(event.id)) {
+    return NextResponse.json({ received: true })
   }
 
   const admin = await createAdminClient()

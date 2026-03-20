@@ -3,9 +3,11 @@ import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized } from '@/lib/api-error'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.acacia' as any }) // eslint-disable-line
-
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const stripeKey = process.env.STRIPE_SECRET_KEY
+  if (!stripeKey) return NextResponse.json({ error: 'Payment processing unavailable' }, { status: 503 })
+  const stripe = new Stripe(stripeKey, { apiVersion: '2026-02-25.acacia' as any })
+
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()

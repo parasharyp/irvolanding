@@ -10,6 +10,8 @@ import { Invoice } from '@/types'
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    console.warn(`[SECURITY] Unauthorized cron attempt from ${ip} — header: ${authHeader ? '[present]' : '[missing]'}`)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

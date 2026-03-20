@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { serverError, unauthorized } from '@/lib/api-error'
+import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 
 const UpdateOrgSchema = z.object({ name: z.string().min(1) })
 
@@ -15,6 +16,11 @@ export async function GET() {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return unauthorized()
 
+  const rateLimit = await checkAuthenticatedRateLimit(user.id)
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
@@ -27,6 +33,11 @@ export async function PATCH(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return unauthorized()
+
+  const rateLimit = await checkAuthenticatedRateLimit(user.id)
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
 
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })

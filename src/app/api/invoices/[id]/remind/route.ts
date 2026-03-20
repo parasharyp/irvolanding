@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized } from '@/lib/api-error'
-import { checkReminderRateLimit } from '@/lib/ratelimit'
+import { checkReminderRateLimit, checkInvoiceReminderLimit, checkRecipientReminderLimit } from '@/lib/ratelimit'
 import { calculateInterest } from '@/lib/interest'
 import { determineReminderStage, DEFAULT_TEMPLATES, renderTemplate } from '@/lib/reminders'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -41,11 +41,42 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (invoiceError || !invoice) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
   if (invoice.status === 'paid') return NextResponse.json({ error: 'Invoice is already paid' }, { status: 400 })
 
+  // Per-invoice rate limit (3 reminders/day per invoice)
+  const invoiceLimit = await checkInvoiceReminderLimit(id)
+  if (!invoiceLimit.allowed) {
+    return NextResponse.json(
+      { error: 'This invoice has reached its daily reminder limit (3/day).' },
+      { status: 429, headers: { 'X-RateLimit-Reset': String(invoiceLimit.resetAt) } }
+    )
+  }
+
+  // Per-recipient rate limit (10 emails/hour to same address)
+  const recipientEmail = invoice.client?.email as string | undefined
+  if (recipientEmail) {
+    const recipientLimit = await checkRecipientReminderLimit(recipientEmail)
+    if (!recipientLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many emails sent to this recipient recently.' },
+        { status: 429, headers: { 'X-RateLimit-Reset': String(recipientLimit.resetAt) } }
+      )
+    }
+  }
+
   const { data: org } = await supabase.from('organizations').select('name').eq('id', orgId).single()
 
-  // Determine stage — allow override from body
+  // Determine stage — allow override from body (must be 1–4)
   const body = await request.json().catch(() => ({}))
-  const stage: number = body.stage ?? determineReminderStage(invoice as Invoice) ?? 2
+  const rawStage = body.stage
+  let stage: number
+  if (rawStage !== undefined) {
+    const parsed = Number(rawStage)
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 4) {
+      return NextResponse.json({ error: 'stage must be an integer between 1 and 4' }, { status: 400 })
+    }
+    stage = parsed
+  } else {
+    stage = determineReminderStage(invoice as Invoice) ?? 2
+  }
 
   // Get template (custom org template > default)
   const { data: customTemplate } = await supabase

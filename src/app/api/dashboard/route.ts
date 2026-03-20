@@ -4,11 +4,17 @@ import { calculateInterest } from '@/lib/interest'
 import { Invoice } from '@/types'
 import { daysBetween } from '@/lib/utils'
 import { unauthorized } from '@/lib/api-error'
+import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 
 export async function GET() {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return unauthorized()
+
+  const rateLimit = await checkAuthenticatedRateLimit(user.id)
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(rateLimit.resetAt - Math.floor(Date.now() / 1000)) } })
+  }
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id
