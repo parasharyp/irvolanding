@@ -4,11 +4,20 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { calculateInterest } from '@/lib/interest'
 import { Invoice } from '@/types'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.acacia' as any })
+const stripeKey = process.env.STRIPE_SECRET_KEY
+if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is not configured')
+const stripe = new Stripe(stripeKey, { apiVersion: '2026-02-25.acacia' as any })
+
+const TOKEN_RE = /^[a-f0-9]{64}$/
 
 // Public — no auth required
 export async function POST(_: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
+
+  if (!TOKEN_RE.test(token)) {
+    return NextResponse.json({ error: 'Invalid or expired link' }, { status: 404 })
+  }
+
   const admin = await createAdminClient()
 
   const { data: pt } = await admin
@@ -27,7 +36,8 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ token
     .eq('id', pt.invoice_id)
     .single()
 
-  if (!invoice || invoice.status === 'paid') {
+  // IDOR guard: invoice must belong to the token's resolved invoice_id
+  if (!invoice || invoice.id !== pt.invoice_id || invoice.status === 'paid') {
     return NextResponse.json({ error: 'Invoice unavailable' }, { status: 400 })
   }
 
@@ -37,8 +47,18 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ token
     .eq('id', invoice.organization_id)
     .single()
 
+  // Amount validation — guard against corrupted DB values
+  const principal = Number(invoice.amount)
+  if (!Number.isFinite(principal) || principal <= 0 || principal > 1_000_000) {
+    return NextResponse.json({ error: 'Invalid invoice amount' }, { status: 400 })
+  }
+
   const interest = calculateInterest(invoice as Invoice)
-  const totalPence = Math.round((Number(invoice.amount) + interest.interest_amount + interest.compensation_fee) * 100)
+  const totalPence = Math.round((principal + interest.interest_amount + interest.compensation_fee) * 100)
+
+  if (totalPence <= 0 || totalPence > 100_000_000) {
+    return NextResponse.json({ error: 'Calculated total out of range' }, { status: 400 })
+  }
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 

@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 
+const TOKEN_RE = /^[a-f0-9]{64}$/
+
 // Public — no auth required. Uses admin client to read past RLS.
 export async function GET(_: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
+
+  if (!TOKEN_RE.test(token)) {
+    return NextResponse.json({ error: 'Invalid payment link' }, { status: 404 })
+  }
+
   const admin = await createAdminClient()
 
   // Resolve token

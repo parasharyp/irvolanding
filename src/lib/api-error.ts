@@ -3,7 +3,11 @@ import { NextResponse } from 'next/server'
 // Never expose raw DB/internal error messages to clients.
 // Log server-side, return a safe generic message.
 export function serverError(err: unknown, context?: string): NextResponse {
-  console.error(`[API error]${context ? ` ${context}` : ''}`, err)
+  const message = err instanceof Error ? err.message : String(err)
+  console.error(`[API error]${context ? ` ${context}` : ''}: ${message}`)
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err)
+  }
   return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 })
 }
 

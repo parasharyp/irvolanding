@@ -48,3 +48,38 @@ export async function checkReminderRateLimit(organizationId: string): Promise<{
 }> {
   return slidingWindow(`reminder_rate:${organizationId}`, 20, 3600)
 }
+
+// 3 reminder emails per day per invoice (prevents spamming a single client)
+export async function checkInvoiceReminderLimit(invoiceId: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const result = await slidingWindow(`invoice_remind:${invoiceId}`, 3, 86400)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+// 10 emails per hour to a single recipient address across all orgs
+export async function checkRecipientReminderLimit(email: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const key = `recipient_remind:${email.toLowerCase()}`
+  const result = await slidingWindow(key, 10, 3600)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+// 3 CSV imports per hour per org
+export async function checkCsvImportRateLimit(orgId: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const result = await slidingWindow(`csv_import:${orgId}`, 3, 3600)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+// 100 authenticated API requests per minute per user
+export async function checkAuthenticatedRateLimit(userId: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const result = await slidingWindow(`auth_rate:${userId}`, 100, 60)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+// Webhook idempotency — returns true if this event was already processed.
+// Uses SET NX with 24h TTL to atomically mark an event as seen.
+export async function isWebhookAlreadyProcessed(eventId: string): Promise<boolean> {
+  const redis = getRedis()
+  const key = `webhook_seen:${eventId}`
+  // SET key 1 NX EX 86400 — returns 'OK' if set (first time), null if already existed
+  const result = await redis.set(key, '1', { nx: true, ex: 86400 })
+  return result === null
+}
