@@ -1,21 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 const Schema = z.object({
   user_id: z.string().uuid(),
-  email: z.string().email(),
-  name: z.string(),
-  org_name: z.string(),
+  email: z.string().email().max(254),
+  name: z.string().min(1).max(200),
+  org_name: z.string().min(2).max(200),
 })
 
 export async function POST(request: NextRequest) {
-  const body = await request.json()
+  // CRIT-1: Verify the caller is actually the user they claim to be
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return unauthorized()
+
+  const body = await request.json().catch(() => null)
+  if (!body) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+
   const parsed = Schema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid data' }, { status: 422 })
 
   const { user_id, email, name, org_name } = parsed.data
+
+  // CRIT-1: The authenticated user must match the user_id in the body
+  if (user.id !== user_id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
   const admin = await createAdminClient()
+
+  // HIGH-1: Idempotency — if user already has an org, return it
+  const { data: existing } = await admin
+    .from('users')
+    .select('organization_id')
+    .eq('id', user_id)
+    .single()
+
+  if (existing?.organization_id) {
+    return NextResponse.json({ ok: true, org_id: existing.organization_id })
+  }
 
   // Create organization
   const { data: org, error: orgError } = await admin
@@ -24,7 +47,7 @@ export async function POST(request: NextRequest) {
     .select()
     .single()
 
-  if (orgError) return NextResponse.json({ error: orgError.message }, { status: 500 })
+  if (orgError) return serverError(orgError, 'POST /api/auth/setup — org insert')
 
   // Create user profile
   const { error: userError } = await admin.from('users').insert({
@@ -35,9 +58,8 @@ export async function POST(request: NextRequest) {
   })
 
   if (userError) {
-    // Rollback org
     await admin.from('organizations').delete().eq('id', org.id)
-    return NextResponse.json({ error: userError.message }, { status: 500 })
+    return serverError(userError, 'POST /api/auth/setup — user insert')
   }
 
   // Seed default reminder templates

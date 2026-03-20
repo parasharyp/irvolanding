@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
+import { unauthorized } from '@/lib/api-error'
 import { checkReminderRateLimit } from '@/lib/ratelimit'
 import { calculateInterest } from '@/lib/interest'
 import { determineReminderStage, DEFAULT_TEMPLATES, renderTemplate } from '@/lib/reminders'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Invoice } from '@/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder")
+const resend = new Resend(process.env.RESEND_API_KEY!)
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   // Get user org
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
@@ -29,11 +30,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     )
   }
 
-  // Fetch invoice + client + org
+  // Fetch invoice + client + org — filter by org to prevent IDOR
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .select('*, client:clients(id, name, email, company)')
     .eq('id', id)
+    .eq('organization_id', orgId)
     .single()
 
   if (invoiceError || !invoice) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
@@ -72,7 +74,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const subject = renderTemplate(customTemplate?.subject ?? defaultTpl.subject, templateVars)
   const bodyText = renderTemplate(customTemplate?.body ?? defaultTpl.body, templateVars)
 
-  const htmlBody = `<pre style="font-family:sans-serif;white-space:pre-wrap">${bodyText}</pre>`
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  const htmlBody = `<pre style="font-family:sans-serif;white-space:pre-wrap">${escapeHtml(bodyText)}</pre>`
 
   // Send email
   const { error: emailError } = await resend.emails.send({

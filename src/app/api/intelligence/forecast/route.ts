@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateCashflowForecast } from '@/lib/intelligence/cashflowForecast'
 import { Invoice } from '@/types'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 export async function GET() {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id
@@ -17,7 +18,7 @@ export async function GET() {
     .select('*')
     .eq('organization_id', orgId)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'GET /api/intelligence/forecast')
 
   const forecast = generateCashflowForecast((invoices ?? []) as Invoice[])
   return NextResponse.json(forecast)

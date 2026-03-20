@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { unauthorized } from '@/lib/api-error'
 
 const PRICE_IDS: Record<string, string> = {
   starter: process.env.STRIPE_PRICE_STARTER!,
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const body = await request.json()
   const parsed = Schema.safeParse(body)
@@ -43,8 +44,8 @@ export async function POST(request: NextRequest) {
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: PRICE_IDS[parsed.data.plan], quantity: 1 }],
-    success_url: `${process.env.APP_URL}/settings?billing=success`,
-    cancel_url: `${process.env.APP_URL}/settings?billing=cancelled`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?billing=success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?billing=cancelled`,
   })
 
   return NextResponse.json({ url: session.url })

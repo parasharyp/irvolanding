@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { unauthorized } from '@/lib/api-error'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.acacia' as any }) // eslint-disable-line
 
@@ -8,7 +9,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const { data: invoice } = await supabase

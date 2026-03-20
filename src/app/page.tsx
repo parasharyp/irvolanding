@@ -467,6 +467,10 @@ export default function LandingPage() {
               {item}
             </a>
           ))}
+          <Link href="/audit" onClick={() => setMobileMenu(false)}
+            style={{ fontSize: 22, fontWeight: 700, color: '#00e5bf', textDecoration: 'none', padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>
+            Free Audit ↗
+          </Link>
         </nav>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 32 }}>
           <Link href="/login" onClick={() => setMobileMenu(false)} style={{ fontSize: 15, color: T.text2, textDecoration: 'none', fontWeight: 500, padding: '12px 0', textAlign: 'center', border: `1px solid ${T.border}`, borderRadius: 8 }}>Sign in</Link>
@@ -488,6 +492,7 @@ export default function LandingPage() {
             {NAV.map((item) => (
               <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{item}</motion.a>
             ))}
+            <Link href="/audit" style={{ fontSize: 13, color: '#00e5bf', textDecoration: 'none', fontWeight: 700 }}>Free Audit ↗</Link>
           </nav>
           <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link href="/login" style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
@@ -534,8 +539,8 @@ export default function LandingPage() {
               </Link>
             </Magnetic>
             <Magnetic>
-              <Link href="#features" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: T.text2, fontSize: 15, fontWeight: 500, padding: '14px 32px', borderRadius: 100, textDecoration: 'none', border: `1px solid ${T.border}` }}>
-                See how it works
+              <Link href="/audit" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(0,229,191,0.08)', color: '#00e5bf', fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, textDecoration: 'none', border: '1px solid rgba(0,229,191,0.25)' }}>
+                Free audit — see what you&apos;re owed
               </Link>
             </Magnetic>
           </div>

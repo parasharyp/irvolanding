@@ -3,13 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 import { calculateClientRiskScore } from '@/lib/intelligence/riskScore'
 import { generateRecommendations } from '@/lib/intelligence/recommendations'
 import { Invoice } from '@/types'
+import { unauthorized } from '@/lib/api-error'
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id

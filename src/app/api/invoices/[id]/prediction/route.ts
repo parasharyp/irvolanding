@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { predictInvoicePayment } from '@/lib/intelligence/paymentPrediction'
 import { Invoice } from '@/types'
+import { unauthorized } from '@/lib/api-error'
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')

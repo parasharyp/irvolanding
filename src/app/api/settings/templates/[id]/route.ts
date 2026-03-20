@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { serverError, unauthorized, badRequest } from '@/lib/api-error'
 
 const UpdateTemplateSchema = z.object({
   subject: z.string().min(1).optional(),
@@ -11,7 +12,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
+
+  const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
+  const orgId = userData?.organization_id
+  if (!orgId) return badRequest('No organization')
 
   const body = await request.json()
   const parsed = UpdateTemplateSchema.safeParse(body)
@@ -21,9 +26,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .from('reminder_templates')
     .update(parsed.data)
     .eq('id', id)
+    .eq('organization_id', orgId)
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'PATCH /api/settings/templates/[id]')
   return NextResponse.json(data)
 }

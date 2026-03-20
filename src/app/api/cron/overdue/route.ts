@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { serverError } from '@/lib/api-error'
 import { determineReminderStage } from '@/lib/reminders'
 import { calculateClientRiskScore } from '@/lib/intelligence/riskScore'
 import { predictInvoicePayment } from '@/lib/intelligence/paymentPrediction'
@@ -24,8 +25,7 @@ export async function POST(request: NextRequest) {
     .select('id, invoice_number, organization_id')
 
   if (overdueError) {
-    console.error('Overdue update error:', overdueError)
-    return NextResponse.json({ error: overdueError.message }, { status: 500 })
+    return serverError(overdueError, 'POST /api/cron/overdue — overdue update')
   }
 
   if (overdueUpdated && overdueUpdated.length > 0) {

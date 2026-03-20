@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { serverError, unauthorized, notFound, badRequest } from '@/lib/api-error'
 
 const UpdateInvoiceSchema = z.object({
   status: z.enum(['pending', 'paid', 'overdue', 'escalated']).optional(),
@@ -9,19 +10,28 @@ const UpdateInvoiceSchema = z.object({
   invoice_number: z.string().optional(),
 })
 
+async function resolveOrgId(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data } = await supabase.from('users').select('organization_id').eq('id', userId).single()
+  return data?.organization_id ?? null
+}
+
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
+
+  const orgId = await resolveOrgId(supabase, user.id)
+  if (!orgId) return badRequest('No organization')
 
   const { data, error } = await supabase
     .from('invoices')
     .select('*, client:clients(id, name, email, company)')
     .eq('id', id)
+    .eq('organization_id', orgId)
     .single()
 
-  if (error || !data) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+  if (error || !data) return notFound('Invoice')
   return NextResponse.json(data)
 }
 
@@ -29,7 +39,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
+
+  const orgId = await resolveOrgId(supabase, user.id)
+  if (!orgId) return badRequest('No organization')
 
   const body = await request.json()
   const parsed = UpdateInvoiceSchema.safeParse(body)
@@ -44,10 +57,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .from('invoices')
     .update(updatePayload)
     .eq('id', id)
+    .eq('organization_id', orgId)
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'PATCH /api/invoices/[id]')
+  if (!data) return notFound('Invoice')
 
   if (parsed.data.status) {
     await supabase.from('invoice_events').insert({
@@ -64,10 +79,13 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
-  const { error } = await supabase.from('invoices').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const orgId = await resolveOrgId(supabase, user.id)
+  if (!orgId) return badRequest('No organization')
+
+  const { error } = await supabase.from('invoices').delete().eq('id', id).eq('organization_id', orgId)
+  if (error) return serverError(error, 'DELETE /api/invoices/[id]')
 
   return NextResponse.json({ deleted: true })
 }

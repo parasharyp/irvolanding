@@ -3,11 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { calculateInterest } from '@/lib/interest'
 import { Invoice } from '@/types'
 import { daysBetween } from '@/lib/utils'
+import { unauthorized } from '@/lib/api-error'
 
 export async function GET() {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id

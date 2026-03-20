@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { randomBytes } from 'crypto'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -8,7 +9,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
   const admin = await createAdminClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   // Verify invoice belongs to user's org
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
@@ -29,7 +30,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     .from('payment_tokens')
     .upsert({ invoice_id: id, token, expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() }, { onConflict: 'invoice_id' })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'POST /api/invoices/[id]/payment-link')
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   return NextResponse.json({ url: `${base}/pay/${token}` })

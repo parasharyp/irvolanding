@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { unauthorized } from '@/lib/api-error'
 import { calculateClientRiskScore } from '@/lib/intelligence/riskScore'
 import { predictInvoicePayment } from '@/lib/intelligence/paymentPrediction'
 import { Invoice } from '@/types'
@@ -8,7 +9,7 @@ import { Invoice } from '@/types'
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id

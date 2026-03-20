@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 const CreateInvoiceSchema = z.object({
   client_id: z.string().uuid(),
@@ -19,7 +20,7 @@ async function getOrgId(supabase: Awaited<ReturnType<typeof createClient>>, user
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization found' }, { status: 400 })
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
   if (clientId) query = query.eq('client_id', clientId)
 
   const { data, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'GET /api/invoices')
 
   return NextResponse.json(data)
 }
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization found' }, { status: 400 })
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'POST /api/invoices')
 
   // Log invoice_created event
   await supabase.from('invoice_events').insert({

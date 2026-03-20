@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { serverError, unauthorized, badRequest } from '@/lib/api-error'
 
 const UpdateClientSchema = z.object({
   name: z.string().min(1).optional(),
@@ -12,7 +13,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
+
+  const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
+  const orgId = userData?.organization_id
+  if (!orgId) return badRequest('No organization')
 
   const body = await request.json()
   const parsed = UpdateClientSchema.safeParse(body)
@@ -22,10 +27,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .from('clients')
     .update(parsed.data)
     .eq('id', id)
+    .eq('organization_id', orgId)
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'PATCH /api/clients/[id]')
   return NextResponse.json(data)
 }
 
@@ -33,10 +39,14 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
-  const { error } = await supabase.from('clients').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
+  const orgId = userData?.organization_id
+  if (!orgId) return badRequest('No organization')
+
+  const { error } = await supabase.from('clients').delete().eq('id', id).eq('organization_id', orgId)
+  if (error) return serverError(error, 'DELETE /api/clients/[id]')
 
   return NextResponse.json({ deleted: true })
 }

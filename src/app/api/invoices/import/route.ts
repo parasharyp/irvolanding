@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { unauthorized } from '@/lib/api-error'
 
 const CsvRowSchema = z.object({
   invoice_number: z.string().min(1),
@@ -15,7 +16,7 @@ const CsvRowSchema = z.object({
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id
@@ -25,11 +26,19 @@ export async function POST(request: NextRequest) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
+  if (file.size > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: 'File too large (max 5 MB)' }, { status: 413 })
+  }
+
   const text = await file.text()
   const { data: rows, errors } = Papa.parse(text, { header: true, skipEmptyLines: true })
 
   if (errors.length > 0) {
     return NextResponse.json({ error: 'CSV parse error', details: errors }, { status: 400 })
+  }
+
+  if (rows.length > 500) {
+    return NextResponse.json({ error: 'Too many rows (max 500 per import)' }, { status: 422 })
   }
 
   const results = { imported: 0, skipped: 0, errors: [] as string[] }

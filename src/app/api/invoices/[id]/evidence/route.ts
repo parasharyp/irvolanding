@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { generateEvidencePack } from '@/lib/pdf'
 import { Invoice, InvoiceEvent, ReminderLog, InterestCalculation } from '@/types'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -9,7 +10,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
   const admin = await createAdminClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id
@@ -21,6 +22,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     .from('invoices')
     .select('*, client:clients(id, name, email, company)')
     .eq('id', id)
+    .eq('organization_id', orgId)
     .single()
 
   if (invoiceError || !invoice) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
@@ -51,38 +53,55 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     .from('evidence-packs')
     .upload(filePath, pdfBuffer, { contentType: 'application/pdf', upsert: true })
 
-  if (uploadError) return NextResponse.json({ error: 'Upload failed', details: uploadError.message }, { status: 500 })
+  if (uploadError) return serverError(uploadError, 'POST /api/invoices/[id]/evidence')
 
-  const { data: { publicUrl } } = admin.storage.from('evidence-packs').getPublicUrl(filePath)
-
+  // Store the file path, not a public URL — signed URLs are generated on demand
   const { data: pack, error: packError } = await supabase
     .from('evidence_packs')
-    .insert({ invoice_id: id, file_url: publicUrl })
+    .insert({ invoice_id: id, file_url: filePath })
     .select()
     .single()
 
-  if (packError) return NextResponse.json({ error: packError.message }, { status: 500 })
+  if (packError) return serverError(packError, 'POST /api/invoices/[id]/evidence')
+
+  // Generate a short-lived signed URL (1 hour) for immediate download
+  const { data: signedData } = await admin.storage
+    .from('evidence-packs')
+    .createSignedUrl(filePath, 3600)
 
   await supabase.from('invoice_events').insert({
     invoice_id: id,
     event_type: 'evidence_generated',
-    metadata: { file_url: publicUrl },
+    metadata: { file_path: filePath },
   })
 
-  return NextResponse.json(pack)
+  return NextResponse.json({ ...pack, file_url: signedData?.signedUrl ?? null })
 }
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+  const adminClient = await createAdminClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
-  const { data } = await supabase
+  const { data: packs } = await supabase
     .from('evidence_packs')
     .select('*')
     .eq('invoice_id', id)
     .order('generated_at', { ascending: false })
 
-  return NextResponse.json(data ?? [])
+  if (!packs?.length) return NextResponse.json([])
+
+  // Generate fresh signed URLs for each stored file path
+  const withSignedUrls = await Promise.all(
+    packs.map(async (pack) => {
+      const { data: signedData } = await adminClient.storage
+        .from('evidence-packs')
+        .createSignedUrl(pack.file_url, 3600)
+      return { ...pack, file_url: signedData?.signedUrl ?? null }
+    })
+  )
+
+  return NextResponse.json(withSignedUrls)
 }

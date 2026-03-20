@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 const UpdateOrgSchema = z.object({ name: z.string().min(1) })
 
@@ -12,20 +13,20 @@ async function getOrgId(supabase: Awaited<ReturnType<typeof createClient>>, user
 export async function GET() {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
   const { data, error } = await supabase.from('organizations').select('*').eq('id', orgId).single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'GET /api/settings/org')
   return NextResponse.json(data)
 }
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
@@ -35,6 +36,6 @@ export async function PATCH(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
 
   const { data, error } = await supabase.from('organizations').update(parsed.data).eq('id', orgId).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'PATCH /api/settings/org')
   return NextResponse.json(data)
 }

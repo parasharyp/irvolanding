@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { calculateInterest } from '@/lib/interest'
 import { Invoice } from '@/types'
+import { serverError, unauthorized } from '@/lib/api-error'
 
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
@@ -32,7 +33,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError(error, 'POST /api/invoices/[id]/interest')
 
   await supabase.from('invoice_events').insert({
     invoice_id: id,
@@ -47,7 +48,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return unauthorized()
 
   const { data, error } = await supabase
     .from('interest_calculations')

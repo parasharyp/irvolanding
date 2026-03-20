@@ -7,9 +7,18 @@ import { generateLegalDemandLetter } from '@/lib/legal-letter'
 import { generateCcjPack } from '@/lib/ccj-pack'
 import { Invoice } from '@/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder")
+const resend = new Resend(process.env.RESEND_API_KEY!)
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", { apiVersion: '2026-02-25.clover' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
+
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
 const PLAN_MAP: Record<string, string> = {
   [process.env.STRIPE_PRICE_STARTER ?? '']: 'starter',
@@ -19,13 +28,14 @@ const PLAN_MAP: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
-  const sig = request.headers.get('stripe-signature')!
+  const sig = request.headers.get('stripe-signature')
+  if (!sig) return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
 
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch (err) {
-    console.error('Webhook signature error:', err)
+    // invalid signature
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -133,10 +143,10 @@ export async function POST(request: NextRequest) {
                 <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111">
                   <div style="border-left:4px solid #cc0000;padding-left:16px;margin-bottom:28px">
                     <h2 style="margin:0 0 4px;font-size:18px">FORMAL DEMAND NOTICE</h2>
-                    <p style="margin:0;color:#555;font-size:13px">Invoice ${invoice.invoice_number} — Late Payment of Commercial Debts (Interest) Act 1998</p>
+                    <p style="margin:0;color:#555;font-size:13px">Invoice ${escapeHtml(invoice.invoice_number)} — Late Payment of Commercial Debts (Interest) Act 1998</p>
                   </div>
-                  <p>Dear ${client.name},</p>
-                  <p>Please find attached a formal statutory demand issued on behalf of <strong>${org?.name ?? 'your creditor'}</strong> for the above-referenced invoice which remains outstanding.</p>
+                  <p>Dear ${escapeHtml(client.name)},</p>
+                  <p>Please find attached a formal statutory demand issued on behalf of <strong>${escapeHtml(org?.name ?? 'your creditor')}</strong> for the above-referenced invoice which remains outstanding.</p>
                   <table style="width:100%;border-collapse:collapse;margin:20px 0">
                     <tr style="background:#f8f8f8"><td style="padding:8px 12px;color:#555">Original Amount</td><td style="padding:8px 12px;font-weight:bold">£${Number(invoice.amount).toFixed(2)}</td></tr>
                     <tr><td style="padding:8px 12px;color:#555">Statutory Interest</td><td style="padding:8px 12px;font-weight:bold">£${interest.interest_amount.toFixed(2)}</td></tr>
@@ -201,10 +211,10 @@ export async function POST(request: NextRequest) {
             <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111">
               <div style="border-left:4px solid #cc0000;padding-left:16px;margin-bottom:28px">
                 <h2 style="margin:0 0 4px;font-size:18px">FORMAL DEMAND NOTICE</h2>
-                <p style="margin:0;color:#555;font-size:13px">Invoice ${m.invoice_number} — Late Payment of Commercial Debts (Interest) Act 1998</p>
+                <p style="margin:0;color:#555;font-size:13px">Invoice ${escapeHtml(m.invoice_number)} — Late Payment of Commercial Debts (Interest) Act 1998</p>
               </div>
-              <p>Dear ${m.client_name},</p>
-              <p>Please find attached a formal statutory demand issued on behalf of <strong>${m.creditor_name}</strong> regarding the above invoice which remains unpaid.</p>
+              <p>Dear ${escapeHtml(m.client_name)},</p>
+              <p>Please find attached a formal statutory demand issued on behalf of <strong>${escapeHtml(m.creditor_name)}</strong> regarding the above invoice which remains unpaid.</p>
               <table style="width:100%;border-collapse:collapse;margin:20px 0">
                 <tr style="background:#f8f8f8"><td style="padding:8px 12px;color:#555">Original Amount</td><td style="padding:8px 12px;font-weight:bold">£${principal.toFixed(2)}</td></tr>
                 <tr><td style="padding:8px 12px;color:#555">Statutory Interest</td><td style="padding:8px 12px;font-weight:bold">£${interest.interest_amount.toFixed(2)}</td></tr>
@@ -254,7 +264,7 @@ export async function POST(request: NextRequest) {
           html: `
             <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111">
               <h2 style="margin:0 0 8px;font-size:20px">Your CCJ Filing Pack is Ready</h2>
-              <p style="color:#555;margin-bottom:24px">Invoice ${m.invoice_number} — ${m.client_name}</p>
+              <p style="color:#555;margin-bottom:24px">Invoice ${escapeHtml(m.invoice_number)} — ${escapeHtml(m.client_name)}</p>
               <p>Your 4-section County Court filing pack is attached as a PDF. It includes:</p>
               <ul style="line-height:2;color:#333">
                 <li>Pre-written Particulars of Claim (ready to paste into MCOL)</li>
