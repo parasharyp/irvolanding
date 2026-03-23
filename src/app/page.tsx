@@ -323,7 +323,7 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
   const rateNum = Math.max(0, parseFloat(rate) || 0)
   const manualHours = systemsNum * 50
   const consultantCost = systemsNum * rateNum * 50
-  const aiedMinutes = systemsNum * 20
+  const irvoMinutes = systemsNum * 20
   const savings = Math.max(0, consultantCost - 149 * 12)
   const hasResult = systemsNum > 0 && rateNum > 0
 
@@ -382,7 +382,7 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
             {[
               { label: 'Manual documentation hours', value: hasResult ? `${manualHours}h` : '—', note: `${systemsNum} system${systemsNum !== 1 ? 's' : ''} × 50 hrs`, dim: true },
               { label: 'Consultant cost estimate', value: hasResult ? fmtEur(consultantCost) : '—', note: `€${rateNum}/hr × 50 hrs each`, dim: false },
-              { label: 'Documentation time with Irvo', value: hasResult ? `${aiedMinutes} min` : '—', note: '~20 min per system', dim: false },
+              { label: 'Documentation time with Irvo', value: hasResult ? `${irvoMinutes} min` : '—', note: '~20 min per system', dim: false },
               { label: 'Potential savings', value: hasResult ? fmtEur(savings) : '—', note: 'vs Irvo Starter plan', dim: false, highlight: true },
             ].map((col, i) => (
               <motion.div
@@ -1063,8 +1063,7 @@ export default function LandingPage() {
                 title: 'Company',
                 links: [
                   { label: 'About', href: '#' },
-                  { label: 'Contact', href: '#' },
-                  { label: 'hello@aied.io', href: 'mailto:hello@aied.io' },
+                  { label: 'hello@irvo.co.uk', href: 'mailto:hello@irvo.co.uk' },
                 ],
               },
             ].map(({ title, links }) => (
@@ -1081,8 +1080,8 @@ export default function LandingPage() {
             ))}
           </div>
           <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-            <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>© {new Date().getFullYear()} AI Act Evidence Desk. Guidance only — not legal advice.</p>
-            <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>aied.io</p>
+            <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>© {new Date().getFullYear()} Irvo. Guidance only — not legal advice.</p>
+            <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>irvo.co.uk</p>
           </div>
         </div>
       </footer>
