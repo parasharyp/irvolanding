@@ -21,12 +21,16 @@ export function track(payload: TrackPayload): void {
   }
   try {
     // Plausible
-    if (typeof (window as any).plausible === 'function') {
-      (window as any).plausible(payload.event, { props: { ...payload } })
+    const w = window as Window & {
+      plausible?: (event: string, opts: { props: TrackPayload }) => void
+      posthog?: { capture: (event: string, props: TrackPayload) => void }
+    }
+    if (typeof w.plausible === 'function') {
+      w.plausible(payload.event, { props: { ...payload } })
     }
     // PostHog
-    if (typeof (window as any).posthog?.capture === 'function') {
-      (window as any).posthog.capture(payload.event, { ...payload })
+    if (typeof w.posthog?.capture === 'function') {
+      w.posthog.capture(payload.event, { ...payload })
     }
   } catch {
     // swallow — analytics must never break the page

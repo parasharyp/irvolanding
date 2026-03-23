@@ -10,7 +10,7 @@ const TOKEN_RE = /^[a-f0-9]{64}$/
 export async function POST(_: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) return NextResponse.json({ error: 'Payment processing unavailable' }, { status: 503 })
-  const stripe = new Stripe(stripeKey, { apiVersion: '2026-02-25.acacia' as any })
+  const stripe = new Stripe(stripeKey)
 
   const { token } = await params
 

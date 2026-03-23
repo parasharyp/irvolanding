@@ -53,7 +53,9 @@ function SettingsContent() {
   const [org, setOrg] = useState<Organization | null>(null)
   const [templates, setTemplates] = useState<ReminderTemplate[]>([])
   const [saving, setSaving] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(
+    billingMsg === 'success' ? 'Subscription updated successfully!' : null
+  )
   const [activeTab, setActiveTab] = useState<Tab>('org')
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<{ name: string }>({ resolver: zodResolver(orgSchema) })
@@ -66,7 +68,6 @@ function SettingsContent() {
       setOrg(o); reset({ name: o.name })
       setTemplates(Array.isArray(t) ? t : [])
     })
-    if (billingMsg === 'success') setMessage('Subscription updated successfully!')
   }, [])
 
   const saveOrg = async (data: { name: string }) => {
@@ -86,12 +87,12 @@ function SettingsContent() {
 
   const openBillingPortal = async () => {
     const res = await fetch('/api/billing/portal').then((r) => r.json())
-    if (res.url) window.location.href = res.url
+    if (res.url) { window.location.assign(res.url as string) }
   }
 
   const checkout = async (plan: string) => {
     const res = await fetch('/api/billing/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan }) }).then((r) => r.json())
-    if (res.url) window.location.href = res.url
+    if (res.url) { window.location.assign(res.url as string) }
   }
 
   const PLANS = [

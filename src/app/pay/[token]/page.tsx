@@ -322,7 +322,7 @@ function Portal() {
           </div>
           {[
             { label: `Original Invoice (${invoice.invoice_number})`, value: fmt(principal), sub: `Due ${new Date(invoice.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, color: '#e3e3e3' },
-            { label: 'Statutory Interest (13% p.a.)', value: fmt(principal * PER_SECOND * Math.max(0, (Date.now() - new Date(invoice.due_date).getTime()) / 1000), 4), sub: `Bank of England 5% + 8% statutory addition`, color: '#e2b742', live: true },
+            { label: 'Statutory Interest (13% p.a.)', value: fmt(Math.max(0, totalNow - principal - compensation), 4), sub: `Bank of England 5% + 8% statutory addition`, color: '#e2b742', live: true },
             { label: 'Late Payment Compensation', value: fmt(compensation), sub: `Fixed fee under the 1998 Act (invoice £${principal < 1000 ? '<1k →£40' : principal < 10000 ? '1k–10k →£70' : '>10k →£100'})`, color: '#e2b742' },
           ].map(({ label, value, sub, color }) => (
             <div key={label} style={{ padding: '16px 28px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>

@@ -6,7 +6,7 @@ import { unauthorized } from '@/lib/api-error'
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) return NextResponse.json({ error: 'Payment processing unavailable' }, { status: 503 })
-  const stripe = new Stripe(stripeKey, { apiVersion: '2026-02-25.acacia' as any })
+  const stripe = new Stripe(stripeKey)
 
   const { id } = await params
   const supabase = await createClient()

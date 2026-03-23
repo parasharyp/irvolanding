@@ -1,7 +1,9 @@
 import type { NextConfig } from 'next'
 
 const securityHeaders = [
-  // Content Security Policy — restrict resource origins
+  // ── Content Security Policy ──────────────────────────────────────────────
+  // Restricts which resources the browser can load. Blocks XSS via inline script injection.
+  // 'unsafe-inline' in style-src is unavoidable — Next.js injects inline styles for hydration.
   {
     key: 'Content-Security-Policy',
     value: [
@@ -18,31 +20,67 @@ const securityHeaders = [
       "upgrade-insecure-requests",
     ].join('; '),
   },
-  // Prevent browsers from guessing MIME types
+
+  // ── MIME sniffing ────────────────────────────────────────────────────────
+  // Prevents browsers from interpreting files as a different MIME type.
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  // Prevent clickjacking
+
+  // ── Clickjacking ─────────────────────────────────────────────────────────
+  // Prevents the page from being embedded in iframes on other origins.
   { key: 'X-Frame-Options', value: 'DENY' },
-  // Force HTTPS for 2 years, include subdomains
+
+  // ── HTTPS enforcement ────────────────────────────────────────────────────
+  // Forces HTTPS for 2 years. Included in browser HSTS preload lists.
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-  // Control referrer data
+
+  // ── Referrer policy ──────────────────────────────────────────────────────
+  // Only sends the origin (not the full URL) as referrer to cross-origin requests.
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  // Restrict powerful browser APIs
+
+  // ── Browser API restrictions ─────────────────────────────────────────────
+  // Disables camera, mic, geolocation, USB. Payment allowed only from our origin.
   {
     key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=(), payment=(self), usb=()',
+    value: 'camera=(), microphone=(), geolocation=(), payment=(self), usb=(), interest-cohort=()',
   },
-  // Remove framework fingerprint
-  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+
+  // ── Cross-origin opener isolation ────────────────────────────────────────
+  // Prevents other pages from getting a reference to this window via window.open().
+  // Mitigates cross-origin information leaks and Spectre-class attacks.
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+
+  // ── Cross-origin resource isolation ──────────────────────────────────────
+  // Prevents other origins from loading our resources (images, scripts) into their context.
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+
+  // ── Flash / PDF cross-domain policy ──────────────────────────────────────
+  // Blocks Flash and Acrobat from making cross-domain requests using our resources.
+  { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+
+  // ── Origin agent cluster ─────────────────────────────────────────────────
+  // Requests that the browser isolate this origin in its own agent cluster.
+  // Additional Spectre mitigation — reduces cross-origin memory access risk.
+  { key: 'Origin-Agent-Cluster', value: '?1' },
 ]
 
 const nextConfig: NextConfig = {
-  // Never expose X-Powered-By: Next.js
+  // ── Turbopack root ───────────────────────────────────────────────────────
+  // Fixes Turbopack panic when the project path contains emoji (💻).
+  turbopack: {
+    root: __dirname,
+  },
+
+  // ── Framework fingerprint removal ────────────────────────────────────────
+  // Removes X-Powered-By: Next.js from all responses.
+  // Prevents automated scanners from identifying the stack and targeting known CVEs.
   poweredByHeader: false,
 
-  // No source maps in production — keep business logic private
+  // ── Source map suppression ───────────────────────────────────────────────
+  // Production JS bundles are minified and unreadable. Source maps would
+  // re-expose the original code — disabled here to keep business logic private.
   productionBrowserSourceMaps: false,
 
-  // Security headers on all routes
+  // ── Security headers ─────────────────────────────────────────────────────
   async headers() {
     return [
       {
@@ -52,7 +90,7 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  // Strict compiler checks
+  // ── TypeScript strictness ────────────────────────────────────────────────
   typescript: {
     ignoreBuildErrors: false,
   },

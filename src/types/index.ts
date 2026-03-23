@@ -107,3 +107,59 @@ export interface DashboardMetrics {
   interest_recoverable: number
   avg_days_late: number
 }
+
+// ─── AIED types ───────────────────────────────────────────────────────────────
+
+export type RiskLevel = 'unacceptable' | 'high' | 'limited' | 'minimal' | 'unknown'
+
+export type AnnexIIICategory =
+  | 'biometric' | 'critical_infrastructure' | 'education'
+  | 'employment' | 'essential_services' | 'law_enforcement'
+  | 'migration' | 'justice' | 'none'
+
+export interface AISystem {
+  id: string
+  organization_id: string
+  name: string
+  description: string
+  owner: string
+  data_sources: string
+  model_type: string
+  business_process: string
+  risk_level: RiskLevel
+  annex_iii_category: AnnexIIICategory | null
+  articles_applicable: string[]
+  obligations_total: number
+  obligations_complete: number
+  classification_completed: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface QuestionnaireAnswer {
+  question_id: string
+  question: string
+  answer: string
+}
+
+export interface Obligation {
+  id: string
+  system_id: string
+  article: string
+  title: string
+  description: string
+  evidence_required: string
+  is_complete: boolean
+  created_at: string
+}
+
+export interface Evidence {
+  id: string
+  obligation_id: string
+  system_id: string
+  type: 'text' | 'file'
+  content: string | null
+  file_url: string | null
+  file_name: string | null
+  created_at: string
+}

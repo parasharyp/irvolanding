@@ -86,6 +86,15 @@ function Count({ to, prefix = '', suffix = '' }: { to: number; prefix?: string; 
   return <span ref={ref}>{display}</span>
 }
 
+/* ─── Deadline months countdown ───────────────────────────────── */
+function MonthsLeft() {
+  const deadline = new Date('2026-08-02T00:00:00Z')
+  const now = new Date()
+  const days = Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / 86400000))
+  const months = Math.max(1, Math.ceil(days / 30.44))
+  return <>{months} month{months !== 1 ? 's' : ''}</>
+}
+
 /* ─── Word cycle ──────────────────────────────────────────────── */
 const WORDS = ['your AI systems', 'your automation', 'your HR tools', 'your AI workflows', 'your deployments']
 function CycleWord() {
@@ -139,7 +148,11 @@ const TESTIMONIALS = [
   { name: 'Elena V.', role: 'Operations Director, Berlin', text: 'Every consultant we spoke to quoted a minimum of €20,000 just for a scoping exercise. We needed something we could start ourselves.', stars: 5 },
 ]
 
-const PRICING = [
+interface PricingPlan {
+  name: string; monthly: number; annual: number; desc: string
+  features: string[]; highlight?: boolean; plus?: boolean
+}
+const PRICING: PricingPlan[] = [
   { name: 'Starter', monthly: 149, annual: 119, desc: '1 user · 3 systems', features: ['3 AI systems', 'PDF export', 'Risk classification', 'Obligations map', 'Basic templates', 'Email support'] },
   { name: 'Growth', monthly: 399, annual: 319, desc: 'Up to 5 users · 10 systems', highlight: true, features: ['10 AI systems', '5 users', 'PDF + Word export', 'AI drafting assistance', 'Custom templates', 'Priority support'] },
   { name: 'Plus', monthly: 799, annual: 639, plus: true, desc: 'Unlimited users', features: ['25+ AI systems', 'Unlimited users', 'Auditor view', 'API access', 'Custom templates', 'Dedicated support'] },
@@ -187,7 +200,7 @@ const WL_CONFIG = {
   founding: {
     overline: 'Founding Access',
     headline: 'Claim your founding discount',
-    sub: 'Founding members lock in 40% off for the lifetime of their plan. Limited to the first 100 organisations.',
+    sub: 'Founding members lock in 30% off for the lifetime of their plan. Limited to the first 20 customers who pre-pay 3 months upfront.',
     cta: 'Claim Founding Discount',
     source: 'landing-founding',
   },
@@ -539,7 +552,7 @@ export default function LandingPage() {
           </motion.div>
 
           <h1 style={{ fontSize: 'clamp(40px, 8vw, 96px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-3px', margin: '0 0 32px', maxWidth: 860 }}>
-            You have 15 months to prove{' '}
+            You have <MonthsLeft /> to prove{' '}
             <CycleWord />
             <br />
             <span style={{ color: T.text2 }}>are compliant.</span>
@@ -676,6 +689,9 @@ export default function LandingPage() {
                 </li>
               ))}
             </ul>
+            <p style={{ fontSize: 15, color: T.text, lineHeight: 1.8, margin: '0 0 16px', padding: '18px 22px', borderLeft: `3px solid ${T.accent}`, background: 'rgba(0,229,191,0.04)' }}>
+              Everyone talks about AI system inventory and policy decks. Nobody is building structured, per-workflow evidence packs for SMEs — the actual artefact regulators and auditors will ask for.
+            </p>
             <p style={{ fontSize: 12, color: T.text3, margin: 0, fontStyle: 'italic' }}>
               This tool provides guidance only and does not constitute legal advice. Consult a qualified legal professional for binding compliance decisions.
             </p>
@@ -769,7 +785,10 @@ export default function LandingPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="hp-pricing-header" style={{ marginBottom: 64 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Pricing</p>
-              <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, lineHeight: 1.1 }}>Simple, transparent plans.</h2>
+              <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: '0 0 12px', lineHeight: 1.1 }}>Simple, transparent plans.</h2>
+              <p style={{ fontSize: 13, color: T.accent, margin: 0, fontWeight: 700 }}>
+                ↳ 30% lifetime off for the first 20 founding customers · Pre-pay 3 months upfront
+              </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: T.text2 }}>
               <span style={{ opacity: annual ? 0.5 : 1 }}>Monthly</span>
@@ -791,7 +810,7 @@ export default function LandingPage() {
                 <p style={{ fontSize: 11, fontWeight: 700, color: plan.highlight ? T.accent : T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 8px' }}>{plan.name}</p>
                 <p style={{ fontSize: 12, color: T.text2, margin: '0 0 24px' }}>{plan.desc}</p>
                 <p style={{ fontSize: 44, fontWeight: 900, color: T.text, margin: '0 0 4px', letterSpacing: '-2px', fontVariantNumeric: 'tabular-nums' }}>
-                  €<AnimatePresence mode="wait"><motion.span key={String(annual)} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>{annual ? plan.annual : plan.monthly}</motion.span></AnimatePresence>{(plan as any).plus ? '+' : ''}
+                  €<AnimatePresence mode="wait"><motion.span key={String(annual)} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>{annual ? plan.annual : plan.monthly}</motion.span></AnimatePresence>{plan.plus ? '+' : ''}
                 </p>
                 <p style={{ fontSize: 12, color: T.text2, margin: '0 0 32px' }}>per month</p>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -960,7 +979,7 @@ export default function LandingPage() {
               Do not wait until<br />someone asks for proof.
             </h2>
             <p style={{ fontSize: 16, color: T.text2, margin: '0 0 16px', lineHeight: 1.8 }}>
-              Start documenting your highest-risk workflow now and secure founding access before the deadline pressure hits.
+              First 20 customers lock in 30% off for life. Pre-pay 3 months and get access before we open publicly.
             </p>
             <p style={{ fontSize: 12, color: T.text3, margin: '0 0 40px', lineHeight: 1.7 }}>
               This tool provides guidance only and does not constitute legal advice.<br />Consult a qualified legal professional for binding compliance decisions.
