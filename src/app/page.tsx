@@ -2,33 +2,33 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
-import {
-  motion, useScroll, useSpring, useInView, useMotionValue,
-  animate, AnimatePresence,
-} from 'framer-motion'
-import {
-  Shield, FileText, CheckCircle, ArrowRight, Zap, BarChart3,
-  AlertTriangle, Clock, Menu, X, TrendingUp,
-} from 'lucide-react'
-import { track } from '@/lib/analytics'
+import { motion, useScroll, useSpring, useInView, useMotionValue, animate, AnimatePresence } from 'framer-motion'
+import { Shield, FileText, CheckCircle, ArrowRight, Zap, BarChart3, AlertTriangle, Clock, Menu, X, TrendingUp } from 'lucide-react'
+import { track, type AnalyticsEvent } from '@/lib/analytics'
 
-/* ─── Design tokens ───────────────────────────────────────────── */
 const T = {
-  bg: '#040404',
-  surface: '#0c0c0c',
-  surface2: '#131313',
-  border: 'rgba(255,255,255,0.07)',
-  borderHover: 'rgba(255,255,255,0.14)',
-  text: '#e8e8e8',
-  text2: '#666',
-  text3: '#333',
-  accent: '#47c9e5',
-  red: '#e54747',
-  purple: '#a78bfa',
-  green: '#36bd5f',
+  bg: '#040404', surface: '#0c0c0c', surface2: '#131313',
+  border: 'rgba(255,255,255,0.07)', borderHover: 'rgba(255,255,255,0.14)',
+  text: '#e8e8e8', text2: '#666', text3: '#333',
+  accent: '#47c9e5', red: '#e54747', purple: '#a78bfa', green: '#36bd5f',
 }
 
-/* ─── Custom cursor ───────────────────────────────────────────── */
+const S = {
+  overline: { fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase' as const, letterSpacing: '1px', margin: '0 0 16px' },
+  h2: { fontWeight: 900, letterSpacing: '-1.5px', margin: 0, lineHeight: 1.1 } as React.CSSProperties,
+  wallGrid: { borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` },
+  wallCell: { borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` },
+  dot4: { width: 4, height: 4, borderRadius: '50%', flexShrink: 0 as const },
+  listItem: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: T.text2 },
+  listItemStart: { display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: T.text2, lineHeight: 1.7 },
+  cardPad: { padding: '40px 32px' },
+  cardPadLg: { padding: '56px 48px' },
+  inlineBtn: { display: 'inline-flex', alignItems: 'center', gap: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties,
+}
+
+const fadeUp = (delay = 0) => ({ initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5, delay } })
+const fadeInOnce = (delay = 0) => ({ initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { delay } })
+
 function Cursor() {
   const x = useMotionValue(-40); const y = useMotionValue(-40)
   const rx = useSpring(x, { stiffness: 600, damping: 35 })
@@ -41,22 +41,21 @@ function Cursor() {
     document.querySelectorAll('a,button,[data-hover]').forEach((el) => { el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off) })
     return () => { window.removeEventListener('mousemove', m) }
   }, [x, y])
+  const base = { position: 'fixed' as const, borderRadius: '50%', pointerEvents: 'none' as const, translateX: '-50%', translateY: '-50%' }
   return (
     <>
-      <motion.div style={{ x: rx, y: ry, position: 'fixed', top: -4, left: -4, width: 8, height: 8, borderRadius: '50%', background: T.accent, pointerEvents: 'none', zIndex: 9999, translateX: '-50%', translateY: '-50%' }} />
-      <motion.div animate={{ width: hovered ? 40 : 28, height: hovered ? 40 : 28, opacity: hovered ? 0.6 : 0.3 }} transition={{ duration: 0.2 }} style={{ x: rx, y: ry, position: 'fixed', top: -14, left: -14, borderRadius: '50%', border: `1px solid ${T.accent}`, pointerEvents: 'none', zIndex: 9998, translateX: '-50%', translateY: '-50%' }} />
+      <motion.div style={{ ...base, x: rx, y: ry, top: -4, left: -4, width: 8, height: 8, background: T.accent, zIndex: 9999 }} />
+      <motion.div animate={{ width: hovered ? 40 : 28, height: hovered ? 40 : 28, opacity: hovered ? 0.6 : 0.3 }} transition={{ duration: 0.2 }} style={{ ...base, x: rx, y: ry, top: -14, left: -14, border: `1px solid ${T.accent}`, zIndex: 9998 }} />
     </>
   )
 }
 
-/* ─── Scroll progress ─────────────────────────────────────────── */
 function ScrollBar() {
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30 })
   return <motion.div style={{ scaleX, position: 'fixed', top: 0, left: 0, right: 0, height: 1, background: T.accent, transformOrigin: '0%', zIndex: 200 }} />
 }
 
-/* ─── Magnetic button ─────────────────────────────────────────── */
 function Magnetic({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0); const y = useMotionValue(0)
@@ -71,7 +70,6 @@ function Magnetic({ children }: { children: React.ReactNode }) {
   return <motion.div ref={ref} style={{ x: sx, y: sy, display: 'inline-block' }} onMouseMove={onMove} onMouseLeave={onLeave}>{children}</motion.div>
 }
 
-/* ─── Animated counter ────────────────────────────────────────── */
 function Count({ to, prefix = '', suffix = '' }: { to: number; prefix?: string; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
@@ -86,16 +84,12 @@ function Count({ to, prefix = '', suffix = '' }: { to: number; prefix?: string; 
   return <span ref={ref}>{display}</span>
 }
 
-/* ─── Deadline months countdown ───────────────────────────────── */
 function MonthsLeft() {
-  const deadline = new Date('2026-08-02T00:00:00Z')
-  const now = new Date()
-  const days = Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / 86400000))
+  const days = Math.max(0, Math.ceil((new Date('2026-08-02T00:00:00Z').getTime() - Date.now()) / 86400000))
   const months = Math.max(1, Math.ceil(days / 30.44))
   return <>{months} month{months !== 1 ? 's' : ''}</>
 }
 
-/* ─── Word cycle ──────────────────────────────────────────────── */
 const WORDS = ['your AI systems', 'your automation', 'your HR tools', 'your AI workflows', 'your deployments']
 function CycleWord() {
   const [idx, setIdx] = useState(0)
@@ -103,14 +97,7 @@ function CycleWord() {
   return (
     <span style={{ position: 'relative', display: 'inline-block', minWidth: 'min(260px, 72vw)' }}>
       <AnimatePresence mode="wait">
-        <motion.span
-          key={idx}
-          initial={{ opacity: 0, y: 28, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
-          transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-          style={{ display: 'inline-block', color: T.accent }}
-        >
+        <motion.span key={idx} initial={{ opacity: 0, y: 28, filter: 'blur(4px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }} transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'inline-block', color: T.accent }}>
           {WORDS[idx]}
         </motion.span>
       </AnimatePresence>
@@ -118,7 +105,6 @@ function CycleWord() {
   )
 }
 
-/* ─── Data ────────────────────────────────────────────────────── */
 const FEATURES = [
   { icon: Shield, title: 'Risk Classification', desc: 'Answer 12 structured questions and receive an Annex III risk classification plus a mapped list of obligations that apply to your specific system.' },
   { icon: FileText, title: 'Evidence Packs', desc: 'Per-workflow evidence packs structured for regulator and auditor review. Export as PDF or Word. One pack per system, not one generic policy doc.' },
@@ -148,10 +134,7 @@ const TESTIMONIALS = [
   { name: 'Elena V.', role: 'Operations Director, Berlin', text: 'Every consultant we spoke to quoted a minimum of €20,000 just for a scoping exercise. We needed something we could start ourselves.' },
 ]
 
-interface PricingPlan {
-  name: string; monthly: number; annual: number; desc: string
-  features: string[]; highlight?: boolean; plus?: boolean
-}
+interface PricingPlan { name: string; monthly: number; annual: number; desc: string; features: string[]; highlight?: boolean; plus?: boolean }
 const PRICING: PricingPlan[] = [
   { name: 'Starter', monthly: 149, annual: 119, desc: '1 user · 3 systems', features: ['3 AI systems', 'PDF export', 'Risk classification', 'Obligations map', 'Basic templates', 'Email support'] },
   { name: 'Growth', monthly: 399, annual: 319, desc: 'Up to 5 users · 10 systems', highlight: true, features: ['10 AI systems', '5 users', 'PDF + Word export', 'AI drafting assistance', 'Custom templates', 'Priority support'] },
@@ -167,7 +150,6 @@ const FAQS = [
   { q: 'What is Annex III?', a: 'Annex III lists specific AI system categories the EU AI Act classifies as high-risk — including systems used in recruitment, credit, biometrics, critical infrastructure, and more.' },
 ]
 
-/* ─── Field component ─────────────────────────────────────────── */
 function Field({ label, value, onChange, type = 'text', placeholder, required }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; required?: boolean }) {
   const [focused, setFocused] = useState(false)
   return (
@@ -184,33 +166,13 @@ function Field({ label, value, onChange, type = 'text', placeholder, required }:
   )
 }
 
-/* ─── Waitlist modal ──────────────────────────────────────────── */
 type WaitlistVariant = 'waitlist' | 'founding' | 'walkthrough'
 interface WaitlistForm { email: string; full_name: string; company_name: string }
 const WL_EMPTY: WaitlistForm = { email: '', full_name: '', company_name: '' }
-
 const WL_CONFIG = {
-  waitlist: {
-    overline: 'Join the Waitlist',
-    headline: 'Be first when we launch',
-    sub: 'We will notify you before public access opens and share early documentation resources.',
-    cta: 'Join the Waitlist',
-    source: 'landing-waitlist',
-  },
-  founding: {
-    overline: 'Founding Access',
-    headline: 'Claim your founding discount',
-    sub: 'Founding members lock in 30% off for the lifetime of their plan. Limited to the first 20 customers who pre-pay 3 months upfront.',
-    cta: 'Claim Founding Discount',
-    source: 'landing-founding',
-  },
-  walkthrough: {
-    overline: 'Book a Walkthrough',
-    headline: 'See the product in 30 minutes',
-    sub: 'Leave your details and we will reach out within one business day to schedule a walkthrough.',
-    cta: 'Request Walkthrough',
-    source: 'landing-walkthrough',
-  },
+  waitlist:   { overline: 'Join the Waitlist',   headline: 'Be first when we launch',          sub: 'We will notify you before public access opens and share early documentation resources.',                                                                                cta: 'Join the Waitlist',         source: 'landing-waitlist' },
+  founding:   { overline: 'Founding Access',      headline: 'Claim your founding discount',     sub: 'Founding members lock in 30% off for the lifetime of their plan. Limited to the first 20 customers who pre-pay 3 months upfront.',                                     cta: 'Claim Founding Discount',   source: 'landing-founding' },
+  walkthrough:{ overline: 'Book a Walkthrough',   headline: 'See the product in 30 minutes',    sub: 'Leave your details and we will reach out within one business day to schedule a walkthrough.',                                                                           cta: 'Request Walkthrough',       source: 'landing-walkthrough' },
 }
 
 function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose: () => void }) {
@@ -223,29 +185,18 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
 
   const submit = async () => {
     setError(null)
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setError('Please enter a valid email address.')
-      return
-    }
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('Please enter a valid email address.'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email.trim(), full_name: form.full_name.trim() || undefined, company_name: form.company_name.trim() || undefined, source: cfg.source }),
       }).then((r) => r.json())
-
       if (res.success) {
         track({ event: res.duplicate ? 'waitlist_duplicate' : 'waitlist_submitted', cta_label: cfg.cta, section: 'modal', page: 'landing' })
-        setSuccess(res.duplicate
-          ? "You're already on the list — we'll be in touch before we launch."
-          : "You're on the list. We'll reach out before launch with early access details.")
-      } else {
-        setError(res.error ?? 'Something went wrong. Please try again.')
-      }
-    } catch {
-      setError('Network error. Please try again.')
-    }
+        setSuccess(res.duplicate ? "You're already on the list — we'll be in touch before we launch." : "You're on the list. We'll reach out before launch with early access details.")
+      } else { setError(res.error ?? 'Something went wrong. Please try again.') }
+    } catch { setError('Network error. Please try again.') }
     setLoading(false)
   }
 
@@ -253,8 +204,7 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
     >
-      <motion.div initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      <motion.div initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
         style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 36, maxWidth: 480, width: '100%', fontFamily: 'inherit', position: 'relative' }}
       >
@@ -262,7 +212,6 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 6, borderRadius: 6 }}>
           <X size={15} />
         </button>
-
         {success ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle size={40} color={T.green} style={{ margin: '0 auto 16px', display: 'block' }} />
@@ -287,8 +236,7 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
                 <motion.button onClick={submit} disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   style={{ flex: 2, background: T.accent, border: 'none', borderRadius: 8, padding: '12px 0', fontSize: 13, fontWeight: 800, color: T.bg, cursor: loading ? 'default' : 'pointer', fontFamily: 'inherit', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
-                  <ArrowRight size={14} />
-                  {loading ? 'Submitting…' : cfg.cta}
+                  <ArrowRight size={14} />{loading ? 'Submitting…' : cfg.cta}
                 </motion.button>
               </div>
               <p style={{ fontSize: 11, color: T.text3, textAlign: 'center', margin: 0 }}>No spam · Unsubscribe anytime · Guidance only, not legal advice</p>
@@ -300,19 +248,15 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
   )
 }
 
-/* ─── Logo mark ───────────────────────────────────────────────── */
 function Logo({ size = 28 }: { size?: number }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.38), userSelect: 'none' }}>
       <div style={{ width: 2, height: Math.round(size * 0.78), background: T.accent, flexShrink: 0 }} />
-      <span style={{ fontSize: size, fontWeight: 900, letterSpacing: '2px', color: T.text, fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif', lineHeight: 1, whiteSpace: 'nowrap' }}>
-        IRVO
-      </span>
+      <span style={{ fontSize: size, fontWeight: 900, letterSpacing: '2px', color: T.text, fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif', lineHeight: 1, whiteSpace: 'nowrap' }}>IRVO</span>
     </div>
   )
 }
 
-/* ─── Systems burden estimator ────────────────────────────────── */
 function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVariant) => void }) {
   const [systems, setSystems] = useState('3')
   const [rate, setRate] = useState('150')
@@ -326,16 +270,14 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
   const irvoMinutes = systemsNum * 20
   const savings = Math.max(0, consultantCost - 149 * 12)
   const hasResult = systemsNum > 0 && rateNum > 0
-
   const fmtEur = (n: number) => `€${n.toLocaleString('de-DE')}`
+  const inputStyle = { fontSize: 40, fontWeight: 900, color: T.text, background: 'transparent', border: 'none', outline: 'none', width: '100%', fontFamily: 'inherit', letterSpacing: '-2px', caretColor: T.accent, appearance: 'textfield' as const }
 
   return (
     <section className="hp-section-pad" style={{ background: T.surface }}>
       <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 64 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>
-            Documentation Burden Calculator
-          </p>
+        <motion.div {...fadeUp()} style={{ marginBottom: 64 }}>
+          <p style={S.overline}>Documentation Burden Calculator</p>
           <h2 style={{ fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 900, letterSpacing: '-1.5px', margin: '0 0 14px', lineHeight: 1.05 }}>
             What are undocumented AI systems <em style={{ fontStyle: 'normal', color: T.accent }}>costing you?</em>
           </h2>
@@ -344,35 +286,18 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
           </p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-          style={{ border: `1px solid ${T.border}`, background: T.bg }}
-        >
+        <motion.div {...fadeUp(0.1)} style={{ border: `1px solid ${T.border}`, background: T.bg }}>
           <div className="r-grid-2" style={{ borderBottom: `1px solid ${T.border}` }}>
             <div style={{ padding: '32px 36px', borderRight: `1px solid ${T.border}` }}>
-              <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>
-                AI / Automation Systems
-              </label>
-              <input
-                type="number" value={systems} onChange={(e) => setSystems(e.target.value)}
-                onFocus={() => setSysFocus(true)} onBlur={() => setSysFocus(false)}
-                placeholder="3"
-                style={{ fontSize: 40, fontWeight: 900, color: T.text, background: 'transparent', border: 'none', outline: 'none', width: '100%', fontFamily: 'inherit', letterSpacing: '-2px', caretColor: T.accent, appearance: 'textfield' }}
-              />
+              <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>AI / Automation Systems</label>
+              <input type="number" value={systems} onChange={(e) => setSystems(e.target.value)} onFocus={() => setSysFocus(true)} onBlur={() => setSysFocus(false)} placeholder="3" style={inputStyle} />
               <div style={{ height: 2, background: sysFocus ? T.accent : T.border, marginTop: 8, transition: 'background 0.2s' }} />
             </div>
             <div style={{ padding: '32px 36px' }}>
-              <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>
-                Internal Hourly Rate (€)
-              </label>
+              <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>Internal Hourly Rate (€)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 32, fontWeight: 900, color: T.text3 }}>€</span>
-                <input
-                  type="number" value={rate} onChange={(e) => setRate(e.target.value)}
-                  onFocus={() => setRateFocus(true)} onBlur={() => setRateFocus(false)}
-                  placeholder="150"
-                  style={{ fontSize: 40, fontWeight: 900, color: T.text, background: 'transparent', border: 'none', outline: 'none', width: '100%', fontFamily: 'inherit', letterSpacing: '-2px', caretColor: T.accent, appearance: 'textfield' }}
-                />
+                <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} onFocus={() => setRateFocus(true)} onBlur={() => setRateFocus(false)} placeholder="150" style={inputStyle} />
               </div>
               <div style={{ height: 2, background: rateFocus ? T.accent : T.border, marginTop: 8, transition: 'background 0.2s' }} />
             </div>
@@ -380,26 +305,19 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
 
           <div className="r-grid-4" style={{ borderBottom: `1px solid ${T.border}` }}>
             {[
-              { label: 'Manual documentation hours', value: hasResult ? `${manualHours}h` : '—', note: `${systemsNum} system${systemsNum !== 1 ? 's' : ''} × 50 hrs`, dim: true },
-              { label: 'Consultant cost estimate', value: hasResult ? fmtEur(consultantCost) : '—', note: `€${rateNum}/hr × 50 hrs each`, dim: false },
-              { label: 'Documentation time with Irvo', value: hasResult ? `${irvoMinutes} min` : '—', note: '~20 min per system', dim: false },
-              { label: 'Potential savings', value: hasResult ? fmtEur(savings) : '—', note: 'vs Irvo Starter plan', dim: false, highlight: true },
+              { label: 'Manual documentation hours', value: hasResult ? `${manualHours}h` : '—', note: `${systemsNum} system${systemsNum !== 1 ? 's' : ''} × 50 hrs`, highlight: false },
+              { label: 'Consultant cost estimate', value: hasResult ? fmtEur(consultantCost) : '—', note: `€${rateNum}/hr × 50 hrs each`, highlight: false },
+              { label: 'Documentation time with Irvo', value: hasResult ? `${irvoMinutes} min` : '—', note: '~20 min per system', highlight: false },
+              { label: 'Potential savings', value: hasResult ? fmtEur(savings) : '—', note: 'vs Irvo Starter plan', highlight: true },
             ].map((col, i) => (
-              <motion.div
-                key={col.label}
-                animate={{ opacity: hasResult ? 1 : 0.4 }}
-                transition={{ duration: 0.3 }}
+              <motion.div key={col.label} animate={{ opacity: hasResult ? 1 : 0.4 }} transition={{ duration: 0.3 }}
                 style={{ padding: '32px 36px', borderRight: i < 3 ? `1px solid ${T.border}` : 'none', borderTop: col.highlight ? `2px solid ${T.accent}` : undefined, background: col.highlight ? 'rgba(71,201,229,0.03)' : 'transparent' }}
               >
                 <p style={{ fontSize: 9, fontWeight: 700, color: col.highlight ? T.accent : T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 16px' }}>{col.label}</p>
                 <AnimatePresence mode="wait">
-                  <motion.p
-                    key={col.value}
-                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
+                  <motion.p key={col.value} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
                     style={{ fontSize: col.highlight ? 28 : 22, fontWeight: 900, color: col.highlight ? T.accent : T.text, margin: '0 0 6px', letterSpacing: '-1px', fontVariantNumeric: 'tabular-nums' }}
-                  >
-                    {col.value}
-                  </motion.p>
+                  >{col.value}</motion.p>
                 </AnimatePresence>
                 <p style={{ fontSize: 10, color: T.text3, margin: 0, fontWeight: 600 }}>{col.note}</p>
               </motion.div>
@@ -408,21 +326,15 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
 
           <div style={{ padding: '24px 36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <p style={{ fontSize: 13, color: T.text2, margin: 0, maxWidth: 520, lineHeight: 1.7 }}>
-              {hasResult
-                ? `Manual documentation at €${rateNum}/hr costs ${fmtEur(consultantCost)}. Irvo Starter is €149/mo. Documentation pays for itself in week one.`
-                : 'Enter your AI system count and internal hourly rate to see your documentation burden.'}
+              {hasResult ? `Manual documentation at €${rateNum}/hr costs ${fmtEur(consultantCost)}. Irvo Starter is €149/mo. Documentation pays for itself in week one.` : 'Enter your AI system count and internal hourly rate to see your documentation burden.'}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'estimator', page: 'landing' }); onOpenWaitlist('waitlist') }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.text, color: T.bg, fontSize: 13, fontWeight: 700, padding: '11px 24px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px' }}
-              >
+              <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'estimator', page: 'landing' }); onOpenWaitlist('waitlist') }}
+                style={{ ...S.inlineBtn, background: T.text, color: T.bg, fontSize: 13, fontWeight: 700, padding: '11px 24px' }}>
                 Get Early Access <ArrowRight size={14} />
               </button>
-              <button
-                onClick={() => { setSystems('3'); setRate('150') }}
-                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.text2, fontSize: 12, fontWeight: 600, padding: '11px 16px', cursor: 'pointer', fontFamily: 'inherit' }}
-              >
+              <button onClick={() => { setSystems('3'); setRate('150') }}
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.text2, fontSize: 12, fontWeight: 600, padding: '11px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Reset example
               </button>
             </div>
@@ -437,7 +349,6 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
   )
 }
 
-/* ─── Divider ─────────────────────────────────────────────────── */
 function Divider() {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true })
@@ -448,7 +359,6 @@ function Divider() {
   )
 }
 
-/* ─── Main page ───────────────────────────────────────────────── */
 export default function LandingPage() {
   const [annual, setAnnual] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -462,7 +372,6 @@ export default function LandingPage() {
   }, [])
 
   const openWaitlist = (v: WaitlistVariant) => setWaitlistModal(v)
-
   const NAV = ['Features', 'How It Works', 'Pricing']
 
   return (
@@ -470,65 +379,48 @@ export default function LandingPage() {
       <Cursor />
       <ScrollBar />
 
-      {/* ── Mobile nav overlay ───────────────────────────────────── */}
       <div className={`mobile-nav-overlay${mobileMenu ? ' open' : ''}`}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
           <Logo size={28} />
-          <button onClick={() => setMobileMenu(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 8, touchAction: 'manipulation' }}>
-            <X size={22} />
-          </button>
+          <button onClick={() => setMobileMenu(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 8, touchAction: 'manipulation' }}><X size={22} /></button>
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
           {NAV.map((item) => (
             <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={() => setMobileMenu(false)}
-              style={{ fontSize: 22, fontWeight: 700, color: T.text2, textDecoration: 'none', padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>
-              {item}
-            </a>
+              style={{ fontSize: 22, fontWeight: 700, color: T.text2, textDecoration: 'none', padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>{item}</a>
           ))}
-          <button
-            onClick={() => { setMobileMenu(false); track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'mobile-nav', page: 'landing' }); openWaitlist('waitlist') }}
-            style={{ fontSize: 22, fontWeight: 700, color: T.accent, textDecoration: 'none', padding: '12px 0', background: 'transparent', border: 'none', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' } as React.CSSProperties}
-          >
+          <button onClick={() => { setMobileMenu(false); track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'mobile-nav', page: 'landing' }); openWaitlist('waitlist') }}
+            style={{ fontSize: 22, fontWeight: 700, color: T.accent, textDecoration: 'none', padding: '12px 0', background: 'transparent', border: 'none', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' } as React.CSSProperties}>
             Get Early Access ↗
           </button>
         </nav>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 32 }}>
           <Link href="/login" onClick={() => setMobileMenu(false)} style={{ fontSize: 15, color: T.text2, textDecoration: 'none', fontWeight: 500, padding: '12px 0', textAlign: 'center', border: `1px solid ${T.border}`, borderRadius: 8 }}>Sign in</Link>
-          <button
-            onClick={() => { setMobileMenu(false); openWaitlist('waitlist') }}
-            style={{ background: T.text, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 0', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px' }}
-          >
+          <button onClick={() => { setMobileMenu(false); openWaitlist('waitlist') }}
+            style={{ background: T.text, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 0', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px' }}>
             Get Early Access
           </button>
         </div>
       </div>
 
-      {/* ── NAV ─────────────────────────────────────────────────── */}
-      <motion.header
-        animate={{ borderBottomColor: scrolled ? T.border : 'transparent', background: scrolled ? 'rgba(4,4,4,0.92)' : 'transparent', backdropFilter: scrolled ? 'blur(20px)' : 'none' }}
-        transition={{ duration: 0.3 }}
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, borderBottom: '1px solid transparent' }}
-      >
+      <motion.header animate={{ borderBottomColor: scrolled ? T.border : 'transparent', background: scrolled ? 'rgba(4,4,4,0.92)' : 'transparent', backdropFilter: scrolled ? 'blur(20px)' : 'none' }} transition={{ duration: 0.3 }}
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, borderBottom: '1px solid transparent' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
           <Logo size={32} />
           <nav className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
             {NAV.map((item) => (
               <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{item}</motion.a>
             ))}
-            <button
-              onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
-              style={{ fontSize: 13, color: T.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-            >
+            <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
+              style={{ fontSize: 13, color: T.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Early Access ↗
             </button>
           </nav>
           <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link href="/login" style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
             <Magnetic>
-              <button
-                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
-                style={{ background: T.text, color: T.bg, fontSize: 13, fontWeight: 700, padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-block', letterSpacing: '-0.2px' }}
-              >
+              <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
+                style={{ background: T.text, color: T.bg, fontSize: 13, fontWeight: 700, padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-block', letterSpacing: '-0.2px' }}>
                 Get Early Access
               </button>
             </Magnetic>
@@ -539,37 +431,26 @@ export default function LandingPage() {
         </div>
       </motion.header>
 
-      {/* ── HERO ─────────────────────────────────────────────────── */}
       <section className="hp-hero-pad" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)', backgroundSize: '80px 80px', pointerEvents: 'none' }} />
-
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid ${T.border}`, borderRadius: 100, padding: '5px 14px', marginBottom: 40, fontSize: 11, color: T.text2, letterSpacing: '0.4px' }}
-          >
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid ${T.border}`, borderRadius: 100, padding: '5px 14px', marginBottom: 40, fontSize: 11, color: T.text2, letterSpacing: '0.4px' }}>
             <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity }} style={{ width: 5, height: 5, borderRadius: '50%', background: T.red }} />
             <MonthsLeft /> left · EU AI Act enforcement begins August 2, 2026
           </motion.div>
 
           <h1 style={{ fontSize: 'clamp(40px, 8vw, 96px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-3px', margin: '0 0 32px', maxWidth: 860 }}>
-            Your AI is running.
-            <br />
-            <span style={{ color: T.text2 }}>Your documentation isn&apos;t.</span>
+            Your AI is running.<br /><span style={{ color: T.text2 }}>Your documentation isn&apos;t.</span>
           </h1>
 
           <p style={{ fontSize: 18, color: T.text2, lineHeight: 1.8, maxWidth: 520, margin: '0 auto 40px' }}>
             The EU AI Act requires structured evidence for every high-risk workflow. Consultants charge €20,000+ to get you there. We do it in 20 minutes per system.
           </p>
 
-          {/* Stat strip */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderRadius: 8, marginBottom: 48, overflow: 'hidden' }}
-          >
-            {[
-              { value: '€35M', label: 'maximum fine' },
-              { value: '50h+', label: 'manual docs per system' },
-              { value: '20min', label: 'with Irvo' },
-            ].map(({ value, label }, i) => (
+            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderRadius: 8, marginBottom: 48, overflow: 'hidden' }}>
+            {[{ value: '€35M', label: 'maximum fine' }, { value: '50h+', label: 'manual docs per system' }, { value: '20min', label: 'with Irvo' }].map(({ value, label }, i) => (
               <div key={label} style={{ padding: '14px 28px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center' }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: i === 2 ? T.accent : T.text, letterSpacing: '-0.5px', lineHeight: 1 }}>{value}</div>
                 <div style={{ fontSize: 10, color: T.text3, marginTop: 4, letterSpacing: '0.3px', textTransform: 'uppercase', fontWeight: 600 }}>{label}</div>
@@ -579,33 +460,24 @@ export default function LandingPage() {
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Magnetic>
-              <button
-                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Document Your First System', section: 'hero', page: 'landing' }); openWaitlist('waitlist') }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.text, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px' }}
-              >
+              <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Document Your First System', section: 'hero', page: 'landing' }); openWaitlist('waitlist') }}
+                style={{ ...S.inlineBtn, background: T.text, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, letterSpacing: '-0.2px' }}>
                 Document Your First System <ArrowRight size={16} />
               </button>
             </Magnetic>
             <Magnetic>
-              <a
-                href="#how-it-works"
-                onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'See How It Works', section: 'hero', page: 'landing' })}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(71,201,229,0.08)', color: T.accent, fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, textDecoration: 'none', border: `1px solid rgba(71,201,229,0.25)` }}
-              >
+              <a href="#how-it-works" onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'See How It Works', section: 'hero', page: 'landing' })}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(71,201,229,0.08)', color: T.accent, fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, textDecoration: 'none', border: `1px solid rgba(71,201,229,0.25)` }}>
                 See How It Works
               </a>
             </Magnetic>
           </div>
 
-          <p style={{ fontSize: 12, color: T.text3, margin: '24px 0 0', letterSpacing: '0.2px' }}>
-            No credit card required · EU &amp; UK coverage · First system free
-          </p>
+          <p style={{ fontSize: 12, color: T.text3, margin: '24px 0 0', letterSpacing: '0.2px' }}>No credit card required · EU &amp; UK coverage · First system free</p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
-          style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
+          style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 10, color: T.text3, letterSpacing: '0.5px', textTransform: 'uppercase' }}>scroll</span>
           <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity }} style={{ width: 1, height: 24, background: `linear-gradient(${T.text3}, transparent)` }} />
         </motion.div>
@@ -613,11 +485,8 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── MARQUEE STRIP ────────────────────────────────────────── */}
       <div style={{ overflow: 'hidden', padding: '20px 0', background: T.surface }}>
-        <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-          style={{ display: 'flex', gap: 0, width: 'max-content' }}
-        >
+        <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} style={{ display: 'flex', gap: 0, width: 'max-content' }}>
           {[...Array(2)].map((_, outer) => (
             <span key={outer} style={{ display: 'flex' }}>
               {['EU AI ACT COMPLIANCE', 'RISK CLASSIFICATION', 'EVIDENCE PACKS', 'ANNEX III MAPPING', 'OBLIGATIONS TRACKER', 'REGULATOR-READY DOCS', 'SME DOCUMENTATION'].map((item, i) => (
@@ -634,24 +503,16 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── FEATURES ─────────────────────────────────────────────── */}
       <section id="features" className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ marginBottom: 80 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Features</p>
-            <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, maxWidth: 560, lineHeight: 1.1 }}>
-              Everything you need to produce regulator-ready evidence. Nothing you don&apos;t.
-            </h2>
+          <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
+            <p style={S.overline}>Features</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(32px, 4vw, 48px)', maxWidth: 560 }}>Everything you need to produce regulator-ready evidence. Nothing you don&apos;t.</h2>
           </motion.div>
-
-          <div className="r-grid-3" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={S.wallGrid}>
             {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: (i % 3) * 0.07 }}
-                whileHover={{ background: T.surface }}
-                style={{ padding: '36px 32px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, transition: 'background 0.2s' }}
-              >
+              <motion.div key={f.title} {...fadeInOnce((i % 3) * 0.07)} whileHover={{ background: T.surface }}
+                style={{ ...S.cardPad, ...S.wallCell, transition: 'background 0.2s' }}>
                 <f.icon size={20} color={T.accent} style={{ marginBottom: 18 }} />
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.3px' }}>{f.title}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.75, margin: 0 }}>{f.desc}</p>
@@ -663,11 +524,10 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── STATS ────────────────────────────────────────────────── */}
       <section className="hp-section-pad">
-        <div className="r-grid-4" style={{ maxWidth: 1160, margin: '0 auto', borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+        <div className="r-grid-4" style={{ maxWidth: 1160, margin: '0 auto', ...S.wallGrid }}>
           {STATS.map((s) => (
-            <div key={s.label} style={{ padding: '48px 36px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
+            <div key={s.label} style={{ padding: '48px 36px', ...S.wallCell }}>
               <p style={{ fontSize: 'clamp(40px, 5vw, 58px)', fontWeight: 900, color: T.text, margin: '0 0 8px', letterSpacing: '-2px', fontVariantNumeric: 'tabular-nums' }}>
                 <Count to={s.to} prefix={s.prefix} suffix={s.suffix} />
               </p>
@@ -679,28 +539,18 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── PROBLEM / COMPLIANCE STAKES ──────────────────────────── */}
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div className="hp-law-grid" style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 20px' }}>The compliance gap</p>
-            <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1.5px', margin: '0 0 24px', lineHeight: 1.1 }}>
-              Most SMEs are not ready for AI Act evidence requirements.
-            </h2>
+            <p style={S.overline}>The compliance gap</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.5vw, 44px)', margin: '0 0 24px' }}>Most SMEs are not ready for AI Act evidence requirements.</h2>
             <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.9, margin: '0 0 20px' }}>
               The EU AI Act requires organisations to produce structured technical documentation and evidence packs for AI systems classified as high-risk — before enforcement begins.
             </p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                'AI workflows are documented across spreadsheets, notes, and internal wikis',
-                'One system can take 40–60 hours to document manually',
-                'Consultants typically charge €15,000–€50,000 per system',
-                'Many teams do not yet know which workflows may be high-risk',
-                'Regulators will ask for evidence packs, not good intentions',
-              ].map((pt) => (
-                <li key={pt} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: T.text2, lineHeight: 1.7 }}>
-                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: T.red, flexShrink: 0, marginTop: 8 }} />
-                  {pt}
+              {['AI workflows are documented across spreadsheets, notes, and internal wikis', 'One system can take 40–60 hours to document manually', 'Consultants typically charge €15,000–€50,000 per system', 'Many teams do not yet know which workflows may be high-risk', 'Regulators will ask for evidence packs, not good intentions'].map((pt) => (
+                <li key={pt} style={S.listItemStart}>
+                  <div style={{ ...S.dot4, background: T.red, marginTop: 8 }} />{pt}
                 </li>
               ))}
             </ul>
@@ -718,11 +568,7 @@ export default function LandingPage() {
               { label: 'GPAI model obligations', value: 'Aug 2025', note: 'Already in force' },
               { label: 'Annex III categories', value: '8+', note: 'High-risk use case groups' },
             ].map((row, i) => (
-              <motion.div
-                key={row.label}
-                initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 0', borderBottom: `1px solid ${T.border}` }}
-              >
+              <motion.div key={row.label} {...fadeInOnce(i * 0.07)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 0', borderBottom: `1px solid ${T.border}` }}>
                 <div>
                   <p style={{ margin: 0, fontSize: 14, color: T.text }}>{row.label}</p>
                   <p style={{ margin: '2px 0 0', fontSize: 11, color: T.text2 }}>{row.note}</p>
@@ -736,21 +582,16 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── HOW IT WORKS ─────────────────────────────────────────── */}
       <section id="how-it-works" className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 72 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Process</p>
-            <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, lineHeight: 1.1 }}>From workflow description to evidence pack.</h2>
+          <motion.div {...fadeUp()} style={{ marginBottom: 72 }}>
+            <p style={S.overline}>Process</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>From workflow description to evidence pack.</h2>
           </motion.div>
-          <div className="r-grid-4" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-4" style={S.wallGrid}>
             {STEPS.map((step, i) => (
-              <motion.div
-                key={step.n}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                whileHover={{ background: T.surface }}
-                style={{ padding: '40px 32px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, transition: 'background 0.2s' }}
-              >
+              <motion.div key={step.n} {...fadeInOnce(i * 0.08)} whileHover={{ background: T.surface }}
+                style={{ ...S.cardPad, ...S.wallCell, transition: 'background 0.2s' }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: T.text3, letterSpacing: '0.5px', display: 'block', marginBottom: 24 }}>{step.n}</span>
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 12px', letterSpacing: '-0.3px' }}>{step.title}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.75, margin: 0 }}>{step.desc}</p>
@@ -762,21 +603,16 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── TESTIMONIALS ─────────────────────────────────────────── */}
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 64 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 10px' }}>Customer discovery</p>
+          <motion.div {...fadeInOnce()} style={{ marginBottom: 64 }}>
+            <p style={S.overline}>Customer discovery</p>
             <p style={{ fontSize: 13, color: T.text3, margin: 0 }}>Quotes from compliance and legal professionals we spoke to while building this.</p>
           </motion.div>
-          <div className="r-grid-3" style={{ gap: 0, borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={{ gap: 0, ...S.wallGrid }}>
             {TESTIMONIALS.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                whileHover={{ background: 'rgba(255,255,255,0.02)' }}
-                style={{ padding: '40px 36px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, transition: 'background 0.2s' }}
-              >
+              <motion.div key={t.name} {...fadeInOnce(i * 0.08)} whileHover={{ background: 'rgba(255,255,255,0.02)' }}
+                style={{ padding: '40px 36px', ...S.wallCell, transition: 'background 0.2s' }}>
                 <div style={{ width: 24, height: 2, background: T.accent, marginBottom: 24 }} />
                 <p style={{ fontSize: 15, color: T.text, lineHeight: 1.8, margin: '0 0 28px', fontStyle: 'italic' }}>&ldquo;{t.text}&rdquo;</p>
                 <div>
@@ -791,16 +627,13 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── PRICING ──────────────────────────────────────────────── */}
       <motion.section id="pricing" className="hp-section-pad" onViewportEnter={() => track({ event: 'pricing_viewed', page: 'landing' })}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="hp-pricing-header" style={{ marginBottom: 64 }}>
+          <motion.div {...fadeUp()} className="hp-pricing-header" style={{ marginBottom: 64 }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Pricing</p>
-              <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: '0 0 12px', lineHeight: 1.1 }}>Simple, transparent plans.</h2>
-              <p style={{ fontSize: 13, color: T.accent, margin: 0, fontWeight: 700 }}>
-                ↳ 30% lifetime off for the first 20 founding customers · Pre-pay 3 months upfront
-              </p>
+              <p style={S.overline}>Pricing</p>
+              <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)', margin: '0 0 12px' }}>Simple, transparent plans.</h2>
+              <p style={{ fontSize: 13, color: T.accent, margin: 0, fontWeight: 700 }}>↳ 30% lifetime off for the first 20 founding customers · Pre-pay 3 months upfront</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: T.text2 }}>
               <span style={{ opacity: annual ? 0.5 : 1 }}>Monthly</span>
@@ -811,13 +644,10 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <div className="r-grid-3" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={S.wallGrid}>
             {PRICING.map((plan, i) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                style={{ padding: '48px 36px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, background: plan.highlight ? T.surface : 'transparent', position: 'relative' }}
-              >
+              <motion.div key={plan.name} {...fadeUp(i * 0.08)}
+                style={{ padding: '48px 36px', ...S.wallCell, background: plan.highlight ? T.surface : 'transparent', position: 'relative' }}>
                 {plan.highlight && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.accent }} />}
                 <p style={{ fontSize: 11, fontWeight: 700, color: plan.highlight ? T.accent : T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 8px' }}>{plan.name}</p>
                 <p style={{ fontSize: 12, color: T.text2, margin: '0 0 24px' }}>{plan.desc}</p>
@@ -827,22 +657,15 @@ export default function LandingPage() {
                 <p style={{ fontSize: 12, color: T.text2, margin: '0 0 32px' }}>per month</p>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {plan.features.map((f) => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: T.text2 }}>
-                      <CheckCircle size={13} color={T.accent} />
-                      {f}
-                    </li>
+                    <li key={f} style={S.listItem}><CheckCircle size={13} color={T.accent} />{f}</li>
                   ))}
                 </ul>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Magnetic>
-                    <button
-                      onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Founding Discount', section: 'pricing', page: 'landing' }); openWaitlist('founding') }}
-                      style={{ display: 'block', width: '100%', textAlign: 'center', background: plan.highlight ? T.text : 'transparent', color: plan.highlight ? T.bg : T.text, border: `1px solid ${plan.highlight ? T.text : T.border}`, borderRadius: 8, padding: '12px 0', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                    >
-                      Claim Founding Discount
-                    </button>
-                  </Magnetic>
-                </div>
+                <Magnetic>
+                  <button onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Founding Discount', section: 'pricing', page: 'landing' }); openWaitlist('founding') }}
+                    style={{ display: 'block', width: '100%', textAlign: 'center', background: plan.highlight ? T.text : 'transparent', color: plan.highlight ? T.bg : T.text, border: `1px solid ${plan.highlight ? T.text : T.border}`, borderRadius: 8, padding: '12px 0', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                    Claim Founding Discount
+                  </button>
+                </Magnetic>
               </motion.div>
             ))}
           </div>
@@ -851,21 +674,16 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── FAQ ──────────────────────────────────────────────────── */}
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 72 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>FAQ</p>
-            <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, lineHeight: 1.1 }}>Common questions.</h2>
+          <motion.div {...fadeUp()} style={{ marginBottom: 72 }}>
+            <p style={S.overline}>FAQ</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>Common questions.</h2>
           </motion.div>
-          <div className="r-grid-3" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
+          <div className="r-grid-3" style={S.wallGrid}>
             {FAQS.map((faq, i) => (
-              <motion.div
-                key={faq.q}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: (i % 3) * 0.07 }}
-                whileHover={{ background: 'rgba(255,255,255,0.02)' }}
-                style={{ padding: '36px 32px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, transition: 'background 0.2s' }}
-              >
+              <motion.div key={faq.q} {...fadeInOnce((i % 3) * 0.07)} whileHover={{ background: 'rgba(255,255,255,0.02)' }}
+                style={{ padding: '36px 32px', ...S.wallCell, transition: 'background 0.2s' }}>
                 <h3 style={{ fontSize: 15, fontWeight: 800, color: T.text, margin: '0 0 12px', letterSpacing: '-0.2px', lineHeight: 1.3 }}>{faq.q}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.75, margin: 0 }}>{faq.a}</p>
               </motion.div>
@@ -876,103 +694,64 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── URGENCY BAND ─────────────────────────────────────────── */}
       <section className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 72 }}>
+          <motion.div {...fadeUp()} style={{ marginBottom: 72 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Enforcement Timeline</p>
+              <p style={{ ...S.overline, margin: 0 }}>Enforcement Timeline</p>
               <span style={{ fontSize: 11, color: T.text3, border: `1px solid ${T.border}`, borderRadius: 100, padding: '2px 10px' }}>August 2, 2026</span>
             </div>
-            <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', margin: '0 0 16px', lineHeight: 1.1 }}>
-              August 2, 2026 is the deadline<br />that matters.
-            </h2>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)', margin: '0 0 16px' }}>August 2, 2026 is the deadline<br />that matters.</h2>
             <p style={{ fontSize: 15, color: T.text2, margin: 0, maxWidth: 520, lineHeight: 1.8 }}>
               High-risk AI obligations come into force on August 2, 2026. Fines can reach €35M or 7% of global annual turnover. Most SMEs are still starting from zero.
             </p>
           </motion.div>
 
-          <div className="hp-esc-grid" style={{ borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
-            {/* Deadline card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              style={{ padding: '56px 48px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, position: 'relative' }}
-            >
-              <div style={{ position: 'absolute', top: 0, left: 0, width: 2, height: '100%', background: T.red }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                <div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: T.red, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 8 }}>The deadline</span>
-                  <h3 style={{ fontSize: 26, fontWeight: 900, color: T.text, margin: 0, letterSpacing: '-0.5px' }}>August 2, 2026</h3>
+          <div className="hp-esc-grid" style={S.wallGrid}>
+            {([
+              {
+                color: T.red, icon: <Clock size={20} color={T.red} style={{ marginTop: 4 }} />, tag: 'The deadline', title: 'August 2, 2026',
+                body: 'This is the date high-risk AI system obligations under the EU AI Act become enforceable. Technical documentation, risk management, and evidence packs must exist before this date — not after.',
+                points: ['Risk classification required per system', 'Technical documentation must be current', 'Human oversight measures must be in place', 'Evidence available for regulator review'],
+                ctaLabel: 'Join the Waitlist', ctaEvent: 'landing_cta_clicked' as AnalyticsEvent, ctaVariant: 'waitlist' as WaitlistVariant,
+              },
+              {
+                color: T.purple, icon: <TrendingUp size={20} color={T.purple} style={{ marginTop: 4 }} />, tag: 'The exposure', title: 'Up to €35M in fines',
+                body: 'Non-compliance with high-risk AI obligations can result in fines of up to €35,000,000 or 7% of total worldwide annual turnover — whichever is higher. For SMEs, that exposure is existential.',
+                points: ['€35M or 7% of global turnover for prohibited AI', '€15M or 3% for high-risk non-compliance', 'National supervisory authorities begin audits 2026', 'No grace period after enforcement starts'],
+                ctaLabel: 'Claim Founding Discount', ctaEvent: 'founding_discount_clicked' as AnalyticsEvent, ctaVariant: 'founding' as WaitlistVariant,
+              },
+            ] as const).map((card, ci) => (
+              <motion.div key={card.tag} {...fadeInOnce(ci * 0.07)} style={{ ...S.cardPadLg, ...S.wallCell, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 2, height: '100%', background: card.color }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                  <div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: card.color, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 8 }}>{card.tag}</span>
+                    <h3 style={{ fontSize: 26, fontWeight: 900, color: T.text, margin: 0, letterSpacing: '-0.5px' }}>{card.title}</h3>
+                  </div>
+                  {card.icon}
                 </div>
-                <Clock size={20} color={T.red} style={{ marginTop: 4 }} />
-              </div>
-              <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.8, margin: '0 0 32px' }}>
-                This is the date high-risk AI system obligations under the EU AI Act become enforceable. Technical documentation, risk management, and evidence packs must exist before this date — not after.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {['Risk classification required per system', 'Technical documentation must be current', 'Human oversight measures must be in place', 'Evidence available for regulator review'].map((f) => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: T.text2 }}>
-                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: T.red, flexShrink: 0 }} />{f}
-                  </li>
-                ))}
-              </ul>
-              <Magnetic>
-                <motion.button
-                  onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Join the Waitlist', section: 'urgency', page: 'landing' }); openWaitlist('waitlist') }}
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  style={{ background: T.red, border: 'none', borderRadius: 8, padding: '12px 24px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                >
-                  <ArrowRight size={14} /> Join the Waitlist
-                </motion.button>
-              </Magnetic>
-            </motion.div>
-
-            {/* Exposure card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.07 }}
-              style={{ padding: '56px 48px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, position: 'relative' }}
-            >
-              <div style={{ position: 'absolute', top: 0, left: 0, width: 2, height: '100%', background: T.purple }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                <div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: T.purple, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 8 }}>The exposure</span>
-                  <h3 style={{ fontSize: 26, fontWeight: 900, color: T.text, margin: 0, letterSpacing: '-0.5px' }}>Up to €35M in fines</h3>
-                </div>
-                <TrendingUp size={20} color={T.purple} style={{ marginTop: 4 }} />
-              </div>
-              <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.8, margin: '0 0 32px' }}>
-                Non-compliance with high-risk AI obligations can result in fines of up to €35,000,000 or 7% of total worldwide annual turnover — whichever is higher. For SMEs, that exposure is existential.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {['€35M or 7% of global turnover for prohibited AI', '€15M or 3% for high-risk non-compliance', 'National supervisory authorities begin audits 2026', 'No grace period after enforcement starts'].map((f) => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: T.text2 }}>
-                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: T.purple, flexShrink: 0 }} />{f}
-                  </li>
-                ))}
-              </ul>
-              <Magnetic>
-                <motion.button
-                  onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Founding Discount', section: 'urgency', page: 'landing' }); openWaitlist('founding') }}
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  style={{ background: T.purple, border: 'none', borderRadius: 8, padding: '12px 24px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                >
-                  <ArrowRight size={14} /> Claim Founding Discount
-                </motion.button>
-              </Magnetic>
-            </motion.div>
+                <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.8, margin: '0 0 32px' }}>{card.body}</p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {card.points.map((f) => (
+                    <li key={f} style={S.listItem}><div style={{ ...S.dot4, background: card.color }} />{f}</li>
+                  ))}
+                </ul>
+                <Magnetic>
+                  <motion.button onClick={() => { track({ event: card.ctaEvent, cta_label: card.ctaLabel, section: 'urgency', page: 'landing' }); openWaitlist(card.ctaVariant) }}
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    style={{ ...S.inlineBtn, background: card.color, borderRadius: 8, padding: '12px 24px', fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                    <ArrowRight size={14} /> {card.ctaLabel}
+                  </motion.button>
+                </Magnetic>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Documentation progression ladder */}
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-            style={{ marginTop: 32, display: 'flex', alignItems: 'center', gap: 0, borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}
-          >
-            {[
-              { label: 'Define workflow', color: T.text3 },
-              { label: 'Classify risk', color: T.accent },
-              { label: 'Capture evidence', color: T.purple },
-              { label: 'Export pack', color: T.green },
-            ].map((item, i) => (
-              <div key={item.label} style={{ flex: 1, padding: '16px 24px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+            style={{ marginTop: 32, display: 'flex', alignItems: 'center', gap: 0, ...S.wallGrid }}>
+            {[{ label: 'Define workflow', color: T.text3 }, { label: 'Classify risk', color: T.accent }, { label: 'Capture evidence', color: T.purple }, { label: 'Export pack', color: T.green }].map((item, i) => (
+              <div key={item.label} style={{ flex: 1, padding: '16px 24px', ...S.wallCell, display: 'flex', alignItems: 'center', gap: 10 }}>
                 {i > 0 && <ArrowRight size={12} color={T.text3} />}
                 <span style={{ fontSize: 12, fontWeight: 700, color: item.color, letterSpacing: '0.2px' }}>{item.label}</span>
               </div>
@@ -983,35 +762,28 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── FINAL CTA ─────────────────────────────────────────────── */}
       <section className="hp-cta-pad" style={{ textAlign: 'center' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
             <h2 style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: 900, letterSpacing: '-2.5px', lineHeight: 1.0, margin: '0 0 24px', color: T.text }}>
               Do not wait until<br />someone asks for proof.
             </h2>
-            <p style={{ fontSize: 16, color: T.text2, margin: '0 0 16px', lineHeight: 1.8 }}>
-              First 20 customers lock in 30% off for life. Pre-pay 3 months and get access before we open publicly.
-            </p>
+            <p style={{ fontSize: 16, color: T.text2, margin: '0 0 16px', lineHeight: 1.8 }}>First 20 customers lock in 30% off for life. Pre-pay 3 months and get access before we open publicly.</p>
             <p style={{ fontSize: 12, color: T.text3, margin: '0 0 40px', lineHeight: 1.7 }}>
               This tool provides guidance only and does not constitute legal advice.<br />Consult a qualified legal professional for binding compliance decisions.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Magnetic>
-                <motion.button
-                  onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Founding Discount', section: 'final-cta', page: 'landing' }); openWaitlist('founding') }}
+                <motion.button onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Founding Discount', section: 'final-cta', page: 'landing' }); openWaitlist('founding') }}
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: T.text, color: T.bg, fontSize: 16, fontWeight: 800, padding: '16px 40px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.3px' }}
-                >
+                  style={{ ...S.inlineBtn, gap: 10, background: T.text, color: T.bg, fontSize: 16, fontWeight: 800, padding: '16px 40px', borderRadius: 100, letterSpacing: '-0.3px' }}>
                   Claim Founding Discount <ArrowRight size={18} />
                 </motion.button>
               </Magnetic>
               <Magnetic>
-                <motion.button
-                  onClick={() => { track({ event: 'walkthrough_clicked', cta_label: 'Book a Walkthrough', section: 'final-cta', page: 'landing' }); openWaitlist('walkthrough') }}
+                <motion.button onClick={() => { track({ event: 'walkthrough_clicked', cta_label: 'Book a Walkthrough', section: 'final-cta', page: 'landing' }); openWaitlist('walkthrough') }}
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'transparent', color: T.text2, fontSize: 15, fontWeight: 700, padding: '16px 32px', borderRadius: 100, border: `1px solid ${T.border}`, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px' }}
-                >
+                  style={{ ...S.inlineBtn, gap: 10, background: 'transparent', color: T.text2, fontSize: 15, fontWeight: 700, padding: '16px 32px', borderRadius: 100, border: `1px solid ${T.border}`, letterSpacing: '-0.2px' }}>
                   Book a Walkthrough
                 </motion.button>
               </Magnetic>
@@ -1022,17 +794,12 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── FOOTER ───────────────────────────────────────────────── */}
       <footer style={{ padding: '64px 32px', background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <div className="r-grid-footer" style={{ marginBottom: 64 }}>
             <div>
-              <div style={{ marginBottom: 16 }}>
-                <Logo size={24} />
-              </div>
-              <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.85, maxWidth: 220, margin: '0 0 20px' }}>
-                EU AI Act documentation and evidence pack software for SMEs.
-              </p>
+              <div style={{ marginBottom: 16 }}><Logo size={24} /></div>
+              <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.85, maxWidth: 220, margin: '0 0 20px' }}>EU AI Act documentation and evidence pack software for SMEs.</p>
               <div style={{ display: 'flex', gap: 8 }}>
                 {['EU AI Act', 'GDPR Safe', 'Guidance Only'].map((b) => (
                   <span key={b} style={{ fontSize: 10, fontWeight: 700, color: T.text3, border: `1px solid ${T.border}`, padding: '3px 10px', borderRadius: 100, letterSpacing: '0.3px' }}>{b}</span>
@@ -1040,28 +807,14 @@ export default function LandingPage() {
               </div>
             </div>
             {[
-              {
-                title: 'Product',
-                links: [
-                  { label: 'Features', href: '#features' },
-                  { label: 'Pricing', href: '#pricing' },
-                  { label: 'How It Works', href: '#how-it-works' },
-                ],
-              },
-              {
-                title: 'Contact',
-                links: [
-                  { label: 'hello@irvo.co.uk', href: 'mailto:hello@irvo.co.uk' },
-                ],
-              },
+              { title: 'Product', links: [{ label: 'Features', href: '#features' }, { label: 'Pricing', href: '#pricing' }, { label: 'How It Works', href: '#how-it-works' }] },
+              { title: 'Contact', links: [{ label: 'hello@irvo.co.uk', href: 'mailto:hello@irvo.co.uk' }] },
             ].map(({ title, links }) => (
               <div key={title}>
                 <h4 style={{ color: T.text3, fontWeight: 700, fontSize: 10, marginBottom: 20, letterSpacing: '0.8px', textTransform: 'uppercase' }}>{title}</h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {links.map(({ label, href }) => (
-                    <li key={label}>
-                      <motion.a href={href} whileHover={{ color: T.text }} style={{ color: T.text2, textDecoration: 'none', fontSize: 13, display: 'inline-block', transition: 'color 0.15s' }}>{label}</motion.a>
-                    </li>
+                    <li key={label}><motion.a href={href} whileHover={{ color: T.text }} style={{ color: T.text2, textDecoration: 'none', fontSize: 13, display: 'inline-block', transition: 'color 0.15s' }}>{label}</motion.a></li>
                   ))}
                 </ul>
               </div>
@@ -1074,7 +827,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* ── Waitlist modal ────────────────────────────────────────── */}
       <AnimatePresence>
         {waitlistModal && <WaitlistModal variant={waitlistModal} onClose={() => setWaitlistModal(null)} />}
       </AnimatePresence>
