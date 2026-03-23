@@ -548,27 +548,42 @@ export default function LandingPage() {
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid ${T.border}`, borderRadius: 100, padding: '5px 14px', marginBottom: 40, fontSize: 11, color: T.text2, letterSpacing: '0.4px' }}
           >
             <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity }} style={{ width: 5, height: 5, borderRadius: '50%', background: T.red }} />
-            EU AI Act high-risk obligations: August 2, 2026
+            <MonthsLeft /> left · EU AI Act enforcement begins August 2, 2026
           </motion.div>
 
           <h1 style={{ fontSize: 'clamp(40px, 8vw, 96px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-3px', margin: '0 0 32px', maxWidth: 860 }}>
-            You have <MonthsLeft /> to prove{' '}
-            <CycleWord />
+            Your AI is running.
             <br />
-            <span style={{ color: T.text2 }}>are compliant.</span>
+            <span style={{ color: T.text2 }}>Your documentation isn&apos;t.</span>
           </h1>
 
-          <p style={{ fontSize: 18, color: T.text2, lineHeight: 1.8, maxWidth: 480, margin: '0 auto 48px' }}>
-            Turn each AI or automation workflow into a regulator-ready evidence pack in 20 minutes, not 40+ hours with spreadsheets or consultants.
+          <p style={{ fontSize: 18, color: T.text2, lineHeight: 1.8, maxWidth: 520, margin: '0 auto 40px' }}>
+            The EU AI Act requires structured evidence for every high-risk workflow. Consultants charge €20,000+ to get you there. We do it in 20 minutes per system.
           </p>
+
+          {/* Stat strip */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderRadius: 8, marginBottom: 48, overflow: 'hidden' }}
+          >
+            {[
+              { value: '€35M', label: 'maximum fine' },
+              { value: '50h+', label: 'manual docs per system' },
+              { value: '20min', label: 'with AIED' },
+            ].map(({ value, label }, i) => (
+              <div key={label} style={{ padding: '14px 28px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 900, color: i === 2 ? T.accent : T.text, letterSpacing: '-0.5px', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: 10, color: T.text3, marginTop: 4, letterSpacing: '0.3px', textTransform: 'uppercase', fontWeight: 600 }}>{label}</div>
+              </div>
+            ))}
+          </motion.div>
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Magnetic>
               <button
-                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'hero', page: 'landing' }); openWaitlist('waitlist') }}
+                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Document Your First System', section: 'hero', page: 'landing' }); openWaitlist('waitlist') }}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.text, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '-0.2px' }}
               >
-                Get Early Access <ArrowRight size={16} />
+                Document Your First System <ArrowRight size={16} />
               </button>
             </Magnetic>
             <Magnetic>
@@ -583,7 +598,7 @@ export default function LandingPage() {
           </div>
 
           <p style={{ fontSize: 12, color: T.text3, margin: '24px 0 0', letterSpacing: '0.2px' }}>
-            Built for EU/UK SMEs facing the August 2, 2026 deadline.
+            No credit card required · EU &amp; UK coverage · First system free
           </p>
         </motion.div>
 
