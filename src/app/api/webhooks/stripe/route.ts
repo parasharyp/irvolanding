@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
 
           // Send email to client (CC to user who ordered it)
           if (client?.email) {
-            await resend.emails.send({
+            await resend!.emails.send({
               from: `${org?.name ?? 'Irvo'} <noreply@${process.env.RESEND_DOMAIN ?? 'irvo.co.uk'}>`,
               to: client.email,
               cc: session.metadata.user_email ? [session.metadata.user_email] : [],
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         await admin.storage.from('evidence-packs').upload(fileName, pdfBuffer, { contentType: 'application/pdf', upsert: true })
 
         const total = principal + interest.interest_amount + interest.compensation_fee
-        await resend.emails.send({
+        await resend!.emails.send({
           from: `Irvo <noreply@${process.env.RESEND_DOMAIN ?? 'irvo.co.uk'}>`,
           to: m.client_email,
           cc: [m.creditor_email],
@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
         await admin.storage.from('evidence-packs').upload(fileName, pdfBuffer, { contentType: 'application/pdf', upsert: true })
 
         const total = principal + interest.interest_amount + interest.compensation_fee
-        await resend.emails.send({
+        await resend!.emails.send({
           from: `Irvo <noreply@${process.env.RESEND_DOMAIN ?? 'irvo.co.uk'}>`,
           to: m.creditor_email,
           subject: `Your CCJ Preparation Pack — Invoice ${m.invoice_number}`,
