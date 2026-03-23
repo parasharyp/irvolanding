@@ -132,7 +132,7 @@ const STATS = [
   { to: 35, prefix: '€', suffix: 'M', label: 'maximum fine for non-compliance' },
   { to: 50, prefix: '€', suffix: 'k', label: 'avg. consultant cost per system' },
   { to: 50, prefix: '', suffix: 'h+', label: 'manual documentation per system' },
-  { to: 20, prefix: '', suffix: 'min', label: 'to document a workflow with AIED' },
+  { to: 20, prefix: '', suffix: 'min', label: 'to document a workflow with Irvo' },
 ]
 
 const STEPS = [
@@ -306,7 +306,7 @@ function Logo({ size = 28 }: { size?: number }) {
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.38), userSelect: 'none' }}>
       <div style={{ width: 2, height: Math.round(size * 0.78), background: T.accent, flexShrink: 0 }} />
       <span style={{ fontSize: size, fontWeight: 900, letterSpacing: '2px', color: T.text, fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif', lineHeight: 1, whiteSpace: 'nowrap' }}>
-        AIED
+        IRVO
       </span>
     </div>
   )
@@ -382,8 +382,8 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
             {[
               { label: 'Manual documentation hours', value: hasResult ? `${manualHours}h` : '—', note: `${systemsNum} system${systemsNum !== 1 ? 's' : ''} × 50 hrs`, dim: true },
               { label: 'Consultant cost estimate', value: hasResult ? fmtEur(consultantCost) : '—', note: `€${rateNum}/hr × 50 hrs each`, dim: false },
-              { label: 'Documentation time with AIED', value: hasResult ? `${aiedMinutes} min` : '—', note: '~20 min per system', dim: false },
-              { label: 'Potential savings', value: hasResult ? fmtEur(savings) : '—', note: 'vs AIED Starter plan', dim: false, highlight: true },
+              { label: 'Documentation time with Irvo', value: hasResult ? `${aiedMinutes} min` : '—', note: '~20 min per system', dim: false },
+              { label: 'Potential savings', value: hasResult ? fmtEur(savings) : '—', note: 'vs Irvo Starter plan', dim: false, highlight: true },
             ].map((col, i) => (
               <motion.div
                 key={col.label}
@@ -409,7 +409,7 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
           <div style={{ padding: '24px 36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <p style={{ fontSize: 13, color: T.text2, margin: 0, maxWidth: 520, lineHeight: 1.7 }}>
               {hasResult
-                ? `Manual documentation at €${rateNum}/hr costs ${fmtEur(consultantCost)}. AIED Starter is €149/mo. Documentation pays for itself in week one.`
+                ? `Manual documentation at €${rateNum}/hr costs ${fmtEur(consultantCost)}. Irvo Starter is €149/mo. Documentation pays for itself in week one.`
                 : 'Enter your AI system count and internal hourly rate to see your documentation burden.'}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -568,7 +568,7 @@ export default function LandingPage() {
             {[
               { value: '€35M', label: 'maximum fine' },
               { value: '50h+', label: 'manual docs per system' },
-              { value: '20min', label: 'with AIED' },
+              { value: '20min', label: 'with Irvo' },
             ].map(({ value, label }, i) => (
               <div key={label} style={{ padding: '14px 28px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center' }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: i === 2 ? T.accent : T.text, letterSpacing: '-0.5px', lineHeight: 1 }}>{value}</div>
