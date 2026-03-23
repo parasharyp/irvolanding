@@ -108,7 +108,7 @@ export interface DashboardMetrics {
   avg_days_late: number
 }
 
-// ─── AIED types ───────────────────────────────────────────────────────────────
+// ─── AI Systems types ───────────────────────────────────────────────────────
 
 export type RiskLevel = 'unacceptable' | 'high' | 'limited' | 'minimal' | 'unknown'
 
