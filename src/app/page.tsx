@@ -143,9 +143,9 @@ const STEPS = [
 ]
 
 const TESTIMONIALS = [
-  { name: 'Sophie M.', role: 'Legal Counsel, Amsterdam', text: 'We have been building spreadsheets for two years and still cannot give our board a clear picture of which systems are in scope. That is exactly the problem this solves.', stars: 5 },
-  { name: 'Daniel F.', role: 'Head of Compliance, Dublin', text: 'Documenting 12 AI systems before August 2026 manually would take months. Any tool that compresses that into hours is immediately worth evaluating.', stars: 5 },
-  { name: 'Elena V.', role: 'Operations Director, Berlin', text: 'Every consultant we spoke to quoted a minimum of €20,000 just for a scoping exercise. We needed something we could start ourselves.', stars: 5 },
+  { name: 'Sophie M.', role: 'Legal Counsel, Amsterdam', text: 'We have been building spreadsheets for two years and still cannot give our board a clear picture of which systems are in scope. That is exactly the problem this solves.' },
+  { name: 'Daniel F.', role: 'Head of Compliance, Dublin', text: 'Documenting 12 AI systems before August 2026 manually would take months. Any tool that compresses that into hours is immediately worth evaluating.' },
+  { name: 'Elena V.', role: 'Operations Director, Berlin', text: 'Every consultant we spoke to quoted a minimum of €20,000 just for a scoping exercise. We needed something we could start ourselves.' },
 ]
 
 interface PricingPlan {
@@ -640,7 +640,7 @@ export default function LandingPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ marginBottom: 80 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Features</p>
             <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, maxWidth: 560, lineHeight: 1.1 }}>
-              A structured evidence system for AI workflows.
+              Everything you need to produce regulator-ready evidence. Nothing you don&apos;t.
             </h2>
           </motion.div>
 
@@ -765,9 +765,10 @@ export default function LandingPage() {
       {/* ── TESTIMONIALS ─────────────────────────────────────────── */}
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 64 }}>
-            What compliance teams told us
-          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 64 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 10px' }}>Customer discovery</p>
+            <p style={{ fontSize: 13, color: T.text3, margin: 0 }}>Quotes from compliance and legal professionals we spoke to while building this.</p>
+          </motion.div>
           <div className="r-grid-3" style={{ gap: 0, borderTop: `1px solid ${T.border}`, borderLeft: `1px solid ${T.border}` }}>
             {TESTIMONIALS.map((t, i) => (
               <motion.div
@@ -776,11 +777,7 @@ export default function LandingPage() {
                 whileHover={{ background: 'rgba(255,255,255,0.02)' }}
                 style={{ padding: '40px 36px', borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, transition: 'background 0.2s' }}
               >
-                <div style={{ display: 'flex', gap: 2, marginBottom: 20 }}>
-                  {[...Array(t.stars)].map((_, s) => (
-                    <svg key={s} width="12" height="12" viewBox="0 0 12 12" fill={T.accent}><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9.2,11 6,9.2 2.8,11 3.5,7.5 1,5 4.5,4.5" /></svg>
-                  ))}
-                </div>
+                <div style={{ width: 24, height: 2, background: T.accent, marginBottom: 24 }} />
                 <p style={{ fontSize: 15, color: T.text, lineHeight: 1.8, margin: '0 0 28px', fontStyle: 'italic' }}>&ldquo;{t.text}&rdquo;</p>
                 <div>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: T.text }}>{t.name}</p>
@@ -1052,17 +1049,8 @@ export default function LandingPage() {
                 ],
               },
               {
-                title: 'Legal',
+                title: 'Contact',
                 links: [
-                  { label: 'Privacy Policy', href: '#' },
-                  { label: 'Terms of Service', href: '#' },
-                  { label: 'Guidance Disclaimer', href: '#' },
-                ],
-              },
-              {
-                title: 'Company',
-                links: [
-                  { label: 'About', href: '#' },
                   { label: 'hello@irvo.co.uk', href: 'mailto:hello@irvo.co.uk' },
                 ],
               },
