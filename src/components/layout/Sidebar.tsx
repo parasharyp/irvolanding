@@ -2,21 +2,23 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Shield, Settings, LogOut, X } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Settings, LogOut, X, Shield } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { OrgPlan } from '@/types'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/invoices', label: 'Invoices', icon: FileText },
+  { href: '/clients', label: 'Clients', icon: Users },
   { href: '/systems', label: 'AI Systems', icon: Shield },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 const PLAN_LABEL: Record<OrgPlan, string> = {
   starter: 'Starter',
-  studio: 'Growth',
-  firm: 'Plus',
+  studio: 'Studio',
+  firm: 'Firm',
 }
 
 interface SidebarProps {
@@ -83,7 +85,6 @@ export default function Sidebar({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
-          {/* Logomark */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, userSelect: 'none', marginBottom: 6 }}>
             <div style={{ width: 2, height: 20, background: '#00e5bf', flexShrink: 0 }} />
             <span style={{
@@ -95,11 +96,11 @@ export default function Sidebar({
               lineHeight: 1,
               whiteSpace: 'nowrap',
             }}>
-              AIED
+              IRVO
             </span>
           </div>
         </motion.div>
-        <p style={{ margin: '2px 0 0', fontSize: 9, color: '#2e2e2e', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase' }}>Evidence Desk</p>
+        <p style={{ margin: '2px 0 0', fontSize: 9, color: '#2e2e2e', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase' }}>Recovery Platform</p>
       </div>
 
       {/* Org + plan */}
@@ -186,7 +187,7 @@ export default function Sidebar({
             transition={{ duration: 2.2, repeat: Infinity }}
             style={{ width: 5, height: 5, borderRadius: '50%', background: '#00e5bf' }}
           />
-          <span style={{ fontSize: 10, color: '#2e2e2e', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Compliance active</span>
+          <span style={{ fontSize: 10, color: '#2e2e2e', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Systems online</span>
         </div>
       </div>
 

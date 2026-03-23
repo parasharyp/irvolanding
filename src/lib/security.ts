@@ -1,14 +1,18 @@
 /**
  * Security utilities — used by the proxy and API routes.
  * All detection is done server-side; nothing here is sent to the browser.
+ *
+ * NOTE: This file must remain Edge Runtime compatible.
+ * Do NOT import Node.js built-ins (crypto, fs, path, etc.).
+ * Use the Web Crypto API globals instead — available in both Edge and Node runtimes.
  */
-import crypto from 'crypto'
 
 // ─── Request ID ──────────────────────────────────────────────────────────────
 
-/** Generates a cryptographically random 16-byte hex request ID for tracing. */
+/** Generates a cryptographically random request ID for tracing. */
 export function generateRequestId(): string {
-  return crypto.randomBytes(16).toString('hex')
+  // crypto.randomUUID() is a Web Crypto API global — works in Edge Runtime and Node.js.
+  return crypto.randomUUID().replace(/-/g, '')
 }
 
 // ─── IP extraction ───────────────────────────────────────────────────────────

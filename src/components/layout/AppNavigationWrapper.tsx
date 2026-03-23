@@ -50,7 +50,7 @@ export default function AppNavigationWrapper({
         >
           <Menu size={20} />
         </button>
-        {/* AIED logo */}
+        {/* IRVO logo */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 2, height: 18, background: '#00e5bf' }} />
           <span
@@ -63,7 +63,7 @@ export default function AppNavigationWrapper({
               lineHeight: 1,
             }}
           >
-            AIED
+            IRVO
           </span>
         </div>
         <div style={{ width: 36 }} />
