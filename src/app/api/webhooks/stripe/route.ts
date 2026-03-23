@@ -8,7 +8,7 @@ import { generateCcjPack } from '@/lib/ccj-pack'
 import { isWebhookAlreadyProcessed } from '@/lib/ratelimit'
 import { Invoice } from '@/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
 
