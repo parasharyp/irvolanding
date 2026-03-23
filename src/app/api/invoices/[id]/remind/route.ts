@@ -8,7 +8,7 @@ import { determineReminderStage, DEFAULT_TEMPLATES, renderTemplate } from '@/lib
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Invoice } from '@/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -110,6 +110,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const htmlBody = `<pre style="font-family:sans-serif;white-space:pre-wrap">${escapeHtml(bodyText)}</pre>`
 
   // Send email
+// Send email
+if (!resend) return NextResponse.json({ error: 'Email service not configured' }, { status: 503 })
   const { error: emailError } = await resend.emails.send({
     from: `Irvo <noreply@${process.env.RESEND_DOMAIN ?? 'irvo.co.uk'}>`,
     to: invoice.client.email,
