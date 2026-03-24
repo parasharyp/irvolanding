@@ -129,101 +129,29 @@ function Divider() {
   return <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent)' }} />
 }
 
-// 3D interactive hero background — perspective grid + parallax orbs
+// Minimal ambient backdrop — the spotlight lives on top of this
 function HeroBg() {
-  const gridRef  = useRef<HTMLDivElement>(null)
-  const orb1Ref  = useRef<HTMLDivElement>(null)
-  const orb2Ref  = useRef<HTMLDivElement>(null)
-  const orb3Ref  = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    let raf = 0
-    const handle = (e: MouseEvent) => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        const cx = window.innerWidth  / 2
-        const cy = window.innerHeight / 2
-        const nx = (e.clientX - cx) / cx   // –1 → 1 horizontal
-        const ny = (e.clientY - cy) / cy   // –1 → 1 vertical
-
-        if (gridRef.current)
-          gridRef.current.style.transform =
-            `perspective(900px) rotateX(${58 + ny * 8}deg) rotateY(${nx * -6}deg)`
-
-        if (orb1Ref.current)
-          orb1Ref.current.style.transform = `translate(${nx * 36}px, ${ny * 24}px)`
-        if (orb2Ref.current)
-          orb2Ref.current.style.transform = `translate(${nx * -22}px, ${ny * -16}px)`
-        if (orb3Ref.current)
-          orb3Ref.current.style.transform = `translate(${nx * 16}px, ${ny * -10}px)`
-      })
-    }
-    window.addEventListener('mousemove', handle, { passive: true })
-    return () => { window.removeEventListener('mousemove', handle); cancelAnimationFrame(raf) }
-  }, [])
-
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-
-      {/* Top teal beam */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 1000px 520px at 50% -40px, rgba(0,229,191,0.22) 0%, rgba(0,229,191,0.05) 55%, transparent 72%)',
-      }} />
-
-      {/* 3D perspective grid floor */}
-      <div style={{
-        position: 'absolute', bottom: '-8%', left: '-35%', right: '-35%', top: '32%',
-        overflow: 'hidden',
-      }}>
-        <div
-          ref={gridRef}
-          style={{
-            width: '100%', height: '140%',
-            backgroundImage: `
-              linear-gradient(rgba(0,229,191,0.11) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0,229,191,0.11) 1px, transparent 1px)
-            `,
-            backgroundSize: '72px 72px',
-            transform: 'perspective(900px) rotateX(58deg)',
-            transformOrigin: '50% 0%',
-            transition: 'transform 0.09s cubic-bezier(0.16,1,0.3,1)',
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 18%, black 45%, black 70%, transparent 100%)',
-            maskImage:        'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 18%, black 45%, black 70%, transparent 100%)',
-          }}
-        />
-      </div>
-
-      {/* Parallax depth orbs — different speeds = visual depth */}
-      <div ref={orb1Ref} style={{
-        position: 'absolute', top: '5%', left: '2%',
-        width: 540, height: 540, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(0,229,191,0.14) 0%, transparent 68%)',
-        filter: 'blur(64px)', willChange: 'transform',
-      }} />
-      <div ref={orb2Ref} style={{
-        position: 'absolute', top: '10%', right: '-4%',
-        width: 460, height: 460, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(71,201,229,0.10) 0%, transparent 68%)',
-        filter: 'blur(72px)', willChange: 'transform',
-      }} />
-      <div ref={orb3Ref} style={{
-        position: 'absolute', bottom: '18%', left: '38%',
-        width: 340, height: 340, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 68%)',
-        filter: 'blur(56px)', willChange: 'transform',
-      }} />
-
-      {/* Film grain — subtle depth */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.022 }}>
+      {/* Breathing top beam — brand signature light source */}
+      <motion.div
+        animate={{ opacity: [0.82, 1, 0.82], scale: [1, 1.04, 1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 72% 44% at 50% -4%, rgba(0,229,191,0.20) 0%, rgba(0,229,191,0.04) 55%, transparent 70%)',
+          transformOrigin: '50% 0%',
+        }}
+      />
+      {/* Film grain — gives the darkness texture */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.024 }}>
         <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
         <rect width="100%" height="100%" filter="url(#n)"/>
       </svg>
-
-      {/* Vignette — frames the content */}
+      {/* Deep vignette — edges fall to black, focuses attention */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 110% 90% at 50% 50%, transparent 28%, rgba(2,2,3,0.88) 100%)',
+        background: 'radial-gradient(ellipse 100% 80% at 50% 50%, transparent 20%, rgba(2,2,3,0.94) 100%)',
       }} />
     </div>
   )
@@ -232,14 +160,6 @@ function HeroBg() {
 function FinalCtaBg() {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Dot grid — same brand signature as hero */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)',
-        backgroundSize: '38px 38px',
-        WebkitMaskImage: 'radial-gradient(ellipse 85% 75% at 50% 50%, black 10%, transparent 75%)',
-        maskImage: 'radial-gradient(ellipse 85% 75% at 50% 50%, black 10%, transparent 75%)',
-      }} />
       {/* Upward stage light — cinematic, not ambient */}
       <motion.div
         animate={{ opacity: [0.8, 1, 0.8] }}
@@ -520,23 +440,57 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
 }
 
 // ─── Visual effects ───────────────────────────────────────────────────────────
-// Cursor-following spotlight — rAF-based, zero re-renders
+// Spring-physics spotlight — 3 layers at different masses create trailing depth
 function CursorSpotlight() {
-  const ref = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const midRef   = useRef<HTMLDivElement>(null)
+  const outerRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     let raf = 0
-    const handle = (e: MouseEvent) => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        if (ref.current)
-          ref.current.style.background =
-            `radial-gradient(680px circle at ${e.clientX}px ${e.clientY}px, rgba(0,229,191,0.055) 0%, transparent 60%)`
-      })
+    // Cursor target
+    let tx = window.innerWidth / 2, ty = window.innerHeight * 0.44
+    // Mid layer — moderate mass
+    let mx = tx, my = ty, mvx = 0, mvy = 0
+    // Outer layer — heavy mass, drifts behind
+    let ox = tx, oy = ty, ovx = 0, ovy = 0
+
+    const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+
+      mvx = mvx * 0.76 + (tx - mx) * 0.11
+      mvy = mvy * 0.76 + (ty - my) * 0.11
+      mx += mvx; my += mvy
+
+      ovx = ovx * 0.84 + (tx - ox) * 0.052
+      ovy = ovy * 0.84 + (ty - oy) * 0.052
+      ox += ovx; oy += ovy
+
+      if (innerRef.current)
+        innerRef.current.style.background =
+          `radial-gradient(160px circle at ${tx}px ${ty}px, rgba(0,229,191,0.28) 0%, rgba(0,229,191,0.08) 55%, transparent 100%)`
+      if (midRef.current)
+        midRef.current.style.background =
+          `radial-gradient(520px circle at ${mx}px ${my}px, rgba(0,229,191,0.10) 0%, rgba(71,201,229,0.03) 60%, transparent 100%)`
+      if (outerRef.current)
+        outerRef.current.style.background =
+          `radial-gradient(960px circle at ${ox}px ${oy}px, rgba(0,229,191,0.048) 0%, transparent 62%)`
     }
-    window.addEventListener('mousemove', handle, { passive: true })
-    return () => { window.removeEventListener('mousemove', handle); cancelAnimationFrame(raf) }
+
+    raf = requestAnimationFrame(tick)
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove) }
   }, [])
-  return <div ref={ref} style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
+
+  return (
+    <>
+      <div ref={outerRef} style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
+      <div ref={midRef}   style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
+      <div ref={innerRef} style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
+    </>
+  )
 }
 
 // Card glow — call onMouseMove / onMouseLeave on the card element
