@@ -325,26 +325,45 @@ function FinalCtaBg() {
 }
 
 function Cursor() {
-  const x = useMotionValue(-40); const y = useMotionValue(-40)
-  const rx = useSpring(x, { stiffness: 600, damping: 35 })
-  const ry = useSpring(y, { stiffness: 600, damping: 35 })
+  const posRef  = useRef<HTMLDivElement>(null)
   const [hovered, setHovered] = useState(false)
+
   useEffect(() => {
-    const m = (e: MouseEvent) => { x.set(e.clientX); y.set(e.clientY) }
-    const on = () => setHovered(true); const off = () => setHovered(false)
-    window.addEventListener('mousemove', m)
-    document.querySelectorAll('a,button,[data-hover]').forEach((el) => {
-      el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off)
+    let raf = 0
+    let tx = -120, ty = -120
+    const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
+    const on  = () => setHovered(true)
+    const off = () => setHovered(false)
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+      if (posRef.current)
+        posRef.current.style.transform = `translate(${tx}px, ${ty}px)`
+    }
+    raf = requestAnimationFrame(tick)
+
+    window.addEventListener('mousemove', onMove, { passive: true })
+    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
+      el.addEventListener('mouseenter', on)
+      el.addEventListener('mouseleave', off)
     })
-    return () => { window.removeEventListener('mousemove', m) }
-  }, [x, y])
-  const base = { position: 'fixed' as const, borderRadius: '50%', pointerEvents: 'none' as const, translateX: '-50%', translateY: '-50%' }
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove) }
+  }, [])
+
   return (
-    <>
-      <motion.div style={{ ...base, x: rx, y: ry, top: -4, left: -4, width: 8, height: 8, background: T.accent, zIndex: 9999 }} />
-      <motion.div animate={{ width: hovered ? 40 : 28, height: hovered ? 40 : 28, opacity: hovered ? 0.6 : 0.3 }} transition={{ duration: 0.2 }}
-        style={{ ...base, x: rx, y: ry, top: -14, left: -14, border: `1px solid ${T.accent}`, zIndex: 9998 }} />
-    </>
+    <div ref={posRef} style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999, pointerEvents: 'none' }}>
+      <motion.div
+        animate={{ width: hovered ? 48 : 18, height: hovered ? 48 : 18 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          borderRadius: '50%',
+          background: '#ffffff',
+          mixBlendMode: 'difference' as const,
+          transform: 'translate(-50%, -50%)',
+          willChange: 'width, height',
+        }}
+      />
+    </div>
   )
 }
 
@@ -662,7 +681,7 @@ export default function LandingPage() {
   const NAV = ['Features', 'How It Works', 'Pricing']
 
   return (
-    <div style={{ background: T.bg, color: T.text, fontFamily: FF, minHeight: '100vh' }}>
+    <div style={{ background: T.bg, color: T.text, fontFamily: FF, minHeight: '100vh', cursor: 'none' }}>
       <HeroCanvas />
       <CursorSpotlight />
       <Cursor />
