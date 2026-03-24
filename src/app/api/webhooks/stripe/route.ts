@@ -30,14 +30,15 @@ const PLAN_MAP: Record<string, string> = {
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')
-  if (!sig) return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
+  // Return identical response for all verification failures (C4: no oracle)
+  if (!sig) return NextResponse.json({ error: 'Webhook verification failed' }, { status: 400 })
 
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
-  } catch (err) {
-    // invalid signature
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  } catch {
+    // Return identical response for all verification failures (C4: no oracle)
+    return NextResponse.json({ error: 'Webhook verification failed' }, { status: 400 })
   }
 
   // Idempotency guard — Stripe may retry webhooks; skip if already processed

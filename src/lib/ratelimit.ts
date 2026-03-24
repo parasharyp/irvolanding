@@ -83,3 +83,19 @@ export async function isWebhookAlreadyProcessed(eventId: string): Promise<boolea
   const result = await redis.set(key, '1', { nx: true, ex: 86400 })
   return result === null
 }
+
+// 1 request per 24h per IP for document-generation public endpoints (legal demand / CCJ)
+// Stricter than checkPublicRateLimit to deter harassment/fraud use
+export async function checkPublicLegalLimit(ip: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const key = `public_legal:${ip}`
+  const result = await slidingWindow(key, 1, 86400)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+// Per-IP rate limit for cron attempts — 5 per hour
+// Secondary defence: slows brute force if CRON_SECRET leaks
+export async function checkCronAttemptLimit(ip: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const key = `cron_attempt:${ip}`
+  const result = await slidingWindow(key, 5, 3600)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}

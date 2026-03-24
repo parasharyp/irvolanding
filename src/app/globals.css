@@ -26,6 +26,18 @@ body {
 /* Remove tap delay on iOS */
 button, a { touch-action: manipulation; }
 
+/* Keyboard focus ring — invisible to mouse users, visible to keyboard users (A7) */
+:focus-visible {
+  outline: 2px solid #00e5bf;
+  outline-offset: 2px;
+}
+/* Remove outline from elements that manage their own focus styling */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 /* Prevent iOS from adding styling to inputs */
 input, textarea, select {
   -webkit-appearance: none;

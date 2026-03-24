@@ -421,14 +421,15 @@ const WL_CONFIG = {
   walkthrough: { overline: 'Book a Walkthrough', headline: 'See the product in 30 minutes', sub: 'Leave your details and we will reach out within one business day to schedule a walkthrough.',                                                        cta: 'Request Walkthrough',     source: 'landing-walkthrough' },
 }
 
-function Field({ label, value, onChange, type = 'text', placeholder, required }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; required?: boolean }) {
+function Field({ label, id, name, value, onChange, type = 'text', placeholder, required }: { label: string; id: string; name: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; required?: boolean }) {
   const [focused, setFocused] = useState(false)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.7px' }}>
+      <label htmlFor={id} style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.7px' }}>
         {label}{required && <span style={{ color: T.red }}> *</span>}
       </label>
       <input
+        id={id} name={name}
         type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={{ background: T.surface, border: `1px solid ${focused ? T.borderMid : T.border}`, padding: '10px 12px', fontSize: 13, color: T.text, outline: 'none', fontFamily: FF, width: '100%', boxSizing: 'border-box', transition: 'border-color 0.15s', caretColor: T.accent, borderRadius: 0 }}
@@ -444,8 +445,43 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
   const [success, setSuccess] = useState<string | null>(null)
   const set = (k: keyof WaitlistForm) => (v: string) => setForm((f) => ({ ...f, [k]: v }))
   const cfg = WL_CONFIG[variant]
+  const dialogRef = useRef<HTMLDivElement>(null)
 
-  const submit = async () => {
+  // A1: Focus trap — keep Tab/Shift-Tab within the modal
+  useEffect(() => {
+    const el = dialogRef.current
+    if (!el) return
+    const focusable = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      const nodes = Array.from(el.querySelectorAll<HTMLElement>(focusable)).filter((n) => !(n as HTMLButtonElement).disabled)
+      if (nodes.length === 0) return
+      const first = nodes[0], last = nodes[nodes.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
+    }
+    el.addEventListener('keydown', handleKeyDown)
+    return () => el.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // A5: Auto-focus email input when modal opens
+  useEffect(() => {
+    const t = setTimeout(() => (document.getElementById('wl-email') as HTMLInputElement | null)?.focus(), 60)
+    return () => clearTimeout(t)
+  }, [])
+
+  // Close on Escape key
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [onClose])
+
+  const submit = async (e?: React.FormEvent) => {
+    e?.preventDefault()
     setError(null)
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('Please enter a valid email address.'); return }
     setLoading(true)
@@ -464,18 +500,19 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+      role="dialog" aria-modal="true" aria-labelledby="wl-modal-title"
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <motion.div initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      <motion.div ref={dialogRef} initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
         style={{ background: T.surface, border: `1px solid ${T.borderMid}`, padding: 36, maxWidth: 480, width: '100%', fontFamily: FF, position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${T.accent}, transparent)` }} />
-        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 6 }}>
+        <button onClick={onClose} aria-label="Close" style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 6 }}>
           <X size={15} />
         </button>
         {success ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle size={40} color={T.green} style={{ margin: '0 auto 16px', display: 'block' }} />
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: T.text, margin: '0 0 8px', letterSpacing: '-0.3px' }}>You&apos;re on the list</h2>
+            <h2 id="wl-modal-title" style={{ fontSize: 20, fontWeight: 800, color: T.text, margin: '0 0 8px', letterSpacing: '-0.3px' }}>You&apos;re on the list</h2>
             <p style={{ fontSize: 14, color: T.text2, margin: '0 0 24px', lineHeight: 1.7 }}>{success}</p>
             <button onClick={onClose} style={{ background: T.surface2, border: `1px solid ${T.border}`, padding: '10px 24px', fontSize: 13, fontWeight: 600, color: T.text, cursor: 'pointer', fontFamily: FF }}>Close</button>
           </div>
@@ -483,23 +520,25 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
           <>
             <div style={{ marginBottom: 28 }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 6px' }}>{cfg.overline}</p>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, margin: '0 0 4px', letterSpacing: '-0.4px' }}>{cfg.headline}</h2>
+              <h2 id="wl-modal-title" style={{ fontSize: 22, fontWeight: 800, color: T.text, margin: '0 0 4px', letterSpacing: '-0.4px' }}>{cfg.headline}</h2>
               <p style={{ fontSize: 13, color: T.text2, margin: 0, lineHeight: 1.7 }}>{cfg.sub}</p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <Field label="Email address" value={form.email} onChange={set('email')} type="email" placeholder="you@company.com" required />
-              <Field label="Full name (optional)" value={form.full_name} onChange={set('full_name')} placeholder="Jane Smith" />
-              <Field label="Company (optional)" value={form.company_name} onChange={set('company_name')} placeholder="Acme GmbH" />
-              {error && <p style={{ fontSize: 12, color: T.red, background: 'rgba(229,71,71,0.06)', border: '1px solid rgba(229,71,71,0.15)', padding: '10px 14px', margin: 0 }}>{error}</p>}
+            <form onSubmit={submit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <Field label="Email address" id="wl-email" name="email" value={form.email} onChange={set('email')} type="email" placeholder="you@company.com" required />
+              <Field label="Full name (optional)" id="wl-full-name" name="full_name" value={form.full_name} onChange={set('full_name')} placeholder="Jane Smith" />
+              <Field label="Company (optional)" id="wl-company" name="company_name" value={form.company_name} onChange={set('company_name')} placeholder="Acme GmbH" />
+              {/* Hidden honeypot field — bots fill this; humans never see it */}
+              <input name="website" tabIndex={-1} aria-hidden="true" style={{ display: 'none' }} readOnly value="" />
+              {error && <p role="alert" style={{ fontSize: 12, color: T.red, background: 'rgba(229,71,71,0.06)', border: '1px solid rgba(229,71,71,0.15)', padding: '10px 14px', margin: 0 }}>{error}</p>}
               <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-                <button onClick={onClose} style={{ flex: 1, background: 'transparent', border: `1px solid ${T.border}`, padding: '12px 0', fontSize: 13, fontWeight: 600, color: T.text2, cursor: 'pointer', fontFamily: FF, transition: 'border-color 0.15s', borderRadius: 0 }}>Cancel</button>
-                <motion.button onClick={submit} disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                <button type="button" onClick={onClose} style={{ flex: 1, background: 'transparent', border: `1px solid ${T.border}`, padding: '12px 0', fontSize: 13, fontWeight: 600, color: T.text2, cursor: 'pointer', fontFamily: FF, transition: 'border-color 0.15s', borderRadius: 0 }}>Cancel</button>
+                <motion.button type="submit" disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   style={{ flex: 2, background: T.accent, border: 'none', borderRadius: 100, padding: '12px 0', fontSize: 13, fontWeight: 800, color: T.bg, cursor: loading ? 'default' : 'pointer', fontFamily: FF, opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset' }}>
                   <ArrowRight size={14} />{loading ? 'Submitting…' : cfg.cta}
                 </motion.button>
               </div>
               <p style={{ fontSize: 11, color: T.text3, textAlign: 'center', margin: 0 }}>No spam · Unsubscribe anytime · Guidance only, not legal advice</p>
-            </div>
+            </form>
           </>
         )}
       </motion.div>
@@ -704,7 +743,7 @@ export default function LandingPage() {
       <div className={`mobile-nav-overlay${mobileMenu ? ' open' : ''}`} style={{ background: T.bg }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
           <Logo size={28} />
-          <button onClick={() => setMobileMenu(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 8, touchAction: 'manipulation' }}><X size={22} /></button>
+          <button onClick={() => setMobileMenu(false)} aria-label="Close menu" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, display: 'flex', padding: 8, touchAction: 'manipulation' }}><X size={22} /></button>
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
           {NAV.map((item) => (
@@ -750,7 +789,7 @@ export default function LandingPage() {
               </button>
             </Magnetic>
           </div>
-          <button className="mobile-only" onClick={() => setMobileMenu(true)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, padding: 8, touchAction: 'manipulation' }}>
+          <button className="mobile-only" onClick={() => setMobileMenu(true)} aria-label="Open menu" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.text2, padding: 8, touchAction: 'manipulation' }}>
             <Menu size={22} />
           </button>
         </div>

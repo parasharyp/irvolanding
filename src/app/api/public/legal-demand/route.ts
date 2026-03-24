@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { z } from 'zod'
-import { checkPublicRateLimit } from '@/lib/ratelimit'
+import { checkPublicLegalLimit } from '@/lib/ratelimit'
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -31,16 +31,16 @@ function calcInterest(principal: number, dueDate: string) {
 
 function getClientIp(req: NextRequest): string {
   return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
     req.headers.get('x-real-ip') ??
     'unknown'
   )
 }
 
 export async function POST(req: NextRequest) {
-  // Rate limit: 5 requests/hour per IP
+  // Rate limit: 1 request/day per IP — document generation endpoints are high-abuse risk
   const ip = getClientIp(req)
-  const { allowed, resetAt } = await checkPublicRateLimit(ip)
+  const { allowed, resetAt } = await checkPublicLegalLimit(ip)
   if (!allowed) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   const parsed = Schema.safeParse(raw)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid input', detail: parsed.error.flatten().fieldErrors }, { status: 422 })
+    return NextResponse.json({ error: 'Invalid input' }, { status: 422 })
   }
 
   const { creditorName, creditorEmail, clientName, clientEmail, clientCompany, invoiceNumber, invoiceAmount, invoiceDate, dueDate } = parsed.data

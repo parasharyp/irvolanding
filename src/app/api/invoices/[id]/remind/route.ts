@@ -119,7 +119,10 @@ if (!resend) return NextResponse.json({ error: 'Email service not configured' },
     html: htmlBody,
   })
 
-  if (emailError) return NextResponse.json({ error: 'Failed to send email', details: emailError }, { status: 500 })
+  if (emailError) {
+    console.error('[API error] POST remind — email send failed:', emailError)
+    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+  }
 
   // Log reminder
   await supabase.from('reminder_logs').insert({

@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { checkPublicRateLimit } from '@/lib/ratelimit'
 
 const TOKEN_RE = /^[a-f0-9]{64}$/
 
 // Public — no auth required. Uses admin client to read past RLS.
-export async function GET(_: NextRequest, { params }: { params: Promise<{ token: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
+  // Rate limit: prevent token enumeration / brute-force (B2)
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown'
+  const { allowed } = await checkPublicRateLimit(ip)
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+  }
+
   const { token } = await params
 
   if (!TOKEN_RE.test(token)) {
@@ -13,7 +24,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ token:
 
   const admin = await createAdminClient()
 
-  // Resolve token
+  // Resolve token — return same 404 for not-found and expired (C6: no timing oracle)
   const { data: pt, error: tokenErr } = await admin
     .from('payment_tokens')
     .select('invoice_id, expires_at')
@@ -21,7 +32,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ token:
     .single()
 
   if (tokenErr || !pt) return NextResponse.json({ error: 'Invalid payment link' }, { status: 404 })
-  if (new Date(pt.expires_at) < new Date()) return NextResponse.json({ error: 'Payment link expired' }, { status: 410 })
+  if (new Date(pt.expires_at) < new Date()) return NextResponse.json({ error: 'Invalid payment link' }, { status: 404 })
 
   // Fetch invoice + nested client
   const { data: invoice, error: invErr } = await admin

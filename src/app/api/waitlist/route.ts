@@ -8,10 +8,17 @@ const Schema = z.object({
   full_name: z.string().max(200).optional(),
   company_name: z.string().max(200).optional(),
   source: z.string().max(100).default('landing-page'),
+  // Honeypot — bots fill this in; humans never see it
+  website: z.string().max(0).optional(),
 })
 
 function getClientIp(req: NextRequest): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  // Use the rightmost IP (last trusted proxy) to prevent x-forwarded-for spoofing
+  return (
+    req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown'
+  )
 }
 
 export async function POST(req: NextRequest) {
@@ -29,7 +36,12 @@ export async function POST(req: NextRequest) {
 
   const parsed = Schema.safeParse(raw)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid input', detail: parsed.error.flatten().fieldErrors }, { status: 422 })
+    return NextResponse.json({ error: 'Invalid input' }, { status: 422 })
+  }
+
+  // Honeypot: bots fill in the hidden website field — silently succeed without writing
+  if (parsed.data.website) {
+    return NextResponse.json({ success: true, duplicate: false })
   }
 
   const admin = await createAdminClient()

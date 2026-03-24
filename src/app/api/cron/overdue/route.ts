@@ -4,14 +4,20 @@ import { serverError } from '@/lib/api-error'
 import { determineReminderStage } from '@/lib/reminders'
 import { calculateClientRiskScore } from '@/lib/intelligence/riskScore'
 import { predictInvoicePayment } from '@/lib/intelligence/paymentPrediction'
+import { checkCronAttemptLimit } from '@/lib/ratelimit'
 import { Invoice } from '@/types'
 
 // Called daily by Vercel Cron — protected by CRON_SECRET header
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
+      request.headers.get('x-real-ip') ??
+      'unknown'
     console.warn(`[SECURITY] Unauthorized cron attempt from ${ip} — header: ${authHeader ? '[present]' : '[missing]'}`)
+    // Secondary rate limit: throttle brute-force on the secret (B4)
+    await checkCronAttemptLimit(ip)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
