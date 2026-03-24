@@ -32,7 +32,7 @@ const FF = 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif'
 
 // ─── Shared style helpers ────────────────────────────────────────────────────
 const S = {
-  overline: { fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase' as const, letterSpacing: '1px', margin: '0 0 16px' },
+  overline: { fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase' as const, letterSpacing: '1.2px', margin: '0 0 20px' },
   h2: { fontWeight: 900, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.05 } as React.CSSProperties,
   wallCell: { borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` },
   dot4: { width: 4, height: 4, borderRadius: '50%', flexShrink: 0 as const },
@@ -44,17 +44,18 @@ const S = {
 }
 
 // ─── Animation helpers ───────────────────────────────────────────────────────
+const SPRING_EASE = [0.16, 1, 0.3, 1] as [number, number, number, number]
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.5, delay },
+  transition: { duration: 0.6, delay, ease: SPRING_EASE },
 })
 const fadeInOnce = (delay = 0) => ({
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 18 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { delay },
+  transition: { duration: 0.55, delay, ease: SPRING_EASE },
 })
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -131,31 +132,43 @@ function Divider() {
 function HeroBg() {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Fine grid */}
+      {/* Grid — tighter, fades at edges */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)',
-        backgroundSize: '60px 60px',
-        WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%)',
-        maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%)',
+        backgroundImage: 'linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px)',
+        backgroundSize: '52px 52px',
+        WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 20%, transparent 80%)',
+        maskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 20%, transparent 80%)',
       }} />
-      {/* Spotlights */}
+      {/* Primary beam — teal, from top centre, strong */}
+      <motion.div
+        animate={{ opacity: [0.85, 1, 0.85] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 1100px 800px at 50% -8%, rgba(0,229,191,0.13) 0%, rgba(0,229,191,0.04) 40%, transparent 65%)',
+        }}
+      />
+      {/* Secondary — warm blue ambient, bottom right */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: [
-          'radial-gradient(ellipse 1000px 700px at 50% -5%, rgba(0,229,191,0.10) 0%, transparent 55%)',
-          'radial-gradient(ellipse 700px 500px at 85% 105%, rgba(71,201,229,0.05) 0%, transparent 50%)',
-          'radial-gradient(ellipse 400px 600px at -5% 60%, rgba(167,139,250,0.04) 0%, transparent 50%)',
-        ].join(', '),
+        background: 'radial-gradient(ellipse 800px 600px at 88% 110%, rgba(71,201,229,0.07) 0%, transparent 55%)',
+      }} />
+      {/* Tertiary — purple edge, left */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse 500px 700px at -8% 55%, rgba(167,139,250,0.05) 0%, transparent 55%)',
       }} />
       {/* Noise */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.035 }}>
-        <filter id="n">
-          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#n)" />
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04 }}>
+        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+        <rect width="100%" height="100%" filter="url(#n)"/>
       </svg>
+      {/* Vignette — edges darker for depth */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(2,2,3,0.6) 100%)',
+      }} />
     </div>
   )
 }
@@ -163,9 +176,17 @@ function HeroBg() {
 function FinalCtaBg() {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <motion.div
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 1000px 700px at 50% 60%, rgba(0,229,191,0.09) 0%, transparent 65%)',
+        }}
+      />
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 900px 600px at 50% 50%, rgba(0,229,191,0.07) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse 600px 400px at 50% 0%, rgba(71,201,229,0.04) 0%, transparent 50%)',
       }} />
     </div>
   )
@@ -511,32 +532,32 @@ export default function LandingPage() {
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 860 }}>
           {/* Badge */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid ${T.border}`, borderRadius: 100, padding: '5px 14px', marginBottom: 48, fontSize: 11, color: T.text2, letterSpacing: '0.4px' }}>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid ${T.borderMid}`, borderRadius: 100, padding: '6px 16px', marginBottom: 52, fontSize: 11, color: T.text2, letterSpacing: '0.5px', background: 'rgba(255,255,255,0.03)' }}>
             <motion.div animate={{ opacity: [1, 0.25, 1] }} transition={{ duration: 1.8, repeat: Infinity }}
               style={{ width: 5, height: 5, borderRadius: '50%', background: T.red }} />
             <DaysLeft /> remaining · EU AI Act enforcement
           </motion.div>
 
           {/* H1 */}
-          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            style={{ fontSize: 'clamp(42px, 8vw, 96px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-0.04em', margin: '0 0 32px' }}>
+          <motion.h1 initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: SPRING_EASE }}
+            style={{ fontSize: 'clamp(52px, 9.5vw, 112px)', fontWeight: 900, lineHeight: 0.97, letterSpacing: '-0.05em', margin: '0 0 36px' }}>
             Your AI is running.<br />
-            <span style={{ color: T.text3 }}>Your documentation isn&apos;t.</span>
+            <span style={{ color: 'rgba(255,255,255,0.2)' }}>Your documentation isn&apos;t.</span>
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}
-            style={{ fontSize: 18, color: T.text2, lineHeight: 1.8, maxWidth: 480, margin: '0 auto 40px' }}>
-            The EU AI Act requires structured evidence for every high-risk workflow. Consultants charge €20,000+. Irvo gets you there in 20 minutes per system.
+            style={{ fontSize: 17, color: T.text2, lineHeight: 1.85, maxWidth: 500, margin: '0 auto 44px' }}>
+            The EU AI Act mandates structured evidence for every high-risk workflow. Most organisations are starting from zero. Irvo compresses 40+ hours into 20 minutes — per system.
           </motion.p>
 
           {/* Stat strip */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, marginBottom: 48, overflow: 'hidden' }}>
-            {[{ value: '€35M', label: 'maximum fine' }, { value: '50h+', label: 'manual docs per system' }, { value: '20min', label: 'with Irvo' }].map(({ value, label }, i) => (
-              <div key={label} style={{ padding: '14px 28px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center' }}>
-                <div style={{ fontSize: 20, fontWeight: 900, color: i === 2 ? T.accent : T.text, letterSpacing: '-0.5px', lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: 10, color: T.text3, marginTop: 4, letterSpacing: '0.3px', textTransform: 'uppercase', fontWeight: 600 }}>{label}</div>
+            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderTop: `1px solid ${T.borderMid}`, marginBottom: 52, overflow: 'hidden' }}>
+            {[{ value: '€35M', label: 'max fine', accent: false }, { value: '50h+', label: 'manual per system', accent: false }, { value: '20min', label: 'with Irvo', accent: true }].map(({ value, label, accent }, i) => (
+              <div key={label} style={{ padding: '18px 32px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center', background: accent ? T.accentDim : 'transparent' }}>
+                <div style={{ fontSize: 26, fontWeight: 900, color: accent ? T.accent : T.text, letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: 10, color: accent ? T.accent : T.text3, marginTop: 6, letterSpacing: '0.4px', textTransform: 'uppercase', fontWeight: 700, opacity: accent ? 0.7 : 1 }}>{label}</div>
               </div>
             ))}
           </motion.div>
@@ -562,7 +583,7 @@ export default function LandingPage() {
 
           {/* Trust line */}
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-            style={{ fontSize: 12, color: T.text3, margin: '24px 0 0', letterSpacing: '0.2px' }}>
+            style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', margin: '28px 0 0', letterSpacing: '0.3px' }}>
             No credit card required · EU &amp; UK coverage · First system free
           </motion.p>
         </div>
@@ -583,9 +604,10 @@ export default function LandingPage() {
         <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} style={{ display: 'flex', gap: 0, width: 'max-content' }}>
           {[...Array(2)].map((_, outer) => (
             <span key={outer} style={{ display: 'flex' }}>
-              {['EU AI ACT COMPLIANCE', 'RISK CLASSIFICATION', 'EVIDENCE PACKS', 'ANNEX III MAPPING', 'OBLIGATIONS TRACKER', 'REGULATOR-READY DOCS', 'SME DOCUMENTATION'].map((item, i) => (
-                <span key={i} style={{ fontSize: 11, color: T.text3, fontWeight: 700, letterSpacing: '1.2px', padding: '0 32px', whiteSpace: 'nowrap' }}>
-                  {item} <span style={{ color: T.text3, margin: '0 0 0 32px' }}>·</span>
+              {['EU AI ACT COMPLIANCE', 'RISK CLASSIFICATION', 'EVIDENCE PACKS', 'ANNEX III MAPPING', 'OBLIGATIONS TRACKER', 'REGULATOR-READY DOCS', 'AUDIT-READY DOCUMENTATION'].map((item, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 28, fontSize: 11, color: T.text2, fontWeight: 700, letterSpacing: '1.2px', padding: '0 28px', whiteSpace: 'nowrap' }}>
+                  {item}
+                  <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.accentGlow, flexShrink: 0, display: 'inline-block' }} />
                 </span>
               ))}
             </span>
@@ -603,15 +625,17 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
             <p style={S.overline}>Features</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(32px, 4vw, 48px)', maxWidth: 560 }}>
-              Everything you need to produce regulator-ready evidence. Nothing you don&apos;t.
+            <h2 style={{ ...S.h2, fontSize: 'clamp(34px, 4.5vw, 52px)', maxWidth: 600 }}>
+              The compliance stack your consultants charge&nbsp;€20k to build. Included.
             </h2>
           </motion.div>
           <div className="r-grid-3 wall-grid">
             {FEATURES.map((f, i) => (
               <motion.div key={f.title} {...fadeInOnce((i % 3) * 0.07)}
-                whileHover={{ borderTopColor: T.accent }}
-                style={{ ...S.cardPad, ...S.wallCell, background: T.card, borderTop: `2px solid transparent`, transition: 'border-top-color 0.2s' }}>
+                whileHover={{ background: 'rgba(255,255,255,0.025)' }}
+                style={{ ...S.cardPad, ...S.wallCell, background: T.card, borderLeft: `2px solid transparent`, borderTop: `1px solid ${T.border}`, transition: 'background 0.25s, border-left-color 0.25s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderLeftColor = T.accent)}
+                onMouseLeave={(e) => (e.currentTarget.style.borderLeftColor = 'transparent')}>
                 <f.icon size={18} color={T.accent} style={{ marginBottom: 18 }} />
                 <h3 style={{ fontSize: 15, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.3px' }}>{f.title}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.8, margin: 0 }}>{f.desc}</p>
@@ -621,17 +645,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ── STATS ── */}
       <section className="hp-section-pad">
         <div className="r-grid-4 wall-grid" style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {STATS.map((s) => (
-            <motion.div key={s.label} {...fadeInOnce()} style={{ padding: '48px 36px', ...S.wallCell }}>
-              <p style={{ fontSize: 'clamp(48px, 6vw, 72px)', fontWeight: 900, color: T.text, margin: '0 0 8px', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+          {STATS.map((s, i) => (
+            <motion.div key={s.label} {...fadeInOnce(i * 0.06)} style={{ padding: '56px 36px', ...S.wallCell, borderTop: i === 3 ? `2px solid ${T.accent}` : undefined, background: i === 3 ? T.accentDim : 'transparent' }}>
+              <p style={{ fontSize: 'clamp(52px, 6vw, 76px)', fontWeight: 900, color: i === 3 ? T.accent : T.text, margin: '0 0 10px', letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
                 <Count to={s.to} prefix={s.prefix} suffix={s.suffix} />
               </p>
-              <p style={{ fontSize: 12, color: T.text2, margin: 0, letterSpacing: '0.2px' }}>{s.label}</p>
+              <p style={{ fontSize: 12, color: i === 3 ? T.accent : T.text2, margin: 0, letterSpacing: '0.2px', opacity: i === 3 ? 0.8 : 1 }}>{s.label}</p>
             </motion.div>
           ))}
         </div>
@@ -644,7 +666,7 @@ export default function LandingPage() {
         <div className="hp-law-grid" style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
             <p style={S.overline}>The compliance gap</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.5vw, 44px)', margin: '0 0 24px' }}>Most SMEs are not ready for what regulators will ask for.</h2>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 3.5vw, 46px)', margin: '0 0 24px' }}>Regulators will not accept good intentions.</h2>
             <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.9, margin: '0 0 20px' }}>
               The EU AI Act requires organisations to produce structured technical documentation and evidence packs for AI systems classified as high-risk — before enforcement begins.
             </p>
@@ -661,8 +683,8 @@ export default function LandingPage() {
                 </li>
               ))}
             </ul>
-            <p style={{ fontSize: 15, color: T.text, lineHeight: 1.8, margin: '0 0 16px', padding: '18px 22px', borderLeft: `3px solid ${T.accent}`, background: T.accentDim }}>
-              Everyone talks about AI system inventory and policy decks. Nobody is building structured, per-workflow evidence packs for SMEs — the actual artefact regulators and auditors will ask for.
+            <p style={{ fontSize: 15, color: T.text, lineHeight: 1.85, margin: '0 0 16px', padding: '20px 24px', borderLeft: `2px solid ${T.accent}`, background: 'rgba(0,229,191,0.05)', letterSpacing: '-0.01em' }}>
+              The market is full of policy templates and inventory spreadsheets. Nobody is building the actual artefact regulators and auditors will ask to see: a structured, per-workflow evidence pack. That is what Irvo builds.
             </p>
             <p style={{ fontSize: 12, color: T.text3, margin: 0, fontStyle: 'italic' }}>
               This tool provides guidance only and does not constitute legal advice. Consult a qualified legal professional for binding compliance decisions.
@@ -687,20 +709,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 72 }}>
             <p style={S.overline}>Process</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>From workflow description to evidence pack.</h2>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(32px, 4vw, 50px)' }}>Twelve questions. One complete evidence pack.</h2>
           </motion.div>
           <div className="r-grid-4 wall-grid">
             {STEPS.map((step, i) => (
               <motion.div key={step.n} {...fadeInOnce(i * 0.08)}
                 style={{ ...S.cardPad, ...S.wallCell, background: T.card, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 8, right: 16, fontSize: 80, fontWeight: 900, color: T.text3, opacity: 0.06, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>{step.n}</div>
+                <div style={{ position: 'absolute', top: 4, right: 14, fontSize: 96, fontWeight: 900, color: T.text, opacity: 0.035, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.05em' }}>{step.n}</div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: T.text3, letterSpacing: '0.5px', display: 'block', marginBottom: 24 }}>{step.n}</span>
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 12px', letterSpacing: '-0.3px' }}>{step.title}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.75, margin: 0 }}>{step.desc}</p>
@@ -716,15 +736,16 @@ export default function LandingPage() {
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeInOnce()} style={{ marginBottom: 64 }}>
-            <p style={S.overline}>Customer discovery</p>
-            <p style={{ fontSize: 13, color: T.text2, margin: 0, lineHeight: 1.7 }}>Quotes from compliance and legal professionals we spoke to while building this.</p>
+            <p style={S.overline}>Market validation</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.5vw, 42px)', margin: '0 0 12px' }}>The problem is real.</h2>
+            <p style={{ fontSize: 14, color: T.text2, margin: 0, lineHeight: 1.7, maxWidth: 520 }}>We spoke to compliance teams, legal counsel, and operations leaders across Europe before writing a line of code.</p>
           </motion.div>
           <div className="r-grid-3 wall-grid">
             {TESTIMONIALS.map((t, i) => (
               <motion.div key={t.name} {...fadeInOnce(i * 0.08)} whileHover={{ background: 'rgba(255,255,255,0.015)' }}
                 style={{ padding: '40px 36px', ...S.wallCell, background: T.card, transition: 'background 0.2s' }}>
-                <div style={{ width: 24, height: 2, background: T.accent, marginBottom: 28 }} />
-                <p style={{ fontSize: 15, color: T.text, lineHeight: 1.8, margin: '0 0 28px', fontStyle: 'italic' }}>&ldquo;{t.text}&rdquo;</p>
+                <div style={{ width: 32, height: 1, background: T.accent, marginBottom: 32, opacity: 0.7 }} />
+                <p style={{ fontSize: 16, color: T.text, lineHeight: 1.8, margin: '0 0 32px', fontStyle: 'italic', letterSpacing: '-0.01em' }}>&ldquo;{t.text}&rdquo;</p>
                 <div>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: T.text }}>{t.name}</p>
                   <p style={{ margin: '2px 0 0', fontSize: 11, color: T.text2 }}>{t.role}</p>
@@ -735,16 +756,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Divider />
-
       {/* ── PRICING ── */}
       <motion.section id="pricing" className="hp-section-pad" onViewportEnter={() => track({ event: 'pricing_viewed', page: 'landing' })}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} className="hp-pricing-header" style={{ marginBottom: 64 }}>
             <div>
               <p style={S.overline}>Pricing</p>
-              <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)', margin: '0 0 12px' }}>Simple, transparent plans.</h2>
-              <p style={{ fontSize: 13, color: T.accent, margin: 0, fontWeight: 700 }}>↳ 30% lifetime off for the first 20 founding customers · Pre-pay 3 months upfront</p>
+              <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)', margin: '0 0 16px' }}>Every obligation covered. One subscription.</h2>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.accentDim, border: `1px solid rgba(0,229,191,0.2)`, borderRadius: 100, padding: '6px 14px' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.accent, letterSpacing: '0.2px' }}>Founding offer: 30% lifetime off · First 20 customers · Pre-pay 3 months</span>
+              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: T.text2 }}>
               <span style={{ opacity: annual ? 0.5 : 1 }}>Monthly</span>
@@ -805,7 +827,7 @@ export default function LandingPage() {
               <p style={{ ...S.overline, margin: 0 }}>Enforcement Timeline</p>
               <span style={{ fontSize: 11, color: T.text3, border: `1px solid ${T.border}`, borderRadius: 100, padding: '2px 10px' }}>August 2, 2026</span>
             </div>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)', margin: '0 0 16px' }}>August 2, 2026 is the deadline<br />that matters.</h2>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(32px, 4.5vw, 52px)', margin: '0 0 16px' }}>The clock does not care<br />about your backlog.</h2>
             <p style={{ fontSize: 15, color: T.text2, margin: 0, maxWidth: 520, lineHeight: 1.8 }}>
               High-risk AI obligations come into force on August 2, 2026. Fines can reach €35M or 7% of global annual turnover. Most SMEs are still starting from zero.
             </p>
@@ -852,25 +874,31 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <motion.div {...fadeInOnce(0.2)} style={{ marginTop: 32, display: 'flex', alignItems: 'center', gap: 0, border: `1px solid ${T.border}`, borderRight: 'none' }}>
-            {[{ label: 'Define', color: T.text3 }, { label: 'Classify', color: T.accent }, { label: 'Capture', color: T.purple }, { label: 'Export', color: T.green }].map((item, i) => (
-              <div key={item.label} style={{ flex: 1, padding: '16px 24px', borderRight: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                {i > 0 && <ArrowRight size={12} color={T.text3} />}
-                <span style={{ fontSize: 12, fontWeight: 700, color: item.color, letterSpacing: '0.2px' }}>{item.label}</span>
+          <motion.div {...fadeInOnce(0.2)} style={{ marginTop: 40, padding: '28px 36px', border: `1px solid ${T.border}`, background: T.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0 }}>
+            {[
+              { n: '01', label: 'Define workflow', color: T.text2 },
+              { n: '02', label: 'Classify risk', color: T.accent },
+              { n: '03', label: 'Capture evidence', color: T.purple },
+              { n: '04', label: 'Export pack', color: T.green },
+            ].map((item, i) => (
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 0, flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, letterSpacing: '0.3px' }}>{item.n}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: item.color, letterSpacing: '-0.2px' }}>{item.label}</span>
+                </div>
+                {i < 3 && <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${T.border}, transparent)`, margin: '0 20px' }} />}
               </div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      <Divider />
-
       {/* ── FAQ ── */}
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
             <p style={S.overline}>FAQ</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>Common questions.</h2>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>What teams ask before they start.</h2>
           </motion.div>
           <div className="r-grid-3 wall-grid">
             {FAQS.map((faq, i) => (
@@ -891,11 +919,11 @@ export default function LandingPage() {
         <FinalCtaBg />
         <div style={{ maxWidth: 700, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-            <h2 style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.0, margin: '0 0 24px', color: T.text }}>
+            <h2 style={{ fontSize: 'clamp(44px, 7vw, 84px)', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 0.97, margin: '0 0 28px', color: T.text }}>
               Do not wait until<br />someone asks for proof.
             </h2>
-            <p style={{ fontSize: 16, color: T.text2, margin: '0 0 16px', lineHeight: 1.8 }}>
-              First 20 customers lock in 30% off for life. Pre-pay 3 months and get access before we open publicly.
+            <p style={{ fontSize: 16, color: T.text2, margin: '0 0 16px', lineHeight: 1.85, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' }}>
+              The first 20 founding customers lock in 30% off for life. Pre-pay 3 months upfront, get access before public launch.
             </p>
             <p style={{ fontSize: 12, color: T.text3, margin: '0 0 40px', lineHeight: 1.7 }}>
               This tool provides guidance only and does not constitute legal advice.<br />Consult a qualified legal professional for binding compliance decisions.
@@ -931,7 +959,7 @@ export default function LandingPage() {
           <div className="r-grid-footer" style={{ marginBottom: 64 }}>
             <div>
               <div style={{ marginBottom: 16 }}><Logo size={24} /></div>
-              <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.85, maxWidth: 220, margin: '0 0 20px' }}>EU AI Act documentation and evidence pack software for SMEs.</p>
+              <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.85, maxWidth: 240, margin: '0 0 20px' }}>AI compliance documentation, without the consultant bill.</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['EU AI Act', 'GDPR Safe', 'Guidance Only'].map((b) => (
                   <span key={b} style={{ fontSize: 10, fontWeight: 700, color: T.text3, border: `1px solid ${T.border}`, padding: '3px 10px', borderRadius: 100, letterSpacing: '0.3px' }}>{b}</span>
