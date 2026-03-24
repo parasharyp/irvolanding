@@ -154,6 +154,26 @@ function HeroBg() {
         position: 'absolute', top: '52%', left: 0, right: 0, height: 1,
         background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.04) 80%, transparent 100%)',
       }} />
+      {/* Floating particle field — data/intelligence aesthetic */}
+      {PARTICLES.map(p => (
+        <motion.div
+          key={p.id}
+          animate={{ x: [0, p.dx, 0], y: [0, p.dy, 0], opacity: [0.07, 0.2, 0.07] }}
+          transition={{ duration: p.duration, repeat: Infinity, ease: 'easeInOut', delay: p.delay }}
+          style={{ position: 'absolute', left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, borderRadius: '50%', background: T.accent }}
+        />
+      ))}
+      {/* Vertical scanline — slow precision sweep, fades at edges */}
+      <motion.div
+        animate={{ top: ['-1%', '101%'] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'linear', repeatDelay: 5 }}
+        style={{
+          position: 'absolute', left: 0, right: 0, height: 1,
+          background: `linear-gradient(90deg, transparent 0%, rgba(0,229,191,0.07) 20%, rgba(0,229,191,0.12) 50%, rgba(0,229,191,0.07) 80%, transparent 100%)`,
+          WebkitMaskImage: 'radial-gradient(ellipse 55% 100% at 50% 50%, black, transparent)',
+          maskImage: 'radial-gradient(ellipse 55% 100% at 50% 50%, black, transparent)',
+        }}
+      />
       {/* Noise — grain for depth, not noise for texture */}
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025 }}>
         <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
@@ -458,85 +478,47 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
   )
 }
 
-// ─── Product mock UI ─────────────────────────────────────────────────────────
-function ProductMock() {
-  return (
-    <div style={{ background: T.surface, border: `1px solid ${T.borderMid}`, width: '100%', overflow: 'hidden', boxShadow: '0 48px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04)', fontFamily: FF }}>
-      {/* Window chrome */}
-      <div style={{ padding: '10px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8, background: '#050506' }}>
-        <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
-          {[T.red, T.amber, T.green].map((c, i) => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: c, opacity: 0.45 }} />)}
-        </div>
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-          <div style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 3, padding: '3px 20px', fontSize: 9, color: T.text3, letterSpacing: '0.3px' }}>
-            app.irvo.co · Recruitment Screening · Risk Assessment
-          </div>
-        </div>
-        <div style={{ width: 48, flexShrink: 0 }} />
-      </div>
-      {/* App shell */}
-      <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr' }}>
-        {/* Sidebar */}
-        <div style={{ borderRight: `1px solid ${T.border}`, padding: '18px 0', background: '#060607', minHeight: 320 }}>
-          <p style={{ fontSize: 7, fontWeight: 800, color: T.text3, letterSpacing: '1.6px', textTransform: 'uppercase' as const, margin: '0 0 10px', padding: '0 14px' }}>AI Systems</p>
-          {([
-            { name: 'Recruitment Screening', risk: 'HIGH', active: true },
-            { name: 'Credit Scoring Model', risk: 'HIGH', active: false },
-            { name: 'Customer Segmentation', risk: 'LIMITED', active: false },
-            { name: 'Invoice Processing', risk: 'MINIMAL', active: false },
-          ] as const).map((s, i) => (
-            <div key={i} style={{ padding: '8px 14px', background: s.active ? 'rgba(255,255,255,0.04)' : 'transparent', borderRight: s.active ? `2px solid ${T.accent}` : '2px solid transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 10, color: s.active ? T.text : 'rgba(255,255,255,0.25)', fontWeight: s.active ? 600 : 400, letterSpacing: '-0.1px' }}>{s.name}</span>
-              <span style={{ fontSize: 6, fontWeight: 800, letterSpacing: '0.3px', color: s.risk === 'HIGH' ? T.red : s.risk === 'LIMITED' ? T.amber : T.text3, background: s.risk === 'HIGH' ? 'rgba(229,71,71,0.12)' : s.risk === 'LIMITED' ? 'rgba(245,158,11,0.1)' : 'transparent', padding: '2px 5px' }}>{s.risk}</span>
-            </div>
-          ))}
-        </div>
-        {/* Main panel */}
-        <div style={{ padding: '18px 22px', background: T.card }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <span style={{ fontSize: 7, fontWeight: 800, color: T.red, letterSpacing: '0.5px', textTransform: 'uppercase' as const, background: 'rgba(229,71,71,0.1)', padding: '2px 6px' }}>High Risk · Annex III §6</span>
-                <span style={{ fontSize: 8, color: T.text3 }}>Updated 2h ago</span>
-              </div>
-              <h3 style={{ fontSize: 13, fontWeight: 800, color: T.text, margin: 0, letterSpacing: '-0.3px' }}>Recruitment Screening System</h3>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: T.accent, color: T.bg, padding: '6px 13px', borderRadius: 100, fontSize: 9, fontWeight: 800, flexShrink: 0 }}>
-              Export Pack
-            </div>
-          </div>
-          {/* Progress */}
-          <div style={{ marginBottom: 14, padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${T.border}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: 8, color: T.text2, fontWeight: 600 }}>Evidence completion</span>
-              <span style={{ fontSize: 8, color: T.accent, fontWeight: 700 }}>8 of 12 obligations</span>
-            </div>
-            <div style={{ height: 2, background: T.border, borderRadius: 1 }}>
-              <div style={{ width: '67%', height: '100%', background: T.accent, borderRadius: 1 }} />
-            </div>
-          </div>
-          {/* Obligations list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {[
-              { label: 'Risk management system documented', done: true },
-              { label: 'Technical documentation (Annex IV)', done: true },
-              { label: 'Human oversight procedures in place', done: true },
-              { label: 'Data governance documentation', done: false },
-              { label: 'Accuracy & robustness test logs', done: false },
-            ].map((o, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 11px', background: 'rgba(255,255,255,0.015)', border: `1px solid ${o.done ? 'transparent' : T.border}` }}>
-                <div style={{ width: 11, height: 11, flexShrink: 0, background: o.done ? T.accent : 'transparent', border: `1px solid ${o.done ? T.accent : T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {o.done && <span style={{ fontSize: 6, color: T.bg, fontWeight: 900, lineHeight: 1 }}>✓</span>}
-                </div>
-                <span style={{ fontSize: 10, color: o.done ? 'rgba(255,255,255,0.28)' : T.text, textDecoration: o.done ? 'line-through' : 'none', flex: 1 }}>{o.label}</span>
-                {!o.done && <span style={{ fontSize: 7, color: T.amber, fontWeight: 800, letterSpacing: '0.4px', textTransform: 'uppercase' as const }}>Required</span>}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+// ─── Visual effects ───────────────────────────────────────────────────────────
+// Deterministic particle field — no Math.random() avoids SSR/client mismatch
+const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id:       i,
+  x:        (i * 6.18 + 5)   % 94,   // left %
+  y:        (i * 11.3 + 8)   % 88,   // top %
+  size:     1 + (i % 3) * 0.6,       // px
+  duration: 15 + (i * 3.1)   % 13,   // seconds
+  delay:    -((i * 1.9)      % 9),   // stagger start
+  dx:       ((i * 13 + 5)    % 64) - 32,  // x drift
+  dy:       ((i * 9  + 3)    % 64) - 32,  // y drift
+}))
+
+// Cursor-following spotlight — rAF-based, zero re-renders
+function CursorSpotlight() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    let raf = 0
+    const handle = (e: MouseEvent) => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        if (ref.current)
+          ref.current.style.background =
+            `radial-gradient(680px circle at ${e.clientX}px ${e.clientY}px, rgba(0,229,191,0.055) 0%, transparent 60%)`
+      })
+    }
+    window.addEventListener('mousemove', handle, { passive: true })
+    return () => { window.removeEventListener('mousemove', handle); cancelAnimationFrame(raf) }
+  }, [])
+  return <div ref={ref} style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
+}
+
+// Card glow — call onMouseMove / onMouseLeave on the card element
+const cardGlowMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  const g = e.currentTarget.querySelector<HTMLElement>('[data-glow]')
+  if (g) g.style.background = `radial-gradient(280px circle at ${e.clientX - r.left}px ${e.clientY - r.top}px, rgba(0,229,191,0.09) 0%, transparent 70%)`
+}
+const cardGlowLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+  const g = e.currentTarget.querySelector<HTMLElement>('[data-glow]')
+  if (g) g.style.background = 'none'
 }
 
 // ─── Main page ───────────────────────────────────────────────────────────────
@@ -557,6 +539,7 @@ export default function LandingPage() {
 
   return (
     <div style={{ background: T.bg, color: T.text, fontFamily: FF, minHeight: '100vh' }}>
+      <CursorSpotlight />
       <Cursor />
       <ScrollBar />
 
@@ -695,19 +678,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── PRODUCT PREVIEW ── */}
-      <div className="desktop-only" style={{ background: T.bg, padding: '0 32px 0', position: 'relative', overflow: 'hidden' }}>
-        {/* Top fade from hero */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: `linear-gradient(${T.bg}, transparent)`, zIndex: 2, pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
-          <motion.div initial={{ opacity: 0, y: 56 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.9, ease: SPRING_EASE }}>
-            <ProductMock />
-          </motion.div>
-          {/* Bottom fade */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, background: `linear-gradient(transparent, ${T.bg})`, pointerEvents: 'none' }} />
-        </div>
-      </div>
-
       <Divider />
 
       {/* ── MARQUEE ── */}
@@ -743,16 +713,20 @@ export default function LandingPage() {
           <div className="r-grid-3 wall-grid">
             {FEATURES.map((f, i) => (
               <motion.div key={f.title} {...fadeInOnce((i % 3) * 0.07)}
-                whileHover={{ background: 'rgba(255,255,255,0.025)' }}
-                style={{ ...S.cardPad, ...S.wallCell, background: T.card, borderLeft: `2px solid transparent`, borderTop: `1px solid ${T.border}`, transition: 'background 0.25s, border-left-color 0.25s' }}
+                style={{ ...S.cardPad, ...S.wallCell, background: T.card, borderLeft: `2px solid transparent`, borderTop: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden', transition: 'border-left-color 0.25s' }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderLeftColor = T.accent)}
-                onMouseLeave={(e) => (e.currentTarget.style.borderLeftColor = 'transparent')}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                  <f.icon size={17} color="rgba(255,255,255,0.28)" />
-                  <span style={{ fontSize: 9, fontWeight: 900, color: T.accent, letterSpacing: '1.6px', fontVariantNumeric: 'tabular-nums' as const, opacity: 0.65 }}>{String(i + 1).padStart(2, '0')}</span>
+                onMouseMove={cardGlowMove}
+                onMouseLeave={(e) => { e.currentTarget.style.borderLeftColor = 'transparent'; cardGlowLeave(e) }}>
+                {/* Cursor glow overlay */}
+                <div data-glow="" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, transition: 'none' }} />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                    <f.icon size={17} color="rgba(255,255,255,0.28)" />
+                    <span style={{ fontSize: 9, fontWeight: 900, color: T.accent, letterSpacing: '1.6px', fontVariantNumeric: 'tabular-nums' as const, opacity: 0.65 }}>{String(i + 1).padStart(2, '0')}</span>
+                  </div>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.5px' }}>{f.title}</h3>
+                  <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.8, margin: 0 }}>{f.desc}</p>
                 </div>
-                <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.5px' }}>{f.title}</h3>
-                <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.8, margin: 0 }}>{f.desc}</p>
               </motion.div>
             ))}
           </div>
