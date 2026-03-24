@@ -350,24 +350,24 @@ function Cursor() {
     const tick = () => {
       raf = requestAnimationFrame(tick)
 
-      // Lead — fast spring from cursor
-      vx0 = vx0 * 0.70 + (tx - x0) * 0.16
-      vy0 = vy0 * 0.70 + (ty - y0) * 0.16
+      // Lead — smooth, well-damped spring from cursor
+      vx0 = vx0 * 0.82 + (tx - x0) * 0.11
+      vy0 = vy0 * 0.82 + (ty - y0) * 0.11
       x0 += vx0; y0 += vy0
 
-      // Trail 1 — springs from lead position
-      vx1 = vx1 * 0.78 + (x0 - x1) * 0.10
-      vy1 = vy1 * 0.78 + (y0 - y1) * 0.10
+      // Trail 1 — softer follow
+      vx1 = vx1 * 0.86 + (x0 - x1) * 0.08
+      vy1 = vy1 * 0.86 + (y0 - y1) * 0.08
       x1 += vx1; y1 += vy1
 
-      // Trail 2 — springs from trail 1
-      vx2 = vx2 * 0.84 + (x1 - x2) * 0.07
-      vy2 = vy2 * 0.84 + (y1 - y2) * 0.07
+      // Trail 2 — gentlest follow
+      vx2 = vx2 * 0.90 + (x1 - x2) * 0.055
+      vy2 = vy2 * 0.90 + (y1 - y2) * 0.055
       x2 += vx2; y2 += vy2
 
-      // Velocity stretch on lead ring
+      // Velocity stretch — subtle
       const spd     = Math.sqrt(vx0 * vx0 + vy0 * vy0)
-      const stretch = Math.min(spd * 0.038, 0.50)
+      const stretch = Math.min(spd * 0.025, 0.28)
       const sX      = 1 + stretch
       const sY      = Math.max(1 - stretch * 0.58, 0.55)
       const ang     = spd > 0.4 ? Math.atan2(vy0, vx0) * (180 / Math.PI) : 0
@@ -406,12 +406,12 @@ function Cursor() {
 
   return (
     <>
-      {/* Dot — 3px teal, snaps exactly to cursor */}
+      {/* Dot — 3px white, no glow, snaps to cursor */}
       <div ref={dotRef} style={{
         position: 'fixed', top: 0, left: 0, zIndex: 9999,
         width: 3, height: 3, borderRadius: '50%',
-        background: T.accent, pointerEvents: 'none',
-        boxShadow: `0 0 4px ${T.accent}`,
+        background: '#fff', pointerEvents: 'none',
+        mixBlendMode: 'difference' as const,
         willChange: 'transform',
       }} />
       {/* Lead ring — 12px, full white, velocity-stretched */}
