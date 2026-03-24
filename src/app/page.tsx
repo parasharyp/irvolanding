@@ -129,60 +129,101 @@ function Divider() {
   return <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent)' }} />
 }
 
+// 3D interactive hero background — perspective grid + parallax orbs
 function HeroBg() {
+  const gridRef  = useRef<HTMLDivElement>(null)
+  const orb1Ref  = useRef<HTMLDivElement>(null)
+  const orb2Ref  = useRef<HTMLDivElement>(null)
+  const orb3Ref  = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let raf = 0
+    const handle = (e: MouseEvent) => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const cx = window.innerWidth  / 2
+        const cy = window.innerHeight / 2
+        const nx = (e.clientX - cx) / cx   // –1 → 1 horizontal
+        const ny = (e.clientY - cy) / cy   // –1 → 1 vertical
+
+        if (gridRef.current)
+          gridRef.current.style.transform =
+            `perspective(900px) rotateX(${58 + ny * 8}deg) rotateY(${nx * -6}deg)`
+
+        if (orb1Ref.current)
+          orb1Ref.current.style.transform = `translate(${nx * 36}px, ${ny * 24}px)`
+        if (orb2Ref.current)
+          orb2Ref.current.style.transform = `translate(${nx * -22}px, ${ny * -16}px)`
+        if (orb3Ref.current)
+          orb3Ref.current.style.transform = `translate(${nx * 16}px, ${ny * -10}px)`
+      })
+    }
+    window.addEventListener('mousemove', handle, { passive: true })
+    return () => { window.removeEventListener('mousemove', handle); cancelAnimationFrame(raf) }
+  }, [])
+
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Dot grid — architectural, not decorative */}
+
+      {/* Top teal beam */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.11) 1px, transparent 1px)',
-        backgroundSize: '38px 38px',
-        WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 42%, black 15%, transparent 75%)',
-        maskImage: 'radial-gradient(ellipse 70% 60% at 50% 42%, black 15%, transparent 75%)',
+        background: 'radial-gradient(ellipse 1000px 520px at 50% -40px, rgba(0,229,191,0.22) 0%, rgba(0,229,191,0.05) 55%, transparent 72%)',
       }} />
-      {/* Single directional teal beam — one light source, not ambient fog */}
-      <motion.div
-        animate={{ opacity: [0.9, 1, 0.9] }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 800px 600px at 50% -5%, rgba(0,229,191,0.15) 0%, rgba(0,229,191,0.05) 45%, transparent 68%)',
-        }}
-      />
-      {/* Precision horizontal hairline — sense of structure */}
+
+      {/* 3D perspective grid floor */}
       <div style={{
-        position: 'absolute', top: '52%', left: 0, right: 0, height: 1,
-        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.04) 80%, transparent 100%)',
-      }} />
-      {/* Floating particle field — data/intelligence aesthetic */}
-      {PARTICLES.map(p => (
-        <motion.div
-          key={p.id}
-          animate={{ x: [0, p.dx, 0], y: [0, p.dy, 0], opacity: [0.07, 0.2, 0.07] }}
-          transition={{ duration: p.duration, repeat: Infinity, ease: 'easeInOut', delay: p.delay }}
-          style={{ position: 'absolute', left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, borderRadius: '50%', background: T.accent }}
+        position: 'absolute', bottom: '-8%', left: '-35%', right: '-35%', top: '32%',
+        overflow: 'hidden',
+      }}>
+        <div
+          ref={gridRef}
+          style={{
+            width: '100%', height: '140%',
+            backgroundImage: `
+              linear-gradient(rgba(0,229,191,0.11) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,229,191,0.11) 1px, transparent 1px)
+            `,
+            backgroundSize: '72px 72px',
+            transform: 'perspective(900px) rotateX(58deg)',
+            transformOrigin: '50% 0%',
+            transition: 'transform 0.09s cubic-bezier(0.16,1,0.3,1)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 18%, black 45%, black 70%, transparent 100%)',
+            maskImage:        'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 18%, black 45%, black 70%, transparent 100%)',
+          }}
         />
-      ))}
-      {/* Vertical scanline — slow precision sweep, fades at edges */}
-      <motion.div
-        animate={{ top: ['-1%', '101%'] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'linear', repeatDelay: 5 }}
-        style={{
-          position: 'absolute', left: 0, right: 0, height: 1,
-          background: `linear-gradient(90deg, transparent 0%, rgba(0,229,191,0.07) 20%, rgba(0,229,191,0.12) 50%, rgba(0,229,191,0.07) 80%, transparent 100%)`,
-          WebkitMaskImage: 'radial-gradient(ellipse 55% 100% at 50% 50%, black, transparent)',
-          maskImage: 'radial-gradient(ellipse 55% 100% at 50% 50%, black, transparent)',
-        }}
-      />
-      {/* Noise — grain for depth, not noise for texture */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025 }}>
+      </div>
+
+      {/* Parallax depth orbs — different speeds = visual depth */}
+      <div ref={orb1Ref} style={{
+        position: 'absolute', top: '5%', left: '2%',
+        width: 540, height: 540, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(0,229,191,0.14) 0%, transparent 68%)',
+        filter: 'blur(64px)', willChange: 'transform',
+      }} />
+      <div ref={orb2Ref} style={{
+        position: 'absolute', top: '10%', right: '-4%',
+        width: 460, height: 460, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(71,201,229,0.10) 0%, transparent 68%)',
+        filter: 'blur(72px)', willChange: 'transform',
+      }} />
+      <div ref={orb3Ref} style={{
+        position: 'absolute', bottom: '18%', left: '38%',
+        width: 340, height: 340, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 68%)',
+        filter: 'blur(56px)', willChange: 'transform',
+      }} />
+
+      {/* Film grain — subtle depth */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.022 }}>
         <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
         <rect width="100%" height="100%" filter="url(#n)"/>
       </svg>
-      {/* Hard vignette — pulls focus to centre */}
+
+      {/* Vignette — frames the content */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 110% 90% at 50% 50%, transparent 35%, rgba(2,2,3,0.75) 100%)',
+        background: 'radial-gradient(ellipse 110% 90% at 50% 50%, transparent 28%, rgba(2,2,3,0.88) 100%)',
       }} />
     </div>
   )
@@ -479,18 +520,6 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
 }
 
 // ─── Visual effects ───────────────────────────────────────────────────────────
-// Deterministic particle field — no Math.random() avoids SSR/client mismatch
-const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
-  id:       i,
-  x:        (i * 6.18 + 5)   % 94,   // left %
-  y:        (i * 11.3 + 8)   % 88,   // top %
-  size:     1 + (i % 3) * 0.6,       // px
-  duration: 15 + (i * 3.1)   % 13,   // seconds
-  delay:    -((i * 1.9)      % 9),   // stagger start
-  dx:       ((i * 13 + 5)    % 64) - 32,  // x drift
-  dy:       ((i * 9  + 3)    % 64) - 32,  // y drift
-}))
-
 // Cursor-following spotlight — rAF-based, zero re-renders
 function CursorSpotlight() {
   const ref = useRef<HTMLDivElement>(null)
