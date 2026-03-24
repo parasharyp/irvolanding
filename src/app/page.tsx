@@ -325,112 +325,53 @@ function FinalCtaBg() {
 }
 
 function Cursor() {
-  const dotRef = useRef<HTMLDivElement>(null)
-  const r0Ref  = useRef<HTMLDivElement>(null)   // lead ring
-  const r1Ref  = useRef<HTMLDivElement>(null)   // trail 1
-  const r2Ref  = useRef<HTMLDivElement>(null)   // trail 2
+  const dotRef  = useRef<HTMLDivElement>(null)
+  const ringRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let raf = 0
-
-    let tx = -100, ty = -100   // raw cursor
-
-    // Each ring springs off the one before it — chain of mass
-    let x0 = tx, y0 = ty, vx0 = 0, vy0 = 0   // lead  (springs from cursor)
-    let x1 = tx, y1 = ty, vx1 = 0, vy1 = 0   // trail 1 (springs from lead)
-    let x2 = tx, y2 = ty, vx2 = 0, vy2 = 0   // trail 2 (springs from trail 1)
-
-    let clickPulse = 0
+    let tx = -100, ty = -100
+    let cx = tx, cy = ty, vx = 0, vy = 0
 
     const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
-    const onDown = () => { clickPulse = 1 }
     window.addEventListener('mousemove', onMove, { passive: true })
-    window.addEventListener('mousedown', onDown)
 
     const tick = () => {
       raf = requestAnimationFrame(tick)
 
-      // Lead — smooth, well-damped spring from cursor
-      vx0 = vx0 * 0.82 + (tx - x0) * 0.11
-      vy0 = vy0 * 0.82 + (ty - y0) * 0.11
-      x0 += vx0; y0 += vy0
-
-      // Trail 1 — softer follow
-      vx1 = vx1 * 0.86 + (x0 - x1) * 0.08
-      vy1 = vy1 * 0.86 + (y0 - y1) * 0.08
-      x1 += vx1; y1 += vy1
-
-      // Trail 2 — gentlest follow
-      vx2 = vx2 * 0.90 + (x1 - x2) * 0.055
-      vy2 = vy2 * 0.90 + (y1 - y2) * 0.055
-      x2 += vx2; y2 += vy2
-
-      // Velocity stretch — subtle
-      const spd     = Math.sqrt(vx0 * vx0 + vy0 * vy0)
-      const stretch = Math.min(spd * 0.025, 0.28)
-      const sX      = 1 + stretch
-      const sY      = Math.max(1 - stretch * 0.58, 0.55)
-      const ang     = spd > 0.4 ? Math.atan2(vy0, vx0) * (180 / Math.PI) : 0
-
-      clickPulse *= 0.84
-      const pulse = 1 + clickPulse * 0.32
+      // Overdamped spring — glides, never bounces
+      vx = vx * 0.85 + (tx - cx) * 0.10
+      vy = vy * 0.85 + (ty - cy) * 0.10
+      cx += vx; cy += vy
 
       if (dotRef.current)
         dotRef.current.style.transform =
           `translate(${tx}px,${ty}px) translate(-50%,-50%)`
 
-      if (r0Ref.current)
-        r0Ref.current.style.transform =
-          `translate(${(x0 - 6).toFixed(1)}px,${(y0 - 6).toFixed(1)}px)` +
-          ` rotate(${ang.toFixed(1)}deg)` +
-          ` scaleX(${(sX * pulse).toFixed(3)}) scaleY(${(sY * pulse).toFixed(3)})`
-
-      if (r1Ref.current)
-        r1Ref.current.style.transform =
-          `translate(${(x1 - 4.5).toFixed(1)}px,${(y1 - 4.5).toFixed(1)}px)`
-
-      if (r2Ref.current)
-        r2Ref.current.style.transform =
-          `translate(${(x2 - 3).toFixed(1)}px,${(y2 - 3).toFixed(1)}px)`
+      if (ringRef.current)
+        ringRef.current.style.transform =
+          `translate(${(cx - 12).toFixed(1)}px,${(cy - 12).toFixed(1)}px)`
     }
 
     raf = requestAnimationFrame(tick)
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mousedown', onDown)
-    }
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove) }
   }, [])
-
-  const blend = { mixBlendMode: 'difference' as const, pointerEvents: 'none' as const }
 
   return (
     <>
-      {/* Dot — 3px white, no glow, snaps to cursor */}
+      {/* 2px dot — snaps to exact cursor position */}
       <div ref={dotRef} style={{
         position: 'fixed', top: 0, left: 0, zIndex: 9999,
-        width: 3, height: 3, borderRadius: '50%',
-        background: '#fff', pointerEvents: 'none',
-        mixBlendMode: 'difference' as const,
-        willChange: 'transform',
+        width: 4, height: 4, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.9)',
+        pointerEvents: 'none', willChange: 'transform',
       }} />
-      {/* Lead ring — 12px, full white, velocity-stretched */}
-      <div ref={r0Ref} style={{
+      {/* 24px outline ring — follows with soft lag */}
+      <div ref={ringRef} style={{
         position: 'fixed', top: 0, left: 0, zIndex: 9998,
-        width: 12, height: 12, borderRadius: '50%',
-        background: '#fff', willChange: 'transform', ...blend,
-      }} />
-      {/* Trail 1 — 9px, 50% opacity */}
-      <div ref={r1Ref} style={{
-        position: 'fixed', top: 0, left: 0, zIndex: 9997,
-        width: 9, height: 9, borderRadius: '50%',
-        background: 'rgba(255,255,255,0.5)', willChange: 'transform', ...blend,
-      }} />
-      {/* Trail 2 — 6px, 25% opacity */}
-      <div ref={r2Ref} style={{
-        position: 'fixed', top: 0, left: 0, zIndex: 9996,
-        width: 6, height: 6, borderRadius: '50%',
-        background: 'rgba(255,255,255,0.25)', willChange: 'transform', ...blend,
+        width: 24, height: 24, borderRadius: '50%',
+        border: '1px solid rgba(255,255,255,0.45)',
+        pointerEvents: 'none', willChange: 'transform',
       }} />
     </>
   )
