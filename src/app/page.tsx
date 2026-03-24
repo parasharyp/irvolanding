@@ -763,12 +763,13 @@ export default function LandingPage() {
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 860 }}>
           {/* Badge */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: `1px solid rgba(229,71,71,0.35)`, borderRadius: 100, padding: '8px 20px', marginBottom: 52, fontSize: 11, letterSpacing: '0.4px', background: 'rgba(229,71,71,0.07)' }}>
-            <motion.div animate={{ opacity: [1, 0.15, 1] }} transition={{ duration: 1.3, repeat: Infinity }}
-              style={{ width: 6, height: 6, borderRadius: '50%', background: T.red, boxShadow: '0 0 8px rgba(229,71,71,0.9)', flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: T.red, letterSpacing: '0.6px', textTransform: 'uppercase' as const }}>Enforcement</span>
-            <span style={{ color: T.text, fontWeight: 700 }}><DaysLeft /></span>
-            <span style={{ color: T.text3, fontSize: 10, letterSpacing: '0.2px' }}>EU AI Act · High-risk obligations</span>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid rgba(229,71,71,0.5)`, borderRadius: 100, padding: '6px 14px', marginBottom: 52, fontSize: 10, letterSpacing: '0.3px', background: 'rgba(4,4,4,0.82)', backdropFilter: 'blur(8px)' }}>
+            <motion.div animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.3, repeat: Infinity }}
+              style={{ width: 5, height: 5, borderRadius: '50%', background: T.red, boxShadow: '0 0 6px rgba(229,71,71,0.8)', flexShrink: 0 }} />
+            <span style={{ fontWeight: 700, color: T.red, letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>Enforcement</span>
+            <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.12)', flexShrink: 0 }} />
+            <span style={{ color: 'rgba(255,255,255,0.75)', fontWeight: 600 }}><DaysLeft /></span>
+            <span style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1px' }}>EU AI Act · High-risk</span>
           </motion.div>
 
           {/* H1 */}
