@@ -325,73 +325,73 @@ function FinalCtaBg() {
 }
 
 function Cursor() {
-  const dotRef  = useRef<HTMLDivElement>(null)
-  const ringRef = useRef<HTMLDivElement>(null)
+  const dotRef = useRef<HTMLDivElement>(null)
+  const r0Ref  = useRef<HTMLDivElement>(null)   // lead ring
+  const r1Ref  = useRef<HTMLDivElement>(null)   // trail 1
+  const r2Ref  = useRef<HTMLDivElement>(null)   // trail 2
 
   useEffect(() => {
     let raf = 0
 
-    // Cursor target — snaps instantly
-    let tx = -100, ty = -100
+    let tx = -100, ty = -100   // raw cursor
 
-    // Ring spring state — follows with physics
-    let cx = tx, cy = ty, vx = 0, vy = 0
+    // Each ring springs off the one before it — chain of mass
+    let x0 = tx, y0 = ty, vx0 = 0, vy0 = 0   // lead  (springs from cursor)
+    let x1 = tx, y1 = ty, vx1 = 0, vy1 = 0   // trail 1 (springs from lead)
+    let x2 = tx, y2 = ty, vx2 = 0, vy2 = 0   // trail 2 (springs from trail 1)
 
-    // Hover & click state — ref-based, no re-renders
-    let hovering    = false
-    let baseScale   = 1.0    // interpolates toward target
-    let clickPulse  = 0      // 1 on click → decays to 0
-
-    const RING = 22          // base element size px
-    const HALF = RING / 2
+    let clickPulse = 0
 
     const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
     const onDown = () => { clickPulse = 1 }
-
     window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('mousedown', onDown)
-    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
-      el.addEventListener('mouseenter', () => { hovering = true  })
-      el.addEventListener('mouseleave', () => { hovering = false })
-    })
 
     const tick = () => {
       raf = requestAnimationFrame(tick)
 
-      // ── Ring spring physics ─────────────────────────────────
-      vx = vx * 0.74 + (tx - cx) * 0.13
-      vy = vy * 0.74 + (ty - cy) * 0.13
-      cx += vx; cy += vy
+      // Lead — fast spring from cursor
+      vx0 = vx0 * 0.70 + (tx - x0) * 0.16
+      vy0 = vy0 * 0.70 + (ty - y0) * 0.16
+      x0 += vx0; y0 += vy0
 
-      // ── Velocity stretch — ring deforms into an ellipse ─────
-      // oriented along the direction of travel
-      const spd     = Math.sqrt(vx * vx + vy * vy)
-      const stretch = Math.min(spd * 0.034, 0.46)
+      // Trail 1 — springs from lead position
+      vx1 = vx1 * 0.78 + (x0 - x1) * 0.10
+      vy1 = vy1 * 0.78 + (y0 - y1) * 0.10
+      x1 += vx1; y1 += vy1
+
+      // Trail 2 — springs from trail 1
+      vx2 = vx2 * 0.84 + (x1 - x2) * 0.07
+      vy2 = vy2 * 0.84 + (y1 - y2) * 0.07
+      x2 += vx2; y2 += vy2
+
+      // Velocity stretch on lead ring
+      const spd     = Math.sqrt(vx0 * vx0 + vy0 * vy0)
+      const stretch = Math.min(spd * 0.038, 0.50)
       const sX      = 1 + stretch
-      const sY      = Math.max(1 - stretch * 0.55, 0.58)
-      const ang     = spd > 0.5 ? Math.atan2(vy, vx) * (180 / Math.PI) : 0
+      const sY      = Math.max(1 - stretch * 0.58, 0.55)
+      const ang     = spd > 0.4 ? Math.atan2(vy0, vx0) * (180 / Math.PI) : 0
 
-      // ── Smooth size scale (hover → 2.1×) ───────────────────
-      baseScale   += ((hovering ? 2.1 : 1.0) - baseScale)   * 0.15
-      clickPulse  *= 0.85
-      const pulse  = 1 + clickPulse * 0.38
+      clickPulse *= 0.84
+      const pulse = 1 + clickPulse * 0.32
 
-      // ── Dot — snaps, fades on hover ─────────────────────────
-      if (dotRef.current) {
-        dotRef.current.style.opacity   = hovering ? '0' : '1'
+      if (dotRef.current)
         dotRef.current.style.transform =
           `translate(${tx}px,${ty}px) translate(-50%,-50%)`
-      }
 
-      // ── Ring — spring + stretch + hover scale + click pulse ─
-      if (ringRef.current) {
-        const fX = (baseScale * sX * pulse).toFixed(3)
-        const fY = (baseScale * sY * pulse).toFixed(3)
-        ringRef.current.style.transform =
-          `translate(${(cx - HALF).toFixed(1)}px,${(cy - HALF).toFixed(1)}px)` +
+      if (r0Ref.current)
+        r0Ref.current.style.transform =
+          `translate(${(x0 - 6).toFixed(1)}px,${(y0 - 6).toFixed(1)}px)` +
           ` rotate(${ang.toFixed(1)}deg)` +
-          ` scaleX(${fX}) scaleY(${fY})`
-      }
+          ` scaleX(${(sX * pulse).toFixed(3)}) scaleY(${(sY * pulse).toFixed(3)})`
+
+      if (r1Ref.current)
+        r1Ref.current.style.transform =
+          `translate(${(x1 - 4.5).toFixed(1)}px,${(y1 - 4.5).toFixed(1)}px)`
+
+      if (r2Ref.current)
+        r2Ref.current.style.transform =
+          `translate(${(x2 - 3).toFixed(1)}px,${(y2 - 3).toFixed(1)}px)`
     }
 
     raf = requestAnimationFrame(tick)
@@ -402,27 +402,36 @@ function Cursor() {
     }
   }, [])
 
+  const blend = { mixBlendMode: 'difference' as const, pointerEvents: 'none' as const }
+
   return (
     <>
-      {/* Teal dot — exact cursor position, vanishes on hover */}
+      {/* Dot — 3px teal, snaps exactly to cursor */}
       <div ref={dotRef} style={{
         position: 'fixed', top: 0, left: 0, zIndex: 9999,
-        width: 5, height: 5, borderRadius: '50%',
-        background: T.accent,
-        pointerEvents: 'none',
-        willChange: 'transform, opacity',
-        transition: 'opacity 0.12s',
-        boxShadow: `0 0 6px ${T.accent}`,
-      }} />
-      {/* Ring — spring lag + velocity stretch + blend inversion */}
-      <div ref={ringRef} style={{
-        position: 'fixed', top: 0, left: 0, zIndex: 9998,
-        width: 22, height: 22, borderRadius: '50%',
-        background: '#ffffff',
-        mixBlendMode: 'difference' as const,
-        pointerEvents: 'none',
+        width: 3, height: 3, borderRadius: '50%',
+        background: T.accent, pointerEvents: 'none',
+        boxShadow: `0 0 4px ${T.accent}`,
         willChange: 'transform',
-      } as React.CSSProperties} />
+      }} />
+      {/* Lead ring — 12px, full white, velocity-stretched */}
+      <div ref={r0Ref} style={{
+        position: 'fixed', top: 0, left: 0, zIndex: 9998,
+        width: 12, height: 12, borderRadius: '50%',
+        background: '#fff', willChange: 'transform', ...blend,
+      }} />
+      {/* Trail 1 — 9px, 50% opacity */}
+      <div ref={r1Ref} style={{
+        position: 'fixed', top: 0, left: 0, zIndex: 9997,
+        width: 9, height: 9, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.5)', willChange: 'transform', ...blend,
+      }} />
+      {/* Trail 2 — 6px, 25% opacity */}
+      <div ref={r2Ref} style={{
+        position: 'fixed', top: 0, left: 0, zIndex: 9996,
+        width: 6, height: 6, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.25)', willChange: 'transform', ...blend,
+      }} />
     </>
   )
 }
