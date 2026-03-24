@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useSpring, useInView, useMotionValue, animate, AnimatePresence } from 'framer-motion'
-import { Shield, FileText, CheckCircle, ArrowRight, Zap, BarChart3, AlertTriangle, Clock, Menu, X, TrendingUp } from 'lucide-react'
+import { Shield, FileText, CheckCircle, ArrowRight, Zap, BarChart3, AlertTriangle, Menu, X } from 'lucide-react'
 import { track, type AnalyticsEvent } from '@/lib/analytics'
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
@@ -458,6 +458,87 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
   )
 }
 
+// ─── Product mock UI ─────────────────────────────────────────────────────────
+function ProductMock() {
+  return (
+    <div style={{ background: T.surface, border: `1px solid ${T.borderMid}`, width: '100%', overflow: 'hidden', boxShadow: '0 48px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04)', fontFamily: FF }}>
+      {/* Window chrome */}
+      <div style={{ padding: '10px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8, background: '#050506' }}>
+        <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+          {[T.red, T.amber, T.green].map((c, i) => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: c, opacity: 0.45 }} />)}
+        </div>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <div style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 3, padding: '3px 20px', fontSize: 9, color: T.text3, letterSpacing: '0.3px' }}>
+            app.irvo.co · Recruitment Screening · Risk Assessment
+          </div>
+        </div>
+        <div style={{ width: 48, flexShrink: 0 }} />
+      </div>
+      {/* App shell */}
+      <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr' }}>
+        {/* Sidebar */}
+        <div style={{ borderRight: `1px solid ${T.border}`, padding: '18px 0', background: '#060607', minHeight: 320 }}>
+          <p style={{ fontSize: 7, fontWeight: 800, color: T.text3, letterSpacing: '1.6px', textTransform: 'uppercase' as const, margin: '0 0 10px', padding: '0 14px' }}>AI Systems</p>
+          {([
+            { name: 'Recruitment Screening', risk: 'HIGH', active: true },
+            { name: 'Credit Scoring Model', risk: 'HIGH', active: false },
+            { name: 'Customer Segmentation', risk: 'LIMITED', active: false },
+            { name: 'Invoice Processing', risk: 'MINIMAL', active: false },
+          ] as const).map((s, i) => (
+            <div key={i} style={{ padding: '8px 14px', background: s.active ? 'rgba(255,255,255,0.04)' : 'transparent', borderRight: s.active ? `2px solid ${T.accent}` : '2px solid transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 10, color: s.active ? T.text : 'rgba(255,255,255,0.25)', fontWeight: s.active ? 600 : 400, letterSpacing: '-0.1px' }}>{s.name}</span>
+              <span style={{ fontSize: 6, fontWeight: 800, letterSpacing: '0.3px', color: s.risk === 'HIGH' ? T.red : s.risk === 'LIMITED' ? T.amber : T.text3, background: s.risk === 'HIGH' ? 'rgba(229,71,71,0.12)' : s.risk === 'LIMITED' ? 'rgba(245,158,11,0.1)' : 'transparent', padding: '2px 5px' }}>{s.risk}</span>
+            </div>
+          ))}
+        </div>
+        {/* Main panel */}
+        <div style={{ padding: '18px 22px', background: T.card }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 7, fontWeight: 800, color: T.red, letterSpacing: '0.5px', textTransform: 'uppercase' as const, background: 'rgba(229,71,71,0.1)', padding: '2px 6px' }}>High Risk · Annex III §6</span>
+                <span style={{ fontSize: 8, color: T.text3 }}>Updated 2h ago</span>
+              </div>
+              <h3 style={{ fontSize: 13, fontWeight: 800, color: T.text, margin: 0, letterSpacing: '-0.3px' }}>Recruitment Screening System</h3>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: T.accent, color: T.bg, padding: '6px 13px', borderRadius: 100, fontSize: 9, fontWeight: 800, flexShrink: 0 }}>
+              Export Pack
+            </div>
+          </div>
+          {/* Progress */}
+          <div style={{ marginBottom: 14, padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${T.border}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontSize: 8, color: T.text2, fontWeight: 600 }}>Evidence completion</span>
+              <span style={{ fontSize: 8, color: T.accent, fontWeight: 700 }}>8 of 12 obligations</span>
+            </div>
+            <div style={{ height: 2, background: T.border, borderRadius: 1 }}>
+              <div style={{ width: '67%', height: '100%', background: T.accent, borderRadius: 1 }} />
+            </div>
+          </div>
+          {/* Obligations list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {[
+              { label: 'Risk management system documented', done: true },
+              { label: 'Technical documentation (Annex IV)', done: true },
+              { label: 'Human oversight procedures in place', done: true },
+              { label: 'Data governance documentation', done: false },
+              { label: 'Accuracy & robustness test logs', done: false },
+            ].map((o, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 11px', background: 'rgba(255,255,255,0.015)', border: `1px solid ${o.done ? 'transparent' : T.border}` }}>
+                <div style={{ width: 11, height: 11, flexShrink: 0, background: o.done ? T.accent : 'transparent', border: `1px solid ${o.done ? T.accent : T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {o.done && <span style={{ fontSize: 6, color: T.bg, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+                </div>
+                <span style={{ fontSize: 10, color: o.done ? 'rgba(255,255,255,0.28)' : T.text, textDecoration: o.done ? 'line-through' : 'none', flex: 1 }}>{o.label}</span>
+                {!o.done && <span style={{ fontSize: 7, color: T.amber, fontWeight: 800, letterSpacing: '0.4px', textTransform: 'uppercase' as const }}>Required</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main page ───────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const [annual, setAnnual] = useState(false)
@@ -559,8 +640,8 @@ export default function LandingPage() {
 
           {/* Subtitle */}
           <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}
-            style={{ fontSize: 17, color: T.text2, lineHeight: 1.85, maxWidth: 500, margin: '0 auto 44px' }}>
-            The EU AI Act mandates structured evidence for every high-risk workflow. Most organisations are starting from zero. Irvo compresses 40+ hours into 20 minutes — per system.
+            style={{ fontSize: 17, color: 'rgba(255,255,255,0.42)', lineHeight: 1.75, maxWidth: 440, margin: '0 auto 44px', letterSpacing: '-0.01em' }}>
+            The EU AI Act requires structured evidence for every high-risk AI workflow. Irvo generates it in 20 minutes.
           </motion.p>
 
           {/* CTAs */}
@@ -613,6 +694,19 @@ export default function LandingPage() {
             style={{ width: 1, height: 24, background: `linear-gradient(${T.text3}, transparent)` }} />
         </motion.div>
       </section>
+
+      {/* ── PRODUCT PREVIEW ── */}
+      <div className="desktop-only" style={{ background: T.bg, padding: '0 32px 0', position: 'relative', overflow: 'hidden' }}>
+        {/* Top fade from hero */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: `linear-gradient(${T.bg}, transparent)`, zIndex: 2, pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
+          <motion.div initial={{ opacity: 0, y: 56 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.9, ease: SPRING_EASE }}>
+            <ProductMock />
+          </motion.div>
+          {/* Bottom fade */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, background: `linear-gradient(transparent, ${T.bg})`, pointerEvents: 'none' }} />
+        </div>
+      </div>
 
       <Divider />
 
@@ -701,19 +795,29 @@ export default function LandingPage() {
             <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.9, margin: '0 0 20px' }}>
               The EU AI Act requires organisations to produce structured technical documentation and evidence packs for AI systems classified as high-risk — before enforcement begins.
             </p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                'AI workflows are documented across spreadsheets, notes, and internal wikis',
-                'One system can take 40–60 hours to document manually',
-                'Consultants typically charge €15,000–€50,000 per system',
-                'Many teams do not yet know which workflows may be high-risk',
-                'Regulators will ask for evidence packs, not good intentions',
-              ].map((pt) => (
-                <li key={pt} style={S.listItemStart}>
-                  <div style={{ ...S.dot4, background: T.red, marginTop: 8 }} />{pt}
-                </li>
+            <div style={{ margin: '0 0 24px', border: `1px solid ${T.border}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${T.border}`, background: T.surface2 }}>
+                <div style={{ padding: '8px 14px' }}><span style={{ fontSize: 8, fontWeight: 800, color: T.text3, letterSpacing: '1.4px', textTransform: 'uppercase' as const }}>Regulation requires</span></div>
+                <div style={{ padding: '8px 14px', borderLeft: `1px solid ${T.border}` }}><span style={{ fontSize: 8, fontWeight: 800, color: T.red, opacity: 0.7, letterSpacing: '1.4px', textTransform: 'uppercase' as const }}>Most organisations have</span></div>
+              </div>
+              {([
+                ['Risk classification per system', 'No formal classification process'],
+                ['Technical documentation (Annex IV)', 'Internal notes and wikis'],
+                ['Per-workflow evidence pack', 'Generic policy documents'],
+                ['Human oversight procedures', 'Assumed, rarely documented'],
+                ['Regulator-ready evidence on request', 'Spreadsheets, if anything'],
+              ] as const).map(([req, have], i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: i < 4 ? `1px solid ${T.border}` : 'none' }}>
+                  <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 3, height: 3, borderRadius: '50%', background: T.accent, opacity: 0.5, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: T.text, lineHeight: 1.4 }}>{req}</span>
+                  </div>
+                  <div style={{ padding: '10px 14px', borderLeft: `1px solid ${T.border}`, display: 'flex', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: T.red, opacity: 0.6, lineHeight: 1.4 }}>{have}</span>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
             <p style={{ fontSize: 15, color: T.text, lineHeight: 1.85, margin: '0 0 16px', padding: '20px 24px', borderLeft: `2px solid ${T.accent}`, background: 'rgba(0,229,191,0.05)', letterSpacing: '-0.01em' }}>
               The market is full of policy templates and inventory spreadsheets. Nobody is building the actual artefact regulators and auditors will ask to see: a structured, per-workflow evidence pack. That is what Irvo builds.
             </p>
@@ -865,46 +969,62 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="hp-esc-grid wall-grid">
-            {([
-              {
-                color: T.red, icon: <Clock size={20} color={T.red} style={{ marginTop: 4 }} />, tag: 'The deadline', title: 'August 2, 2026',
-                body: 'This is the date high-risk AI system obligations under the EU AI Act become enforceable. Technical documentation, risk management, and evidence packs must exist before this date — not after.',
-                points: ['Risk classification required per system', 'Technical documentation must be current', 'Human oversight measures must be in place', 'Evidence available for regulator review'],
-                ctaLabel: 'Join the Waitlist', ctaEvent: 'landing_cta_clicked' as AnalyticsEvent, ctaVariant: 'waitlist' as WaitlistVariant,
-              },
-              {
-                color: T.purple, icon: <TrendingUp size={20} color={T.purple} style={{ marginTop: 4 }} />, tag: 'The exposure', title: 'Up to €35M in fines',
-                body: 'Non-compliance with high-risk AI obligations can result in fines of up to €35,000,000 or 7% of total worldwide annual turnover — whichever is higher. For SMEs, that exposure is existential.',
-                points: ['€35M or 7% of global turnover for prohibited AI', '€15M or 3% for high-risk non-compliance', 'National supervisory authorities begin audits 2026', 'No grace period after enforcement starts'],
-                ctaLabel: 'Claim Founding Discount', ctaEvent: 'founding_discount_clicked' as AnalyticsEvent, ctaVariant: 'founding' as WaitlistVariant,
-              },
-            ] as const).map((card, ci) => (
-              <motion.div key={card.tag} {...fadeInOnce(ci * 0.07)} style={{ ...S.cardPadLg, ...S.wallCell, background: T.card, position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: 2, height: '100%', background: card.color }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: card.color, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 8 }}>{card.tag}</span>
-                    <h3 style={{ fontSize: 26, fontWeight: 900, color: T.text, margin: 0, letterSpacing: '-0.03em' }}>{card.title}</h3>
+          <motion.div {...fadeInOnce(0.08)} style={{ border: `1px solid ${T.border}`, background: T.card, overflow: 'hidden' }}>
+            {/* Status bar */}
+            <div style={{ padding: '14px 24px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(229,71,71,0.03)' }}>
+              <motion.div animate={{ opacity: [1, 0.15, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
+                style={{ width: 6, height: 6, borderRadius: '50%', background: T.red, boxShadow: '0 0 7px rgba(229,71,71,0.8)', flexShrink: 0 }} />
+              <span style={{ fontSize: 9, fontWeight: 800, color: T.red, letterSpacing: '0.8px', textTransform: 'uppercase' as const }}>Enforcement Active</span>
+              <span style={{ fontSize: 9, color: T.text3 }}>·</span>
+              <span style={{ fontSize: 9, color: T.text3, fontWeight: 600 }}>High-risk AI Act obligations come into force August 2, 2026</span>
+              <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: T.text2, fontVariantNumeric: 'tabular-nums' as const }}><DaysLeft /> remaining</span>
+            </div>
+            {/* Two-column body */}
+            <div className="hp-esc-grid">
+              {/* Left: timeline */}
+              <div style={{ padding: '28px 24px', borderRight: `1px solid ${T.border}` }}>
+                <p style={{ fontSize: 8, fontWeight: 800, color: T.text3, letterSpacing: '1.6px', textTransform: 'uppercase' as const, margin: '0 0 18px' }}>Enforcement Timeline</p>
+                {([
+                  { date: 'Feb 2025', label: 'Prohibited AI systems ban', active: true },
+                  { date: 'Aug 2025', label: 'GPAI model obligations', active: true },
+                  { date: 'Aug 2026', label: 'High-risk system obligations', active: false },
+                  { date: 'Aug 2027', label: 'Embedded AI products', active: false },
+                ] as const).map((row, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: `1px solid ${T.border}` }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: row.active ? T.red : 'rgba(255,255,255,0.3)', width: 54, flexShrink: 0, fontVariantNumeric: 'tabular-nums' as const }}>{row.date}</span>
+                    <span style={{ fontSize: 12, color: row.active ? T.text2 : T.text, flex: 1 }}>{row.label}</span>
+                    <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase' as const, color: row.active ? T.red : T.accent, background: row.active ? 'rgba(229,71,71,0.1)' : 'rgba(0,229,191,0.08)', padding: '2px 7px', flexShrink: 0 }}>{row.active ? 'In force' : 'Upcoming'}</span>
                   </div>
-                  {card.icon}
+                ))}
+              </div>
+              {/* Right: penalty structure */}
+              <div style={{ padding: '28px 24px' }}>
+                <p style={{ fontSize: 8, fontWeight: 800, color: T.text3, letterSpacing: '1.6px', textTransform: 'uppercase' as const, margin: '0 0 18px' }}>Penalty Structure</p>
+                {([
+                  { type: 'Prohibited AI systems', fine: '€35M', sub: 'or 7% of global annual turnover' },
+                  { type: 'High-risk non-compliance', fine: '€15M', sub: 'or 3% of global annual turnover' },
+                  { type: 'Insufficient cooperation', fine: '€7.5M', sub: 'or 1.5% of global annual turnover' },
+                ] as const).map((row, i) => (
+                  <div key={i} style={{ padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                      <span style={{ fontSize: 12, color: T.text2 }}>{row.type}</span>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: i === 0 ? T.red : 'rgba(255,255,255,0.7)', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' as const }}>{row.fine}</span>
+                    </div>
+                    <p style={{ fontSize: 10, color: T.text3, margin: 0, textAlign: 'right' }}>{row.sub}</p>
+                  </div>
+                ))}
+                <div style={{ marginTop: 24 }}>
+                  <Magnetic>
+                    <motion.button onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Founding Discount', section: 'urgency', page: 'landing' }); openWaitlist('founding') }}
+                      whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                      style={{ ...S.inlineBtn, background: T.accent, borderRadius: 100, padding: '11px 22px', fontSize: 13, fontWeight: 700, color: T.bg }}>
+                      <ArrowRight size={14} /> Claim Founding Discount
+                    </motion.button>
+                  </Magnetic>
                 </div>
-                <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.8, margin: '0 0 32px' }}>{card.body}</p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {card.points.map((f) => (
-                    <li key={f} style={S.listItem}><div style={{ ...S.dot4, background: card.color }} />{f}</li>
-                  ))}
-                </ul>
-                <Magnetic>
-                  <motion.button onClick={() => { track({ event: card.ctaEvent, cta_label: card.ctaLabel, section: 'urgency', page: 'landing' }); openWaitlist(card.ctaVariant) }}
-                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                    style={{ ...S.inlineBtn, background: card.color, borderRadius: 100, padding: '12px 24px', fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                    <ArrowRight size={14} /> {card.ctaLabel}
-                  </motion.button>
-                </Magnetic>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </div>
+          </motion.div>
 
           <motion.div {...fadeInOnce(0.2)} style={{ marginTop: 40, padding: '28px 36px', border: `1px solid ${T.border}`, background: T.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0 }}>
             {[
