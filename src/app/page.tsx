@@ -509,10 +509,10 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
 
 function Logo({ size = 28 }: { size?: number }) {
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.38), userSelect: 'none' }}>
+    <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.38), userSelect: 'none', textDecoration: 'none' }}>
       <div style={{ width: 3, height: Math.round(size * 0.85), background: T.accent, flexShrink: 0, borderRadius: 1 }} />
       <span style={{ fontSize: size, fontWeight: 900, letterSpacing: '-0.5px', color: T.text, fontFamily: FF, lineHeight: 1, whiteSpace: 'nowrap' }}>IRVO</span>
-    </div>
+    </Link>
   )
 }
 
@@ -530,7 +530,7 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
   const irvoMinutes = systemsNum * 20
   const savings = Math.max(0, consultantCost - 149 * 12)
   const hasResult = systemsNum > 0 && rateNum > 0
-  const fmtEur = (n: number) => `€${n.toLocaleString('de-DE')}`
+  const fmtGbp = (n: number) => `£${n.toLocaleString('en-GB')}`
   const inputStyle = { fontSize: 40, fontWeight: 900, color: T.text, background: 'transparent', border: 'none', outline: 'none', width: '100%', fontFamily: FF, letterSpacing: '-2px', caretColor: T.accent, appearance: 'textfield' as const }
 
   return (
@@ -554,9 +554,9 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
               <div style={{ height: 2, background: sysFocus ? T.accent : T.border, marginTop: 8, transition: 'background 0.2s' }} />
             </div>
             <div style={{ padding: '32px 36px' }}>
-              <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>Internal Hourly Rate (€)</label>
+              <label style={{ fontSize: 10, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: 12 }}>Internal Hourly Rate (£)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 32, fontWeight: 900, color: T.text3 }}>€</span>
+                <span style={{ fontSize: 32, fontWeight: 900, color: T.text3 }}>£</span>
                 <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} onFocus={() => setRateFocus(true)} onBlur={() => setRateFocus(false)} placeholder="150" style={inputStyle} />
               </div>
               <div style={{ height: 2, background: rateFocus ? T.accent : T.border, marginTop: 8, transition: 'background 0.2s' }} />
@@ -566,9 +566,9 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
           <div className="r-grid-4" style={{ borderBottom: `1px solid ${T.border}` }}>
             {[
               { label: 'Manual documentation hours',    value: hasResult ? `${manualHours}h`       : '—', note: `${systemsNum} system${systemsNum !== 1 ? 's' : ''} × 50 hrs`, highlight: false },
-              { label: 'Consultant cost estimate',      value: hasResult ? fmtEur(consultantCost)  : '—', note: `€${rateNum}/hr × 50 hrs each`,                                highlight: false },
+              { label: 'Consultant cost estimate',      value: hasResult ? fmtGbp(consultantCost)  : '—', note: `£${rateNum}/hr × 50 hrs each`,                                highlight: false },
               { label: 'Documentation time with Irvo', value: hasResult ? `${irvoMinutes} min`     : '—', note: '~20 min per system',                                         highlight: false },
-              { label: 'Potential savings',             value: hasResult ? fmtEur(savings)         : '—', note: 'vs Irvo Starter plan',                                        highlight: true  },
+              { label: 'Potential savings',             value: hasResult ? fmtGbp(savings)         : '—', note: 'vs Irvo Starter plan',                                        highlight: true  },
             ].map((col, i) => (
               <motion.div key={col.label} animate={{ opacity: hasResult ? 1 : 0.4 }} transition={{ duration: 0.3 }}
                 style={{ padding: '32px 36px', borderRight: i < 3 ? `1px solid ${T.border}` : 'none', borderTop: col.highlight ? `2px solid ${T.accent}` : undefined, background: col.highlight ? T.accentDim : 'transparent' }}>
@@ -586,7 +586,7 @@ function SystemsEstimator({ onOpenWaitlist }: { onOpenWaitlist: (v: WaitlistVari
 
           <div style={{ padding: '24px 36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <p style={{ fontSize: 13, color: T.text2, margin: 0, maxWidth: 520, lineHeight: 1.7 }}>
-              {hasResult ? `Manual documentation at €${rateNum}/hr costs ${fmtEur(consultantCost)}. Irvo Starter is €149/mo. Documentation pays for itself in week one.` : 'Enter your AI system count and internal hourly rate to see your documentation burden.'}
+              {hasResult ? `Manual documentation at £${rateNum}/hr costs ${fmtGbp(consultantCost)}. Irvo Starter is £149/mo. Documentation pays for itself in week one.` : 'Enter your AI system count and internal hourly rate to see your documentation burden.'}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'estimator', page: 'landing' }); onOpenWaitlist('waitlist') }}
@@ -708,7 +708,7 @@ export default function LandingPage() {
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
           {NAV.map((item) => (
-            <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={() => setMobileMenu(false)}
+            <a key={item} href={`#${item.toLowerCase().replace(/ /g, '-')}`} onClick={() => setMobileMenu(false)}
               style={{ fontSize: 22, fontWeight: 700, color: T.text2, textDecoration: 'none', padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>{item}</a>
           ))}
           <button onClick={() => { setMobileMenu(false); track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'mobile-nav', page: 'landing' }); openWaitlist('waitlist') }}
@@ -734,7 +734,7 @@ export default function LandingPage() {
           <Logo size={32} />
           <nav className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
             {NAV.map((item) => (
-              <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', textDecoration: 'none', fontWeight: 600, letterSpacing: '0.2px', transition: 'color 0.15s' }}>{item}</motion.a>
+              <motion.a key={item} href={`#${item.toLowerCase().replace(/ /g, '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', textDecoration: 'none', fontWeight: 600, letterSpacing: '0.2px', transition: 'color 0.15s' }}>{item}</motion.a>
             ))}
             <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
               style={{ fontSize: 13, color: T.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FF }}>
@@ -1058,7 +1058,7 @@ export default function LandingPage() {
                 <p style={{ fontSize: 11, fontWeight: 700, color: plan.highlight ? T.accent : T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 8px' }}>{plan.name}</p>
                 <p style={{ fontSize: 12, color: T.text2, margin: '0 0 24px' }}>{plan.desc}</p>
                 <p style={{ fontSize: 48, fontWeight: 900, color: T.text, margin: '0 0 4px', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
-                  €<AnimatePresence mode="wait">
+                  £<AnimatePresence mode="wait">
                     <motion.span key={String(annual)} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                       {annual ? plan.annual : plan.monthly}
                     </motion.span>
