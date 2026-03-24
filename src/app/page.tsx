@@ -325,45 +325,105 @@ function FinalCtaBg() {
 }
 
 function Cursor() {
-  const posRef  = useRef<HTMLDivElement>(null)
-  const [hovered, setHovered] = useState(false)
+  const dotRef  = useRef<HTMLDivElement>(null)
+  const ringRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let raf = 0
-    let tx = -120, ty = -120
+
+    // Cursor target — snaps instantly
+    let tx = -100, ty = -100
+
+    // Ring spring state — follows with physics
+    let cx = tx, cy = ty, vx = 0, vy = 0
+
+    // Hover & click state — ref-based, no re-renders
+    let hovering    = false
+    let baseScale   = 1.0    // interpolates toward target
+    let clickPulse  = 0      // 1 on click → decays to 0
+
+    const RING = 22          // base element size px
+    const HALF = RING / 2
+
     const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
-    const on  = () => setHovered(true)
-    const off = () => setHovered(false)
+    const onDown = () => { clickPulse = 1 }
+
+    window.addEventListener('mousemove', onMove, { passive: true })
+    window.addEventListener('mousedown', onDown)
+    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
+      el.addEventListener('mouseenter', () => { hovering = true  })
+      el.addEventListener('mouseleave', () => { hovering = false })
+    })
 
     const tick = () => {
       raf = requestAnimationFrame(tick)
-      if (posRef.current)
-        posRef.current.style.transform = `translate(${tx}px, ${ty}px)`
-    }
-    raf = requestAnimationFrame(tick)
 
-    window.addEventListener('mousemove', onMove, { passive: true })
-    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
-      el.addEventListener('mouseenter', on)
-      el.addEventListener('mouseleave', off)
-    })
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove) }
+      // ── Ring spring physics ─────────────────────────────────
+      vx = vx * 0.74 + (tx - cx) * 0.13
+      vy = vy * 0.74 + (ty - cy) * 0.13
+      cx += vx; cy += vy
+
+      // ── Velocity stretch — ring deforms into an ellipse ─────
+      // oriented along the direction of travel
+      const spd     = Math.sqrt(vx * vx + vy * vy)
+      const stretch = Math.min(spd * 0.034, 0.46)
+      const sX      = 1 + stretch
+      const sY      = Math.max(1 - stretch * 0.55, 0.58)
+      const ang     = spd > 0.5 ? Math.atan2(vy, vx) * (180 / Math.PI) : 0
+
+      // ── Smooth size scale (hover → 2.1×) ───────────────────
+      baseScale   += ((hovering ? 2.1 : 1.0) - baseScale)   * 0.15
+      clickPulse  *= 0.85
+      const pulse  = 1 + clickPulse * 0.38
+
+      // ── Dot — snaps, fades on hover ─────────────────────────
+      if (dotRef.current) {
+        dotRef.current.style.opacity   = hovering ? '0' : '1'
+        dotRef.current.style.transform =
+          `translate(${tx}px,${ty}px) translate(-50%,-50%)`
+      }
+
+      // ── Ring — spring + stretch + hover scale + click pulse ─
+      if (ringRef.current) {
+        const fX = (baseScale * sX * pulse).toFixed(3)
+        const fY = (baseScale * sY * pulse).toFixed(3)
+        ringRef.current.style.transform =
+          `translate(${(cx - HALF).toFixed(1)}px,${(cy - HALF).toFixed(1)}px)` +
+          ` rotate(${ang.toFixed(1)}deg)` +
+          ` scaleX(${fX}) scaleY(${fY})`
+      }
+    }
+
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mousedown', onDown)
+    }
   }, [])
 
   return (
-    <div ref={posRef} style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999, pointerEvents: 'none' }}>
-      <motion.div
-        animate={{ width: hovered ? 48 : 18, height: hovered ? 48 : 18 }}
-        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          borderRadius: '50%',
-          background: '#ffffff',
-          mixBlendMode: 'difference' as const,
-          transform: 'translate(-50%, -50%)',
-          willChange: 'width, height',
-        }}
-      />
-    </div>
+    <>
+      {/* Teal dot — exact cursor position, vanishes on hover */}
+      <div ref={dotRef} style={{
+        position: 'fixed', top: 0, left: 0, zIndex: 9999,
+        width: 5, height: 5, borderRadius: '50%',
+        background: T.accent,
+        pointerEvents: 'none',
+        willChange: 'transform, opacity',
+        transition: 'opacity 0.12s',
+        boxShadow: `0 0 6px ${T.accent}`,
+      }} />
+      {/* Ring — spring lag + velocity stretch + blend inversion */}
+      <div ref={ringRef} style={{
+        position: 'fixed', top: 0, left: 0, zIndex: 9998,
+        width: 22, height: 22, borderRadius: '50%',
+        background: '#ffffff',
+        mixBlendMode: 'difference' as const,
+        pointerEvents: 'none',
+        willChange: 'transform',
+      } as React.CSSProperties} />
+    </>
   )
 }
 
