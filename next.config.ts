@@ -70,15 +70,27 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
 
+  // ── React strict mode ────────────────────────────────────────────────────
+  // Double-invokes renders/effects in dev to surface side-effect bugs early.
+  reactStrictMode: true,
+
   // ── Framework fingerprint removal ────────────────────────────────────────
   // Removes X-Powered-By: Next.js from all responses.
-  // Prevents automated scanners from identifying the stack and targeting known CVEs.
   poweredByHeader: false,
 
   // ── Source map suppression ───────────────────────────────────────────────
-  // Production JS bundles are minified and unreadable. Source maps would
-  // re-expose the original code — disabled here to keep business logic private.
+  // Production JS bundles are minified. Source maps would re-expose business logic.
   productionBrowserSourceMaps: false,
+
+  // ── Console stripping ────────────────────────────────────────────────────
+  // SWC strips console.log from the browser bundle in production.
+  // console.error and console.warn are kept for error tracking integrations.
+  // Server-side console calls (API routes, middleware) are unaffected.
+  compiler: {
+    removeConsole: {
+      exclude: ['error', 'warn'],
+    },
+  },
 
   // ── Security headers ─────────────────────────────────────────────────────
   async headers() {

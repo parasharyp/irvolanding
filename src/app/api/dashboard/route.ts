@@ -11,8 +11,6 @@ export async function GET() {
     const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
     if (!userData?.organization_id) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
-    console.log('[STUB] GET /api/dashboard for org', userData.organization_id)
-
     return NextResponse.json({
       total_systems: 0,
       classified: 0,

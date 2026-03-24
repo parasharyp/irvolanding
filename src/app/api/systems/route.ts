@@ -12,7 +12,6 @@ export async function GET() {
     const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
     if (!userData?.organization_id) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
-    console.log('[STUB] GET /api/systems for org', userData.organization_id)
     return NextResponse.json({ systems: [] })
   } catch (err) {
     return serverError(err, 'GET /api/systems')
@@ -51,7 +50,6 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     }
 
-    console.log('[STUB] POST /api/systems — created system:', mockSystem.id, mockSystem.name)
     return NextResponse.json({ system: mockSystem }, { status: 201 })
   } catch (err) {
     return serverError(err, 'POST /api/systems')

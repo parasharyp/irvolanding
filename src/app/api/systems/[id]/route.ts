@@ -95,7 +95,6 @@ export async function GET(
 
     if (!id || id === 'undefined') return notFound('System')
 
-    console.log('[STUB] GET /api/systems/', id)
     const system = mockSystem(id, userData.organization_id)
     const obligations = mockObligations(id)
 
@@ -120,7 +119,6 @@ export async function PUT(
     const { id } = await params
     const body = await req.json() as Record<string, unknown>
 
-    console.log('[STUB] PUT /api/systems/', id, body)
     return NextResponse.json({ system: { ...mockSystem(id, userData.organization_id), ...body, updated_at: new Date().toISOString() } })
   } catch (err) {
     return serverError(err, 'PUT /api/systems/[id]')
@@ -140,7 +138,6 @@ export async function DELETE(
     if (!userData?.organization_id) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
     const { id } = await params
-    console.log('[STUB] DELETE /api/systems/', id)
     return NextResponse.json({ success: true })
   } catch (err) {
     return serverError(err, 'DELETE /api/systems/[id]')

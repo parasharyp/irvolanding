@@ -97,8 +97,6 @@ export async function POST(req: NextRequest) {
       obligations = LIMITED_RISK_OBLIGATIONS
     }
 
-    console.log('[STUB] POST /api/systems/classify — risk:', risk_level, 'category:', annex_iii_category)
-
     return NextResponse.json({
       risk_level,
       annex_iii_category: annex_iii_category === 'none' ? null : annex_iii_category,
