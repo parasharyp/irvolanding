@@ -69,8 +69,8 @@ const FEATURES = [
 ]
 
 const STATS = [
-  { to: 35,  prefix: '€', suffix: 'M',   label: 'maximum fine for non-compliance' },
-  { to: 50,  prefix: '€', suffix: 'k',   label: 'avg. consultant cost per system' },
+  { to: 35,  prefix: '£', suffix: 'M',   label: 'maximum fine for non-compliance' },
+  { to: 50,  prefix: '£', suffix: 'k',   label: 'avg. consultant cost per system' },
   { to: 50,  prefix: '',  suffix: 'h+',  label: 'manual documentation per system' },
   { to: 20,  prefix: '',  suffix: 'min', label: 'to document a workflow with Irvo' },
 ]
@@ -85,7 +85,7 @@ const STEPS = [
 const TESTIMONIALS = [
   { name: 'Sophie M.',  role: 'Legal Counsel, Amsterdam',      text: 'We have been building spreadsheets for two years and still cannot give our board a clear picture of which systems are in scope. That is exactly the problem this solves.' },
   { name: 'Daniel F.',  role: 'Head of Compliance, Dublin',    text: 'Documenting 12 AI systems before August 2026 manually would take months. Any tool that compresses that into hours is immediately worth evaluating.' },
-  { name: 'Elena V.',   role: 'Operations Director, Berlin',   text: 'Every consultant we spoke to quoted a minimum of €20,000 just for a scoping exercise. We needed something we could start ourselves.' },
+  { name: 'Elena V.',   role: 'Operations Director, Berlin',   text: 'Every consultant we spoke to quoted a minimum of £20,000 just for a scoping exercise. We needed something we could start ourselves.' },
 ]
 
 interface PricingPlan { name: string; monthly: number; annual: number; desc: string; features: string[]; highlight?: boolean; plus?: boolean }
@@ -857,7 +857,7 @@ export default function LandingPage() {
           {/* Stat strip */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
             style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderTop: `1px solid ${T.borderMid}`, marginTop: 52, overflow: 'hidden' }}>
-            {[{ value: '€35M', label: 'max fine', accent: false }, { value: '50h+', label: 'manual per system', accent: false }, { value: '20min', label: 'with Irvo', accent: true }].map(({ value, label, accent }, i) => (
+            {[{ value: '£35M', label: 'max fine', accent: false }, { value: '50h+', label: 'manual per system', accent: false }, { value: '20min', label: 'with Irvo', accent: true }].map(({ value, label, accent }, i) => (
               <div key={label} style={{ padding: '18px 32px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center', background: accent ? T.accentDim : 'transparent' }}>
                 <div style={{ fontSize: accent ? 32 : 26, fontWeight: 900, color: accent ? T.accent : T.text, letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
                 <div style={{ fontSize: 10, color: accent ? T.accent : T.text3, marginTop: 6, letterSpacing: '0.4px', textTransform: 'uppercase' as const, fontWeight: 700, opacity: accent ? 0.7 : 1 }}>{label}</div>
@@ -882,7 +882,7 @@ export default function LandingPage() {
         <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} style={{ display: 'flex', gap: 0, width: 'max-content' }}>
           {[...Array(2)].map((_, outer) => (
             <span key={outer} style={{ display: 'flex' }}>
-              {['THE CLOCK IS RUNNING', 'AUGUST 2, 2026', 'HIGH-RISK OBLIGATIONS ARE ENFORCEABLE', 'NO GRACE PERIOD', '€35M MAXIMUM FINE', 'STRUCTURED EVIDENCE — NOT SPREADSHEETS', 'EVERY AI WORKFLOW NEEDS DOCUMENTATION', 'ARE YOU READY?'].map((item, i) => (
+              {['THE CLOCK IS RUNNING', 'AUGUST 2, 2026', 'HIGH-RISK OBLIGATIONS ARE ENFORCEABLE', 'NO GRACE PERIOD', '£35M MAXIMUM FINE', 'STRUCTURED EVIDENCE — NOT SPREADSHEETS', 'EVERY AI WORKFLOW NEEDS DOCUMENTATION', 'ARE YOU READY?'].map((item, i) => (
                 <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 28, fontSize: 11, color: T.text2, fontWeight: 700, letterSpacing: '1.2px', padding: '0 28px', whiteSpace: 'nowrap' }}>
                   {item}
                   <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.accentGlow, flexShrink: 0, display: 'inline-block' }} />
@@ -904,7 +904,7 @@ export default function LandingPage() {
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
             <p style={S.overline}>What you get</p>
             <h2 style={{ ...S.h2, fontSize: 'clamp(34px, 4.5vw, 52px)', maxWidth: 600 }}>
-              The compliance stack your consultants charge&nbsp;€20k to build. Included.
+              The compliance stack your consultants charge&nbsp;£20k to build. Included.
             </h2>
           </motion.div>
           <div className="r-grid-3 wall-grid">
@@ -999,7 +999,7 @@ export default function LandingPage() {
           <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
             {[
               { label: 'High-risk obligation start', value: 'Aug 2026', note: 'Annex III systems' },
-              { label: 'Maximum fine',               value: '€35M',    note: 'Or 7% of global annual turnover' },
+              { label: 'Maximum fine',               value: '£35M',    note: 'Or 7% of global annual turnover' },
               { label: 'GPAI model obligations',     value: 'Aug 2025', note: 'Already in force' },
               { label: 'Annex III categories',       value: '8+',      note: 'High-risk use case groups' },
             ].map((row, i) => (
@@ -1136,7 +1136,7 @@ export default function LandingPage() {
             </div>
             <h2 style={{ ...S.h2, fontSize: 'clamp(32px, 4.5vw, 52px)', margin: '0 0 16px' }}>The clock does not care<br />about your backlog.</h2>
             <p style={{ fontSize: 15, color: T.text2, margin: 0, maxWidth: 520, lineHeight: 1.8 }}>
-              High-risk AI obligations come into force on August 2, 2026. Fines can reach €35M or 7% of global annual turnover. Most SMEs are still starting from zero.
+              High-risk AI obligations come into force on August 2, 2026. Fines can reach £35M or 7% of global annual turnover. Most SMEs are still starting from zero.
             </p>
           </motion.div>
 
@@ -1172,9 +1172,9 @@ export default function LandingPage() {
               <div style={{ padding: '28px 24px' }}>
                 <p style={{ fontSize: 8, fontWeight: 800, color: T.text3, letterSpacing: '1.6px', textTransform: 'uppercase' as const, margin: '0 0 18px' }}>Penalty Structure</p>
                 {([
-                  { type: 'Prohibited AI systems', fine: '€35M', sub: 'or 7% of global annual turnover' },
-                  { type: 'High-risk non-compliance', fine: '€15M', sub: 'or 3% of global annual turnover' },
-                  { type: 'Insufficient cooperation', fine: '€7.5M', sub: 'or 1.5% of global annual turnover' },
+                  { type: 'Prohibited AI systems', fine: '£35M', sub: 'or 7% of global annual turnover' },
+                  { type: 'High-risk non-compliance', fine: '£15M', sub: 'or 3% of global annual turnover' },
+                  { type: 'Insufficient cooperation', fine: '£7.5M', sub: 'or 1.5% of global annual turnover' },
                 ] as const).map((row, i) => (
                   <div key={i} style={{ padding: '12px 0', borderBottom: `1px solid ${T.border}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
