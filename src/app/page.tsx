@@ -265,7 +265,7 @@ function HeroCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
     />
   )
 }
@@ -627,9 +627,9 @@ function CursorSpotlight() {
 
   return (
     <>
-      <div ref={outerRef} style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
-      <div ref={midRef}   style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
-      <div ref={innerRef} style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none' }} />
+      <div ref={outerRef} style={{ position: 'fixed', inset: 0, zIndex: 3, pointerEvents: 'none' }} />
+      <div ref={midRef}   style={{ position: 'fixed', inset: 0, zIndex: 3, pointerEvents: 'none' }} />
+      <div ref={innerRef} style={{ position: 'fixed', inset: 0, zIndex: 3, pointerEvents: 'none' }} />
     </>
   )
 }
@@ -667,6 +667,9 @@ export default function LandingPage() {
       <CursorSpotlight />
       <Cursor />
       <ScrollBar />
+
+      {/* Content wrapper — sits above canvas (z:0) but below spotlight (z:3) */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
 
       {/* Mobile nav overlay */}
       <div className={`mobile-nav-overlay${mobileMenu ? ' open' : ''}`} style={{ background: T.bg }}>
@@ -1246,6 +1249,8 @@ export default function LandingPage() {
       <AnimatePresence>
         {waitlistModal && <WaitlistModal variant={waitlistModal} onClose={() => setWaitlistModal(null)} />}
       </AnimatePresence>
+
+      </div>{/* end content wrapper */}
     </div>
   )
 }
