@@ -265,7 +265,7 @@ function HeroCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
     />
   )
 }
@@ -663,6 +663,7 @@ export default function LandingPage() {
 
   return (
     <div style={{ background: T.bg, color: T.text, fontFamily: FF, minHeight: '100vh' }}>
+      <HeroCanvas />
       <CursorSpotlight />
       <Cursor />
       <ScrollBar />
@@ -725,7 +726,6 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section className="hp-hero-pad" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <HeroCanvas />
         <HeroBg />
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 860 }}>
