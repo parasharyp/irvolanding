@@ -32,7 +32,7 @@ const FF = 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif'
 
 // ─── Shared style helpers ────────────────────────────────────────────────────
 const S = {
-  overline: { fontSize: 11, fontWeight: 700, color: T.text2, textTransform: 'uppercase' as const, letterSpacing: '1.2px', margin: '0 0 20px' },
+  overline: { fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.38)', textTransform: 'uppercase' as const, letterSpacing: '2.4px', margin: '0 0 22px', display: 'block' as const },
   h2: { fontWeight: 900, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.05 } as React.CSSProperties,
   wallCell: { borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` },
   dot4: { width: 4, height: 4, borderRadius: '50%', flexShrink: 0 as const },
@@ -132,42 +132,37 @@ function Divider() {
 function HeroBg() {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Grid — tighter, fades at edges */}
+      {/* Dot grid — architectural, not decorative */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px)',
-        backgroundSize: '52px 52px',
-        WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 20%, transparent 80%)',
-        maskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 20%, transparent 80%)',
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.11) 1px, transparent 1px)',
+        backgroundSize: '38px 38px',
+        WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 42%, black 15%, transparent 75%)',
+        maskImage: 'radial-gradient(ellipse 70% 60% at 50% 42%, black 15%, transparent 75%)',
       }} />
-      {/* Primary beam — teal, from top centre, strong */}
+      {/* Single directional teal beam — one light source, not ambient fog */}
       <motion.div
-        animate={{ opacity: [0.85, 1, 0.85] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+        animate={{ opacity: [0.9, 1, 0.9] }}
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 1100px 800px at 50% -8%, rgba(0,229,191,0.13) 0%, rgba(0,229,191,0.04) 40%, transparent 65%)',
+          background: 'radial-gradient(ellipse 800px 600px at 50% -5%, rgba(0,229,191,0.15) 0%, rgba(0,229,191,0.05) 45%, transparent 68%)',
         }}
       />
-      {/* Secondary — warm blue ambient, bottom right */}
+      {/* Precision horizontal hairline — sense of structure */}
       <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 800px 600px at 88% 110%, rgba(71,201,229,0.07) 0%, transparent 55%)',
+        position: 'absolute', top: '52%', left: 0, right: 0, height: 1,
+        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.04) 80%, transparent 100%)',
       }} />
-      {/* Tertiary — purple edge, left */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 500px 700px at -8% 55%, rgba(167,139,250,0.05) 0%, transparent 55%)',
-      }} />
-      {/* Noise */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04 }}>
-        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+      {/* Noise — grain for depth, not noise for texture */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025 }}>
+        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
         <rect width="100%" height="100%" filter="url(#n)"/>
       </svg>
-      {/* Vignette — edges darker for depth */}
+      {/* Hard vignette — pulls focus to centre */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(2,2,3,0.6) 100%)',
+        background: 'radial-gradient(ellipse 110% 90% at 50% 50%, transparent 35%, rgba(2,2,3,0.75) 100%)',
       }} />
     </div>
   )
@@ -176,17 +171,32 @@ function HeroBg() {
 function FinalCtaBg() {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <motion.div
-        animate={{ opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 1000px 700px at 50% 60%, rgba(0,229,191,0.09) 0%, transparent 65%)',
-        }}
-      />
+      {/* Dot grid — same brand signature as hero */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 600px 400px at 50% 0%, rgba(71,201,229,0.04) 0%, transparent 50%)',
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)',
+        backgroundSize: '38px 38px',
+        WebkitMaskImage: 'radial-gradient(ellipse 85% 75% at 50% 50%, black 10%, transparent 75%)',
+        maskImage: 'radial-gradient(ellipse 85% 75% at 50% 50%, black 10%, transparent 75%)',
+      }} />
+      {/* Upward stage light — cinematic, not ambient */}
+      <motion.div
+        animate={{ opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 700px 500px at 50% 105%, rgba(0,229,191,0.18) 0%, rgba(0,229,191,0.07) 42%, transparent 65%)',
+        }}
+      />
+      {/* Thin vertical light column */}
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, transform: 'translateX(-50%)',
+        background: 'linear-gradient(transparent 0%, rgba(0,229,191,0.08) 40%, rgba(0,229,191,0.12) 60%, rgba(0,229,191,0.04) 85%, transparent 100%)',
+      }} />
+      {/* Strong edge vignette — stage effect */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse 120% 100% at 50% 50%, transparent 25%, rgba(2,2,3,0.85) 100%)',
       }} />
     </div>
   )
@@ -349,8 +359,8 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
 function Logo({ size = 28 }: { size?: number }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.38), userSelect: 'none' }}>
-      <div style={{ width: 2, height: Math.round(size * 0.78), background: T.accent, flexShrink: 0 }} />
-      <span style={{ fontSize: size, fontWeight: 900, letterSpacing: '2px', color: T.text, fontFamily: FF, lineHeight: 1, whiteSpace: 'nowrap' }}>IRVO</span>
+      <div style={{ width: 3, height: Math.round(size * 0.85), background: T.accent, flexShrink: 0, borderRadius: 1 }} />
+      <span style={{ fontSize: size, fontWeight: 900, letterSpacing: '-0.5px', color: T.text, fontFamily: FF, lineHeight: 1, whiteSpace: 'nowrap' }}>IRVO</span>
     </div>
   )
 }
@@ -503,7 +513,7 @@ export default function LandingPage() {
           <Logo size={32} />
           <nav className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
             {NAV.map((item) => (
-              <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{item}</motion.a>
+              <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} whileHover={{ color: T.text }} style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', textDecoration: 'none', fontWeight: 600, letterSpacing: '0.2px', transition: 'color 0.15s' }}>{item}</motion.a>
             ))}
             <button onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Get Early Access', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
               style={{ fontSize: 13, color: T.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FF }}>
@@ -532,17 +542,19 @@ export default function LandingPage() {
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 860 }}>
           {/* Badge */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1px solid ${T.borderMid}`, borderRadius: 100, padding: '6px 16px', marginBottom: 52, fontSize: 11, color: T.text2, letterSpacing: '0.5px', background: 'rgba(255,255,255,0.03)' }}>
-            <motion.div animate={{ opacity: [1, 0.25, 1] }} transition={{ duration: 1.8, repeat: Infinity }}
-              style={{ width: 5, height: 5, borderRadius: '50%', background: T.red }} />
-            <DaysLeft /> remaining · EU AI Act enforcement
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: `1px solid rgba(229,71,71,0.35)`, borderRadius: 100, padding: '8px 20px', marginBottom: 52, fontSize: 11, letterSpacing: '0.4px', background: 'rgba(229,71,71,0.07)' }}>
+            <motion.div animate={{ opacity: [1, 0.15, 1] }} transition={{ duration: 1.3, repeat: Infinity }}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: T.red, boxShadow: '0 0 8px rgba(229,71,71,0.9)', flexShrink: 0 }} />
+            <span style={{ fontWeight: 800, color: T.red, letterSpacing: '0.6px', textTransform: 'uppercase' as const }}>Enforcement</span>
+            <span style={{ color: T.text, fontWeight: 700 }}><DaysLeft /></span>
+            <span style={{ color: T.text3, fontSize: 10, letterSpacing: '0.2px' }}>EU AI Act · High-risk obligations</span>
           </motion.div>
 
           {/* H1 */}
           <motion.h1 initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: SPRING_EASE }}
             style={{ fontSize: 'clamp(52px, 9.5vw, 112px)', fontWeight: 900, lineHeight: 0.97, letterSpacing: '-0.05em', margin: '0 0 36px' }}>
             Your AI is running.<br />
-            <span style={{ color: 'rgba(255,255,255,0.2)' }}>Your documentation isn&apos;t.</span>
+            <span style={{ color: 'rgba(229,71,71,0.48)' }}>Your documentation isn&apos;t.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -551,26 +563,15 @@ export default function LandingPage() {
             The EU AI Act mandates structured evidence for every high-risk workflow. Most organisations are starting from zero. Irvo compresses 40+ hours into 20 minutes — per system.
           </motion.p>
 
-          {/* Stat strip */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderTop: `1px solid ${T.borderMid}`, marginBottom: 52, overflow: 'hidden' }}>
-            {[{ value: '€35M', label: 'max fine', accent: false }, { value: '50h+', label: 'manual per system', accent: false }, { value: '20min', label: 'with Irvo', accent: true }].map(({ value, label, accent }, i) => (
-              <div key={label} style={{ padding: '18px 32px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center', background: accent ? T.accentDim : 'transparent' }}>
-                <div style={{ fontSize: 26, fontWeight: 900, color: accent ? T.accent : T.text, letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: 10, color: accent ? T.accent : T.text3, marginTop: 6, letterSpacing: '0.4px', textTransform: 'uppercase', fontWeight: 700, opacity: accent ? 0.7 : 1 }}>{label}</div>
-              </div>
-            ))}
-          </motion.div>
-
           {/* CTAs */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
             style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Magnetic>
               <motion.button
-                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Document Your First System', section: 'hero', page: 'landing' }); openWaitlist('waitlist') }}
+                onClick={() => { track({ event: 'founding_discount_clicked', cta_label: 'Claim Your Founding Spot', section: 'hero', page: 'landing' }); openWaitlist('founding') }}
                 whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 48px rgba(0,229,191,0.22)' }}
                 style={{ ...S.inlineBtn, background: T.accent, color: T.bg, fontSize: 15, fontWeight: 700, padding: '14px 32px', borderRadius: 100, letterSpacing: '-0.2px', boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset' }}>
-                Document Your First System <ArrowRight size={16} />
+                Claim Your Founding Spot <ArrowRight size={16} />
               </motion.button>
             </Magnetic>
             <Magnetic>
@@ -581,11 +582,27 @@ export default function LandingPage() {
             </Magnetic>
           </motion.div>
 
-          {/* Trust line */}
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-            style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', margin: '28px 0 0', letterSpacing: '0.3px' }}>
-            No credit card required · EU &amp; UK coverage · First system free
-          </motion.p>
+          {/* Trust + scarcity */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 28 }}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', margin: 0, letterSpacing: '0.3px' }}>
+              No credit card required · EU &amp; UK coverage · First system free
+            </p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: T.accent, margin: 0, opacity: 0.75, letterSpacing: '0.2px' }}>
+              17 of 20 founding spots claimed
+            </p>
+          </motion.div>
+
+          {/* Stat strip */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
+            style={{ display: 'inline-flex', gap: 0, border: `1px solid ${T.border}`, borderTop: `1px solid ${T.borderMid}`, marginTop: 52, overflow: 'hidden' }}>
+            {[{ value: '€35M', label: 'max fine', accent: false }, { value: '50h+', label: 'manual per system', accent: false }, { value: '20min', label: 'with Irvo', accent: true }].map(({ value, label, accent }, i) => (
+              <div key={label} style={{ padding: '18px 32px', borderRight: i < 2 ? `1px solid ${T.border}` : 'none', textAlign: 'center', background: accent ? T.accentDim : 'transparent' }}>
+                <div style={{ fontSize: accent ? 32 : 26, fontWeight: 900, color: accent ? T.accent : T.text, letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: 10, color: accent ? T.accent : T.text3, marginTop: 6, letterSpacing: '0.4px', textTransform: 'uppercase' as const, fontWeight: 700, opacity: accent ? 0.7 : 1 }}>{label}</div>
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         {/* Scroll indicator */}
@@ -604,7 +621,7 @@ export default function LandingPage() {
         <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} style={{ display: 'flex', gap: 0, width: 'max-content' }}>
           {[...Array(2)].map((_, outer) => (
             <span key={outer} style={{ display: 'flex' }}>
-              {['EU AI ACT COMPLIANCE', 'RISK CLASSIFICATION', 'EVIDENCE PACKS', 'ANNEX III MAPPING', 'OBLIGATIONS TRACKER', 'REGULATOR-READY DOCS', 'AUDIT-READY DOCUMENTATION'].map((item, i) => (
+              {['THE CLOCK IS RUNNING', 'AUGUST 2, 2026', 'HIGH-RISK OBLIGATIONS ARE ENFORCEABLE', 'NO GRACE PERIOD', '€35M MAXIMUM FINE', 'STRUCTURED EVIDENCE — NOT SPREADSHEETS', 'EVERY AI WORKFLOW NEEDS DOCUMENTATION', 'ARE YOU READY?'].map((item, i) => (
                 <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 28, fontSize: 11, color: T.text2, fontWeight: 700, letterSpacing: '1.2px', padding: '0 28px', whiteSpace: 'nowrap' }}>
                   {item}
                   <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.accentGlow, flexShrink: 0, display: 'inline-block' }} />
@@ -624,7 +641,7 @@ export default function LandingPage() {
       <section id="features" className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
-            <p style={S.overline}>Features</p>
+            <p style={S.overline}>What you get</p>
             <h2 style={{ ...S.h2, fontSize: 'clamp(34px, 4.5vw, 52px)', maxWidth: 600 }}>
               The compliance stack your consultants charge&nbsp;€20k to build. Included.
             </h2>
@@ -636,8 +653,11 @@ export default function LandingPage() {
                 style={{ ...S.cardPad, ...S.wallCell, background: T.card, borderLeft: `2px solid transparent`, borderTop: `1px solid ${T.border}`, transition: 'background 0.25s, border-left-color 0.25s' }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderLeftColor = T.accent)}
                 onMouseLeave={(e) => (e.currentTarget.style.borderLeftColor = 'transparent')}>
-                <f.icon size={18} color={T.accent} style={{ marginBottom: 18 }} />
-                <h3 style={{ fontSize: 15, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.3px' }}>{f.title}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                  <f.icon size={17} color="rgba(255,255,255,0.28)" />
+                  <span style={{ fontSize: 9, fontWeight: 900, color: T.accent, letterSpacing: '1.6px', fontVariantNumeric: 'tabular-nums' as const, opacity: 0.65 }}>{String(i + 1).padStart(2, '0')}</span>
+                </div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.5px' }}>{f.title}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.8, margin: 0 }}>{f.desc}</p>
               </motion.div>
             ))}
@@ -647,15 +667,26 @@ export default function LandingPage() {
 
       {/* ── STATS ── */}
       <section className="hp-section-pad">
-        <div className="r-grid-4 wall-grid" style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {STATS.map((s, i) => (
-            <motion.div key={s.label} {...fadeInOnce(i * 0.06)} style={{ padding: '56px 36px', ...S.wallCell, borderTop: i === 3 ? `2px solid ${T.accent}` : undefined, background: i === 3 ? T.accentDim : 'transparent' }}>
-              <p style={{ fontSize: 'clamp(52px, 6vw, 76px)', fontWeight: 900, color: i === 3 ? T.accent : T.text, margin: '0 0 10px', letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
-                <Count to={s.to} prefix={s.prefix} suffix={s.suffix} />
-              </p>
-              <p style={{ fontSize: 12, color: i === 3 ? T.accent : T.text2, margin: 0, letterSpacing: '0.2px', opacity: i === 3 ? 0.8 : 1 }}>{s.label}</p>
-            </motion.div>
-          ))}
+        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+          <motion.div {...fadeUp()} style={{ marginBottom: 56 }}>
+            <p style={S.overline}>The cost of the status quo</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(26px, 3vw, 38px)', maxWidth: 420 }}>
+              What manual compliance costs. What Irvo costs.
+            </h2>
+          </motion.div>
+          <div className="r-grid-4 wall-grid">
+            {STATS.map((s, i) => (
+              <motion.div key={s.label} {...fadeInOnce(i * 0.06)} style={{ padding: '48px 36px', ...S.wallCell, borderTop: i === 3 ? `2px solid ${T.accent}` : `1px solid ${T.border}`, background: i === 3 ? T.accentDim : 'transparent', position: 'relative' }}>
+                {i === 3 && (
+                  <p style={{ fontSize: 9, fontWeight: 800, color: T.accent, textTransform: 'uppercase' as const, letterSpacing: '1.8px', margin: '0 0 16px', opacity: 0.7 }}>vs 50+ hours manually</p>
+                )}
+                <p style={{ fontSize: i === 3 ? 'clamp(64px, 8vw, 96px)' : 'clamp(48px, 5.5vw, 68px)', fontWeight: 900, color: i === 3 ? T.accent : 'rgba(255,255,255,0.65)', margin: '0 0 10px', letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums' as const, lineHeight: 1 }}>
+                  <Count to={s.to} prefix={s.prefix} suffix={s.suffix} />
+                </p>
+                <p style={{ fontSize: 11, color: i === 3 ? T.accent : 'rgba(255,255,255,0.3)', margin: 0, letterSpacing: '0.3px', opacity: i === 3 ? 0.75 : 1, lineHeight: 1.5 }}>{s.label}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -720,8 +751,9 @@ export default function LandingPage() {
             {STEPS.map((step, i) => (
               <motion.div key={step.n} {...fadeInOnce(i * 0.08)}
                 style={{ ...S.cardPad, ...S.wallCell, background: T.card, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 4, right: 14, fontSize: 96, fontWeight: 900, color: T.text, opacity: 0.035, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.05em' }}>{step.n}</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.text3, letterSpacing: '0.5px', display: 'block', marginBottom: 24 }}>{step.n}</span>
+                <div style={{ position: 'absolute', top: 4, right: 14, fontSize: 96, fontWeight: 900, color: T.text, opacity: 0.025, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.05em' }}>{step.n}</div>
+                <span style={{ fontSize: 9, fontWeight: 900, color: T.accent, letterSpacing: '1.6px', display: 'block', marginBottom: 10, opacity: 0.6 }}>{step.n}</span>
+                <div style={{ width: 18, height: 1, background: T.accent, opacity: 0.35, marginBottom: 22 }} />
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: '0 0 12px', letterSpacing: '-0.3px' }}>{step.title}</h3>
                 <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.75, margin: 0 }}>{step.desc}</p>
               </motion.div>
@@ -736,16 +768,16 @@ export default function LandingPage() {
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeInOnce()} style={{ marginBottom: 64 }}>
-            <p style={S.overline}>Market validation</p>
+            <p style={S.overline}>From compliance teams across Europe</p>
             <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.5vw, 42px)', margin: '0 0 12px' }}>The problem is real.</h2>
-            <p style={{ fontSize: 14, color: T.text2, margin: 0, lineHeight: 1.7, maxWidth: 520 }}>We spoke to compliance teams, legal counsel, and operations leaders across Europe before writing a line of code.</p>
+            <p style={{ fontSize: 14, color: T.text2, margin: 0, lineHeight: 1.7, maxWidth: 520 }}>We spoke to compliance teams, legal counsel, and operations leaders before writing a line of code. This is what they said.</p>
           </motion.div>
           <div className="r-grid-3 wall-grid">
             {TESTIMONIALS.map((t, i) => (
               <motion.div key={t.name} {...fadeInOnce(i * 0.08)} whileHover={{ background: 'rgba(255,255,255,0.015)' }}
                 style={{ padding: '40px 36px', ...S.wallCell, background: T.card, transition: 'background 0.2s' }}>
-                <div style={{ width: 32, height: 1, background: T.accent, marginBottom: 32, opacity: 0.7 }} />
-                <p style={{ fontSize: 16, color: T.text, lineHeight: 1.8, margin: '0 0 32px', fontStyle: 'italic', letterSpacing: '-0.01em' }}>&ldquo;{t.text}&rdquo;</p>
+                <div style={{ fontSize: 72, lineHeight: 0.75, color: T.text, opacity: 0.06, fontFamily: 'Georgia, serif', marginBottom: 20, letterSpacing: '-4px', userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</div>
+                <p style={{ fontSize: 15, color: T.text, lineHeight: 1.85, margin: '0 0 32px', letterSpacing: '-0.01em' }}>{t.text}</p>
                 <div>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: T.text }}>{t.name}</p>
                   <p style={{ margin: '2px 0 0', fontSize: 11, color: T.text2 }}>{t.role}</p>
@@ -784,8 +816,8 @@ export default function LandingPage() {
                 style={{ padding: '48px 36px', ...S.wallCell, background: plan.highlight ? T.surface : T.card, position: 'relative' }}>
                 {plan.highlight && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.accent }} />}
                 {plan.highlight && (
-                  <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 10, fontWeight: 700, color: T.bg, background: T.accent, padding: '3px 8px', borderRadius: 3, letterSpacing: '0.3px', textTransform: 'uppercase' }}>
-                    Most popular
+                  <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 9, fontWeight: 800, color: T.bg, background: T.accent, padding: '3px 10px', borderRadius: 100, letterSpacing: '0.8px', textTransform: 'uppercase' as const }}>
+                    Recommended
                   </div>
                 )}
                 <p style={{ fontSize: 11, fontWeight: 700, color: plan.highlight ? T.accent : T.text2, textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 8px' }}>{plan.name}</p>
@@ -898,7 +930,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
             <p style={S.overline}>FAQ</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>What teams ask before they start.</h2>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(30px, 4vw, 46px)' }}>Every question before the decision.</h2>
           </motion.div>
           <div className="r-grid-3 wall-grid">
             {FAQS.map((faq, i) => (
@@ -922,12 +954,14 @@ export default function LandingPage() {
             <h2 style={{ fontSize: 'clamp(44px, 7vw, 84px)', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 0.97, margin: '0 0 28px', color: T.text }}>
               Do not wait until<br />someone asks for proof.
             </h2>
-            <p style={{ fontSize: 16, color: T.text2, margin: '0 0 16px', lineHeight: 1.85, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' }}>
+            <p style={{ fontSize: 16, color: T.text2, margin: '0 auto 32px', lineHeight: 1.85, maxWidth: 480 }}>
               The first 20 founding customers lock in 30% off for life. Pre-pay 3 months upfront, get access before public launch.
             </p>
-            <p style={{ fontSize: 12, color: T.text3, margin: '0 0 40px', lineHeight: 1.7 }}>
-              This tool provides guidance only and does not constitute legal advice.<br />Consult a qualified legal professional for binding compliance decisions.
-            </p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 40, background: 'rgba(0,229,191,0.06)', border: `1px solid rgba(0,229,191,0.22)`, borderRadius: 100, padding: '7px 18px' }}>
+              <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.6, repeat: Infinity }}
+                style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: T.accent, letterSpacing: '0.2px' }}>3 of 20 founding spots remaining</span>
+            </div>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Magnetic>
                 <motion.button
@@ -947,6 +981,9 @@ export default function LandingPage() {
                 </motion.button>
               </Magnetic>
             </div>
+            <p style={{ fontSize: 11, color: T.text3, margin: '24px 0 0', lineHeight: 1.7 }}>
+              Guidance only — not legal advice · Consult a qualified professional for binding decisions
+            </p>
           </motion.div>
         </div>
       </section>
