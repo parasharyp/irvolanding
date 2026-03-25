@@ -19,7 +19,7 @@ npm run lint         # ESLint
 Copy `.env.local` and fill in real values:
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_APP_URL` — full origin URL (e.g. `https://irvo.co.uk`)
-- `ANTHROPIC_API_KEY` — for AI classification and evidence drafting (Claude API)
+- `OPENROUTER_API_KEY` — for AI classification and evidence drafting (via OpenRouter → Claude). Falls back to `ANTHROPIC_API_KEY` if set.
 - `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_GROWTH` / `STRIPE_PRICE_PLUS`
 - `RESEND_API_KEY` + `RESEND_DOMAIN`
 - `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`

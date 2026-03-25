@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { z } from 'zod'
 import type { ClassificationResult } from '@/types'
 import { CLASSIFY_SYSTEM_PROMPT } from './prompts'
@@ -54,6 +54,27 @@ interface ClassifyInput {
   answers: { questionId: string; answer: string }[]
 }
 
+function getClient(): OpenAI {
+  const apiKey = process.env.OPENROUTER_API_KEY ?? process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error('No AI API key configured (OPENROUTER_API_KEY or ANTHROPIC_API_KEY)')
+  }
+
+  // If OpenRouter key, use OpenRouter base URL. Otherwise use Anthropic-compatible endpoint.
+  if (process.env.OPENROUTER_API_KEY) {
+    return new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: 'https://openrouter.ai/api/v1',
+    })
+  }
+
+  // Fallback: use OpenAI SDK pointed at Anthropic (for future flexibility)
+  return new OpenAI({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    baseURL: 'https://api.anthropic.com/v1',
+  })
+}
+
 export async function classifySystem(
   input: ClassifyInput
 ): Promise<ClassificationResult> {
@@ -73,23 +94,25 @@ ${answersFormatted}
 Classify this system under the EU AI Act. Return JSON only.`
 
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('[classify] ANTHROPIC_API_KEY is not configured')
-      return DEFAULT_RESULT
-    }
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const client = getClient()
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6-20250514',
+    const response = await client.chat.completions.create({
+      model: process.env.OPENROUTER_API_KEY
+        ? 'anthropic/claude-sonnet-4'
+        : 'claude-sonnet-4-6-20250514',
       max_tokens: 2048,
-      system: CLASSIFY_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [
+        { role: 'system', content: CLASSIFY_SYSTEM_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
     })
 
-    const text =
-      response.content[0].type === 'text' ? response.content[0].text : ''
+    const text = response.choices[0]?.message?.content ?? ''
 
-    const raw = JSON.parse(text)
+    // Strip markdown code fences if the model wraps JSON in them
+    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+
+    const raw = JSON.parse(cleaned)
     const validated = classificationSchema.safeParse(raw)
 
     if (!validated.success) {
@@ -98,7 +121,8 @@ Classify this system under the EU AI Act. Return JSON only.`
     }
 
     return validated.data as ClassificationResult
-  } catch {
+  } catch (err) {
+    console.error('[classify] Error:', err)
     return DEFAULT_RESULT
   }
 }

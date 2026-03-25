@@ -177,8 +177,54 @@ input, textarea, select {
 
   /* ── Homepage section padding */
   .hp-section-pad { padding: 64px 20px !important; }
-  .hp-hero-pad { padding: 100px 20px 60px !important; }
+  .hp-hero-pad {
+    padding: 80px 16px 40px !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+  .hp-hero-pad h1 {
+    font-size: clamp(28px, 8vw, 48px) !important;
+  }
   .hp-cta-pad { padding: 80px 20px !important; }
+
+  /* ── Wizard workflow steps: stack vertically on mobile */
+  .hp-wizard-steps {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+  .hp-wizard-steps > div {
+    flex: none !important;
+  }
+  .hp-wizard-step-line {
+    display: none !important;
+  }
+
+  /* ── Product mock: stack cards vertically */
+  .hp-mock-stats {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .hp-mock-stats > div {
+    flex: none !important;
+  }
+
+  /* ── Pricing CTA: constrain on mobile */
+  .hp-pricing-cta {
+    padding: 12px 24px !important;
+    font-size: 13px !important;
+    border-radius: 0 !important;
+  }
+
+  /* ── Hide scroll indicator on mobile */
+  .hp-scroll-indicator {
+    display: none !important;
+  }
+
+  /* ── Urgency bar: stack on mobile */
+  .r-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
 
   /* ── Homepage 2-col grids that use inline styles → collapse */
   .hp-law-grid { grid-template-columns: 1fr !important; gap: 40px !important; }

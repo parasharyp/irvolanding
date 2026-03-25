@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { DRAFT_SECTION_PROMPT } from './prompts'
 
 interface DraftContext {
@@ -14,6 +14,25 @@ interface DraftFromDbContext {
   system: { name: string; description: string }
   obligation: { title: string; description: string; evidence_required: string }
   existingContent?: string
+}
+
+function getClient(): OpenAI {
+  const apiKey = process.env.OPENROUTER_API_KEY ?? process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error('AI drafting is not available. No API key configured.')
+  }
+
+  if (process.env.OPENROUTER_API_KEY) {
+    return new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: 'https://openrouter.ai/api/v1',
+    })
+  }
+
+  return new OpenAI({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    baseURL: 'https://api.anthropic.com/v1',
+  })
 }
 
 export async function draftEvidenceSection(
@@ -47,22 +66,20 @@ ${normalized.existingContent ? `## Existing Content (revise and improve)\n${norm
 Draft this evidence section now.`
 
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('AI drafting is not available. ANTHROPIC_API_KEY is not configured.')
-    }
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const client = getClient()
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6-20250514',
+    const response = await client.chat.completions.create({
+      model: process.env.OPENROUTER_API_KEY
+        ? 'anthropic/claude-sonnet-4'
+        : 'claude-sonnet-4-6-20250514',
       max_tokens: 2048,
-      system: DRAFT_SECTION_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [
+        { role: 'system', content: DRAFT_SECTION_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
     })
 
-    const text =
-      response.content[0].type === 'text' ? response.content[0].text : ''
-
-    return text
+    return response.choices[0]?.message?.content ?? ''
   } catch {
     throw new Error(
       'Failed to generate evidence draft. Please try again or draft manually.'

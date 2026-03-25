@@ -682,7 +682,7 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
                 </motion.button>
               </div>
               <p style={{ fontSize: 11, color: T.text3, textAlign: 'center', margin: 0 }}>
-                No spam \u00B7 Unsubscribe anytime \u00B7 Guidance only, not legal advice
+                No spam &middot; Unsubscribe anytime &middot; Guidance only, not legal advice
               </p>
             </form>
           </>
@@ -955,6 +955,7 @@ export default function LandingPage() {
 
         {/* Scroll indicator */}
         <motion.div
+          className="hp-scroll-indicator"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
           style={{
             position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
@@ -1202,7 +1203,7 @@ export default function LandingPage() {
             </div>
 
             {/* Steps row */}
-            <div style={{
+            <div className="hp-wizard-steps" style={{
               padding: '32px 24px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0,
               flexWrap: 'wrap',
@@ -1220,7 +1221,7 @@ export default function LandingPage() {
                     }}>{step.label}</span>
                   </div>
                   {i < WORKFLOW_STEPS.length - 1 && (
-                    <div style={{
+                    <div className="hp-wizard-step-line" style={{
                       flex: 1, height: 1, minWidth: 16,
                       background: `linear-gradient(90deg, ${T.border}, transparent)`,
                       margin: '0 16px',
@@ -1249,7 +1250,7 @@ export default function LandingPage() {
                     <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>Classification Result</span>
                     <span style={{ fontSize: 10, color: T.text3, marginLeft: 'auto' }}>Step 3 of 5</span>
                   </div>
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <div className="hp-mock-stats" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                     <div style={{ flex: '1 1 200px', padding: '14px 16px', background: T.surface, border: `1px solid rgba(229,71,71,0.3)` }}>
                       <div style={{ fontSize: 9, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Risk Level</div>
                       <div style={{ fontSize: 22, fontWeight: 900, color: T.red }}>High Risk</div>
@@ -1390,6 +1391,7 @@ export default function LandingPage() {
                         ? '0 0 0 1px rgba(0,229,191,0.4), 0 0 32px rgba(0,229,191,0.18)'
                         : 'none',
                     }}
+                    className="hp-pricing-cta"
                     style={{
                       display: 'block', width: '100%', textAlign: 'center',
                       background: plan.highlight ? T.accent : 'transparent',
