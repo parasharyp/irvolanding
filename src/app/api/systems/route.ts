@@ -1,56 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized, badRequest, serverError } from '@/lib/api-error'
-import { RiskLevel, AnnexIIICategory } from '@/types'
+import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
+import { PLAN_SYSTEM_LIMITS } from '@/types'
+import type { OrgPlan } from '@/types'
 
+// GET /api/systems — list all systems for the user's org
 export async function GET() {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) return unauthorized()
 
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'No organization' }, { status: 400 })
+    const { data: profile } = await supabase
+      .from('users')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single()
+    if (!profile) return unauthorized()
 
-    return NextResponse.json({ systems: [] })
+    const rateCheck = await checkAuthenticatedRateLimit(user.id)
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+    }
+
+    const { data: systems, error } = await supabase
+      .from('systems')
+      .select('*')
+      .eq('organization_id', profile.organization_id)
+      .order('created_at', { ascending: false })
+
+    if (error) return serverError(error, 'GET /api/systems')
+
+    return NextResponse.json({ systems: systems ?? [] })
   } catch (err) {
     return serverError(err, 'GET /api/systems')
   }
 }
 
+const createSystemSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  description: z.string().max(2000).optional().default(''),
+})
+
+// POST /api/systems — create a new AI system
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) return unauthorized()
 
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'No organization' }, { status: 400 })
+    const { data: profile } = await supabase
+      .from('users')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single()
+    if (!profile) return unauthorized()
 
-    const body = await req.json() as Record<string, unknown>
-    const name = typeof body.name === 'string' ? body.name.trim() : ''
-    if (!name) return badRequest('name is required')
-
-    const mockSystem = {
-      id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      organization_id: userData.organization_id,
-      name,
-      description: typeof body.description === 'string' ? body.description : '',
-      owner: typeof body.owner === 'string' ? body.owner : '',
-      data_sources: typeof body.data_sources === 'string' ? body.data_sources : '',
-      model_type: typeof body.model_type === 'string' ? body.model_type : '',
-      business_process: typeof body.business_process === 'string' ? body.business_process : '',
-      risk_level: (body.risk_level as RiskLevel) ?? 'unknown',
-      annex_iii_category: (body.annex_iii_category as AnnexIIICategory) ?? null,
-      articles_applicable: Array.isArray(body.articles_applicable) ? body.articles_applicable as string[] : [],
-      obligations_total: Array.isArray(body.obligations) ? (body.obligations as unknown[]).length : 0,
-      obligations_complete: 0,
-      classification_completed: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    const rateCheck = await checkAuthenticatedRateLimit(user.id)
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
-    return NextResponse.json({ system: mockSystem }, { status: 201 })
+    const body = await req.json()
+    const parsed = createSystemSchema.safeParse(body)
+    if (!parsed.success) {
+      return badRequest(parsed.error.issues[0].message)
+    }
+
+    // Check plan system limit
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('plan')
+      .eq('id', profile.organization_id)
+      .single()
+
+    if (!org) return serverError(new Error('Organization not found'), 'POST /api/systems')
+
+    const { count } = await supabase
+      .from('systems')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', profile.organization_id)
+
+    const limit = PLAN_SYSTEM_LIMITS[org.plan as OrgPlan] ?? 3
+    if ((count ?? 0) >= limit) {
+      return badRequest(`Plan limit reached. Your ${org.plan} plan allows ${limit} systems. Upgrade to add more.`)
+    }
+
+    const { data: system, error } = await supabase
+      .from('systems')
+      .insert({
+        organization_id: profile.organization_id,
+        name: parsed.data.name,
+        description: parsed.data.description,
+      })
+      .select()
+      .single()
+
+    if (error) return serverError(error, 'POST /api/systems')
+
+    return NextResponse.json({ system }, { status: 201 })
   } catch (err) {
     return serverError(err, 'POST /api/systems')
   }

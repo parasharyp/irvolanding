@@ -2,23 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, FileText, Users, Settings, LogOut, X, Shield } from 'lucide-react'
+import { LayoutDashboard, Settings, LogOut, X, Shield } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { OrgPlan } from '@/types'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/invoices', label: 'Invoices', icon: FileText },
-  { href: '/clients', label: 'Clients', icon: Users },
   { href: '/systems', label: 'AI Systems', icon: Shield },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 const PLAN_LABEL: Record<OrgPlan, string> = {
   starter: 'Starter',
-  studio: 'Studio',
-  firm: 'Firm',
+  growth: 'Growth',
+  plus: 'Plus',
 }
 
 interface SidebarProps {
@@ -100,7 +98,7 @@ export default function Sidebar({
             </span>
           </div>
         </motion.div>
-        <p style={{ margin: '2px 0 0', fontSize: 9, color: '#2e2e2e', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase' }}>Recovery Platform</p>
+        <p style={{ margin: '2px 0 0', fontSize: 9, color: '#2e2e2e', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase' }}>AI Compliance</p>
       </div>
 
       {/* Org + plan */}

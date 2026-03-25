@@ -10,8 +10,8 @@ const raleway = Raleway({
 })
 
 export const metadata: Metadata = {
-  title: 'Irvo — UK Invoice Enforcement',
-  description: 'Track overdue invoices, calculate statutory interest, and enforce UK late payment rights automatically.',
+  title: 'Irvo — AI Act Compliance for SMEs',
+  description: 'Document, classify, and generate evidence packs for your AI systems. EU AI Act compliance made simple.',
 }
 
 export const viewport: Viewport = {

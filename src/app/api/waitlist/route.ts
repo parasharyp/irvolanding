@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   // Honeypot: bots fill in the hidden website field — silently succeed without writing
   if (parsed.data.website) {
-    return NextResponse.json({ success: true, duplicate: false })
+    return NextResponse.json({ success: true })
   }
 
   const admin = await createAdminClient()
@@ -54,7 +54,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (existing) {
-    return NextResponse.json({ success: true, duplicate: true })
+    // Don't expose duplicate status to client — prevents waitlist enumeration
+    return NextResponse.json({ success: true })
   }
 
   const { error } = await admin.from('waitlist').insert({
@@ -69,5 +70,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true, duplicate: false })
+  return NextResponse.json({ success: true })
 }

@@ -12,26 +12,41 @@ npm run lint         # ESLint
 
 ## What This Product Is
 
-**Irvo** — UK late payment enforcement SaaS for freelancers and small agencies. It tracks overdue B2B invoices, applies statutory interest under the Late Payment of Commercial Debts Act 1998 (8% + BoE base rate = 13% p.a.), runs automated 4-stage reminder sequences, and generates PDF evidence packs. Stripe handles billing and client payment portals.
+**Irvo** — AI Act compliance SaaS for EU/UK SMEs. It guides companies through documenting their AI and automation workflows for EU AI Act compliance (enforcement: August 2, 2026). Users describe an AI system, answer a 12-question risk questionnaire, receive AI-powered risk classification + obligations mapping, capture evidence per obligation (with AI-assisted drafting), and export regulator-ready evidence packs as PDF.
 
 ## Environment Setup
 
 Copy `.env.local` and fill in real values:
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
-- `NEXT_PUBLIC_APP_URL` — full origin URL (e.g. `https://irvo.co.uk`), used in payment links and emails
-- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_STUDIO` / `STRIPE_PRICE_FIRM`
+- `NEXT_PUBLIC_APP_URL` — full origin URL (e.g. `https://irvo.co.uk`)
+- `ANTHROPIC_API_KEY` — for AI classification and evidence drafting (Claude API)
+- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_GROWTH` / `STRIPE_PRICE_PLUS`
 - `RESEND_API_KEY` + `RESEND_DOMAIN`
 - `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
-- `CRON_SECRET` — arbitrary secret, sent as `Authorization: Bearer <secret>` by Vercel cron
 
 ## Route Structure
 
 - `src/app/(auth)/` — login, signup, reset-password (public, dark design)
-- `src/app/(app)/` — dashboard, invoices, clients, settings (auth-gated, sidebar layout)
+- `src/app/(app)/` — dashboard, systems, settings (auth-gated, sidebar layout)
 - `src/app/api/` — all API routes, plain Next.js route handlers
 - `src/app/page.tsx` — public landing page
-- `src/app/audit/page.tsx` — free "Late Payment Audit" lead-gen tool (no auth required)
-- `src/app/pay/[token]/page.tsx` — client-facing payment portal (no auth, token-gated)
+
+### Core App Pages
+- `/dashboard` — compliance overview: metrics, risk breakdown, quick actions
+- `/systems` — list all documented AI systems with risk badges + progress
+- `/systems/new` — 3-step wizard: Describe → Questionnaire → Classification
+- `/systems/[id]` — system detail: evidence capture per obligation, AI drafting, PDF export
+- `/systems/[id]/questionnaire` — review questionnaire answers
+- `/settings` — org name, plan management, billing
+
+### API Routes
+- `POST /api/systems` — create system (plan limit enforced)
+- `GET/PATCH/DELETE /api/systems/[id]` — system CRUD
+- `POST /api/systems/classify` — AI risk classification + obligations generation
+- `GET/POST /api/systems/[id]/evidence` — evidence items CRUD
+- `POST /api/systems/[id]/export` — generate PDF evidence pack
+- `POST /api/ai/draft` — AI-assisted evidence section drafting
+- `GET /api/dashboard` — compliance metrics
 
 ## Design System
 
@@ -41,7 +56,7 @@ Copy `.env.local` and fill in real values:
 - Surface 2: `#131313` / app shell: `#080808`
 - Accent (teal): `#00e5bf` — used for CTAs, active states, highlights
 - Text: `#e8e8e8` / muted: `#666` / dim: `#333`
-- Error: `#e54747` / success: `#36bd5f`
+- Error: `#e54747` / success: `#36bd5f` / warning: `#f59e0b`
 
 **Typography:** Raleway (Next.js font, weights 400–900). Applied via `var(--font-raleway)` CSS variable set on `<body>`. Always pass `fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif'` on containers.
 
@@ -58,66 +73,50 @@ Copy `.env.local` and fill in real values:
 - `.wall-grid` — shared-wall borders that switch to bottom-borders on mobile
 - `.table-scroll` — horizontal scroll wrapper for tables
 - `.mobile-only` / `.desktop-only` — visibility helpers
-- `.hp-section-pad` / `.hp-hero-pad` / `.hp-cta-pad` — homepage section padding (120px → 64px on mobile)
-- `.hp-law-grid` / `.hp-esc-grid` — 2-col homepage grids that collapse to 1-col
-- `.hp-modal-grid-2` / `.hp-modal-grid-3` — EscalationModal form grids that stack on mobile
-- `.hp-pricing-header` — pricing toggle row that stacks on mobile
-- `.auth-right-panel` — auth form panel (fills screen on mobile)
 - `.app-mobile-header` — fixed top bar shown on mobile only (hidden desktop)
 - `.sidebar-root` / `.sidebar-open` — sidebar becomes a fixed drawer on mobile
 - `.sidebar-close-btn` — X button shown inside sidebar on mobile only
-- `.pay-main` — pay page padding adjustment on mobile
 
 **iPhone-specific fixes already in place:**
-- `viewport` is a separate `export const viewport: Viewport` in `layout.tsx` — NOT inside `metadata` (Next.js 14+ requirement; putting it in metadata is silently ignored and breaks iOS)
+- `viewport` is a separate `export const viewport: Viewport` in `layout.tsx`
 - Inputs get `font-size: 16px !important` on mobile (prevents iOS auto-zoom)
 - Sidebar uses `height: 100dvh` (not `vh`) to handle iOS address bar
 - `viewportFit: 'cover'` + `env(safe-area-inset-*)` for notch support
 
 ## App Shell (Authenticated Layout)
 
-`src/components/layout/AppNavigationWrapper.tsx` — client component that owns mobile sidebar open/close state. Renders the fixed mobile header bar (hamburger + IRVO wordmark) and backdrop overlay. Passes `mobileOpen`/`onMobileClose` props to `Sidebar`.
+`src/components/layout/AppNavigationWrapper.tsx` — client component that owns mobile sidebar open/close state. Renders the fixed mobile header bar (hamburger + IRVO wordmark) and backdrop overlay.
 
-`src/components/layout/Sidebar.tsx` — uses plain `<aside className="sidebar-root">` (not motion.aside). The `.sidebar-open` CSS class triggers the slide-in transition. Nav links call `onMobileClose` on click to close the drawer.
+`src/components/layout/Sidebar.tsx` — Nav items: Dashboard, AI Systems, Settings. Uses `.sidebar-root` CSS class for mobile drawer behavior.
 
 `src/app/(app)/layout.tsx` — server component that fetches org/plan from Supabase, then renders `<AppNavigationWrapper>`.
 
-## Core Business Logic
+## AI Layer
 
-- `src/lib/interest.ts` — `calculateInterest(invoice)` → `{ days_overdue, interest_amount, compensation_fee, total }`. Rate: `(0.05 + 0.08) / 365`. Compensation: <£1k → £40, £1k–£10k → £70, ≥£10k → £100.
-- `src/lib/reminders.ts` — `determineReminderStage(invoice)` → 1–4 or null. `renderTemplate()` substitutes `{{variable}}` placeholders.
-- `src/lib/pdf.ts` — `@react-pdf/renderer` server-side PDF generation. Cast `createElement` result to `any` to satisfy the type checker.
-- `src/lib/ratelimit.ts` — Upstash Redis sliding window. Client is **lazily initialized** to avoid build-time env var failures. Two exported functions: `checkReminderRateLimit(orgId)` (20/hr) and `checkPublicRateLimit(ip)` (5/hr for unauthenticated endpoints).
+- `src/lib/ai/prompts.ts` — centralised prompt registry (CLASSIFY_SYSTEM_PROMPT, DRAFT_SECTION_PROMPT)
+- `src/lib/ai/classify.ts` — `classifySystem()` → calls Claude API, returns ClassificationResult
+- `src/lib/ai/draft.ts` — `draftEvidenceSection()` → calls Claude API, returns drafted text
+- `src/lib/ai/questionnaire.ts` — QUESTIONNAIRE constant (12 questions for risk classification)
 
 ## Security
 
 **`next.config.ts`:** Security headers on every response (`X-Frame-Options: DENY`, `X-Content-Type-Options`, `Strict-Transport-Security` 2yr, `Referrer-Policy`, `Permissions-Policy`). `poweredByHeader: false`. `productionBrowserSourceMaps: false`.
 
-**`src/lib/api-error.ts`:** Shared helpers used by all API routes — `serverError()`, `unauthorized()`, `forbidden()`, `notFound()`, `badRequest()`. Never return raw `error.message` from Supabase to clients. Always use these helpers.
-
-**Public API endpoints** (`/api/public/legal-demand`, `/api/public/ccj-pack`): IP-based rate limiting via `checkPublicRateLimit`, full Zod validation, max invoice amount £1M.
+**`src/lib/api-error.ts`:** Shared helpers — `serverError()`, `unauthorized()`, `forbidden()`, `notFound()`, `badRequest()`. Never return raw `error.message` from Supabase to clients.
 
 **Database:** RLS enabled on all tables, scoped via `get_user_org_id()` security-definer function. Even if API auth is bypassed, a user cannot read another org's data at the DB level.
 
-**Stripe webhook** (`/api/webhooks/stripe`): Signature verified via `stripe.webhooks.constructEvent`. Cron endpoint requires `Authorization: Bearer <CRON_SECRET>`.
+**Rate limiting:** `src/lib/ratelimit.ts` — Upstash Redis sliding window. `checkAuthenticatedRateLimit(userId)` (100/min). `checkPublicRateLimit(ip)` (5/hr). Webhook idempotency via Redis SET NX.
 
 ## Supabase Clients
 
 - `src/lib/supabase/client.ts` — browser client, use in `'use client'` components
-- `src/lib/supabase/server.ts` — `createClient()` for SSR/route handlers + `createAdminClient()` (service role, bypasses RLS — only for cron, webhooks, pay portal)
-
-## Infrastructure
-
-**Cron:** `POST /api/cron/overdue` — daily at 06:00 UTC (`vercel.json`). Marks overdue invoices, auto-escalates 30+ day ones, recomputes client risk scores + payment predictions.
-
-**Stripe:** Webhook at `/api/webhooks/stripe` handles subscription lifecycle → updates `organizations.plan`. Test: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
-
-**Pay portal:** `/pay/[token]` — public page. Tokens stored in `payment_tokens` table with expiry. Admin client used server-side to read past RLS.
+- `src/lib/supabase/server.ts` — `createClient()` for SSR/route handlers + `createAdminClient()` (service role, bypasses RLS)
 
 ## Key Patterns
 
 - All API routes: auth-check with `supabase.auth.getUser()` → look up `organization_id` from `users` table → use that for all DB queries
 - `useSearchParams()` always wrapped in `<Suspense>` (Next.js 15 requirement)
-- Form validation: use `defaultValues` in `useForm`, not `z.string().default()` (causes resolver type mismatch)
-- Adding a new grid layout: add a CSS class to `globals.css` with desktop styles + `@media (max-width: 768px)` override using `!important`. Add `className` to the JSX element. Do not attempt to use inline style media queries.
-- New public API endpoints must import `checkPublicRateLimit` from `src/lib/ratelimit.ts` and use `serverError`/`unauthorized` from `src/lib/api-error.ts`
+- Form validation: use `defaultValues` in `useForm`, not `z.string().default()`
+- New API endpoints must use rate limiting + Zod validation + error helpers
+- Plan limits enforced: PLAN_SYSTEM_LIMITS in types/index.ts (starter: 3, growth: 10, plus: 25)

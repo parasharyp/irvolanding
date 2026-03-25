@@ -92,6 +92,18 @@ export async function checkPublicLegalLimit(ip: string): Promise<{ allowed: bool
   return { allowed: result.allowed, resetAt: result.resetAt }
 }
 
+// 10 AI classifications per hour per org — protects Anthropic API spend
+export async function checkClassifyRateLimit(orgId: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const result = await slidingWindow(`ai_classify:${orgId}`, 10, 3600)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+// 30 AI drafts per hour per org — protects Anthropic API spend
+export async function checkDraftRateLimit(orgId: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const result = await slidingWindow(`ai_draft:${orgId}`, 30, 3600)
+  return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
 // Per-IP rate limit for cron attempts — 5 per hour
 // Secondary defence: slows brute force if CRON_SECRET leaks
 export async function checkCronAttemptLimit(ip: string): Promise<{ allowed: boolean; resetAt: number }> {

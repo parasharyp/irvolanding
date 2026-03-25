@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ReminderTemplate, Organization } from '@/types'
+import { Organization, OrgPlan, PLAN_SYSTEM_LIMITS } from '@/types'
 
 const orgSchema = z.object({ name: z.string().min(1) })
 
@@ -23,13 +23,6 @@ const inputStyle: React.CSSProperties = {
   transition: 'border-color 0.15s',
 }
 
-const textareaStyle: React.CSSProperties = {
-  ...inputStyle,
-  resize: 'vertical' as const,
-  minHeight: 130,
-  lineHeight: 1.6,
-}
-
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: 11,
@@ -38,9 +31,20 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '0.04em',
 }
 
+const PLAN_LABEL: Record<OrgPlan, string> = {
+  starter: 'Starter',
+  growth: 'Growth',
+  plus: 'Plus',
+}
+
+const PLAN_ACCENT: Record<OrgPlan, string> = {
+  starter: '#00e5bf',
+  growth: '#47c9e5',
+  plus: '#937fd5',
+}
+
 const TABS = [
   { key: 'org', label: 'Organisation' },
-  { key: 'templates', label: 'Reminder Templates' },
   { key: 'billing', label: 'Billing' },
 ] as const
 
@@ -51,8 +55,6 @@ function SettingsContent() {
   const billingMsg = searchParams.get('billing')
 
   const [org, setOrg] = useState<Organization | null>(null)
-  const [templates, setTemplates] = useState<ReminderTemplate[]>([])
-  const [saving, setSaving] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(
     billingMsg === 'success' ? 'Subscription updated successfully!' : null
   )
@@ -61,28 +63,14 @@ function SettingsContent() {
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<{ name: string }>({ resolver: zodResolver(orgSchema) })
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/settings/org').then((r) => r.json()),
-      fetch('/api/settings/templates').then((r) => r.json()),
-    ]).then(([o, t]) => {
+    fetch('/api/settings/org').then((r) => r.json()).then((o) => {
       setOrg(o); reset({ name: o.name })
-      setTemplates(Array.isArray(t) ? t : [])
     })
   }, [])
 
   const saveOrg = async (data: { name: string }) => {
     const res = await fetch('/api/settings/org', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
     if (res.ok) setMessage('Organisation updated.')
-  }
-
-  const saveTemplate = async (template: ReminderTemplate) => {
-    setSaving(template.id)
-    await fetch(`/api/settings/templates/${template.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subject: template.subject, body: template.body }),
-    })
-    setSaving(null); setMessage('Template saved.')
   }
 
   const openBillingPortal = async () => {
@@ -95,10 +83,13 @@ function SettingsContent() {
     if (res.url) { window.location.assign(res.url as string) }
   }
 
+  const currentPlan = org?.plan ?? 'starter'
+  const systemLimit = PLAN_SYSTEM_LIMITS[currentPlan]
+
   const PLANS = [
-    { key: 'starter', name: 'Starter', price: '£19', period: '/mo', desc: 'Perfect for freelancers', accent: '#00e5bf' },
-    { key: 'studio', name: 'Studio', price: '£69', period: '/mo', desc: 'For small teams', accent: '#47c9e5' },
-    { key: 'firm', name: 'Firm', price: '£149', period: '/mo', desc: 'For accountants & agencies', accent: '#937fd5' },
+    { key: 'starter' as OrgPlan, name: 'Starter', price: '\u00a319', period: '/mo', desc: 'For individuals getting started', systems: PLAN_SYSTEM_LIMITS.starter },
+    { key: 'growth' as OrgPlan, name: 'Growth', price: '\u00a369', period: '/mo', desc: 'For growing teams', systems: PLAN_SYSTEM_LIMITS.growth },
+    { key: 'plus' as OrgPlan, name: 'Plus', price: '\u00a3149', period: '/mo', desc: 'For large organisations', systems: PLAN_SYSTEM_LIMITS.plus },
   ]
 
   return (
@@ -118,7 +109,7 @@ function SettingsContent() {
 
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: 32 }}>
-        {TABS.map(({ key, label }, i) => (
+        {TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
@@ -140,6 +131,32 @@ function SettingsContent() {
       <AnimatePresence mode="wait">
         {activeTab === 'org' && (
           <motion.div key="org" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
+            {/* Plan display card */}
+            <div style={{
+              background: '#0c0c0c',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderTop: `2px solid ${PLAN_ACCENT[currentPlan]}`,
+              padding: '20px 28px',
+              marginBottom: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Current Plan</p>
+                <p style={{ color: '#e8e8e8', fontSize: 15, fontWeight: 700, margin: 0 }}>
+                  <span style={{ color: PLAN_ACCENT[currentPlan] }}>{PLAN_LABEL[currentPlan]}</span>
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>System Limit</p>
+                <p style={{ color: '#e8e8e8', fontSize: 15, fontWeight: 700, margin: 0 }}>
+                  {systemLimit} systems
+                </p>
+              </div>
+            </div>
+
+            {/* Org name form */}
             <div style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', borderTop: '2px solid #00e5bf', padding: 28 }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 24px' }}>Organisation Details</p>
               <form onSubmit={handleSubmit(saveOrg)} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -148,49 +165,10 @@ function SettingsContent() {
                   <input {...register('name')} style={inputStyle} />
                 </div>
                 <button type="submit" disabled={isSubmitting} style={{ background: '#00e5bf', border: 'none', padding: '10px 24px', fontSize: 13, fontWeight: 800, color: '#040404', cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'flex-start', opacity: isSubmitting ? 0.7 : 1, letterSpacing: '0.02em' }}>
-                  {isSubmitting ? 'Saving…' : 'Save changes'}
+                  {isSubmitting ? 'Saving...' : 'Save changes'}
                 </button>
               </form>
             </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'templates' && (
-          <motion.div key="templates" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {[1, 2, 3, 4].map((stage, idx) => {
-              const tpl = templates.find((t) => t.stage === stage)
-              if (!tpl) return null
-              const stageDescs = ['3 days before due date', '3 days overdue', '14 days overdue — includes interest', '30 days overdue — final escalation']
-              const stageColors = ['#00e5bf', '#e2b742', '#e2a242', '#e54747']
-              const color = stageColors[stage - 1]
-              return (
-                <div
-                  key={stage}
-                  style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', borderTop: `2px solid ${color}` }}
-                >
-                  <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Stage {stage}</span>
-                    <span style={{ fontSize: 12, color: '#444' }}>{stageDescs[stage - 1]}</span>
-                  </div>
-                  <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div>
-                      <label style={labelStyle}>Subject</label>
-                      <input value={tpl.subject} onChange={(e) => setTemplates((prev) => prev.map((t) => t.id === tpl.id ? { ...t, subject: e.target.value } : t))} style={inputStyle} />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Body</label>
-                      <textarea rows={6} value={tpl.body} onChange={(e) => setTemplates((prev) => prev.map((t) => t.id === tpl.id ? { ...t, body: e.target.value } : t))} style={textareaStyle} />
-                      <p style={{ fontSize: 11, color: '#333', marginTop: 6 }}>
-                        {'{{invoice_number}} {{client_name}} {{amount}} {{due_date}} {{days_overdue}} {{interest_amount}} {{compensation_fee}} {{total_due}} {{org_name}}'}
-                      </p>
-                    </div>
-                    <button onClick={() => saveTemplate(tpl)} disabled={saving === tpl.id} style={{ background: color === '#00e5bf' ? '#00e5bf' : 'transparent', border: color === '#00e5bf' ? 'none' : `1px solid ${color}40`, padding: '9px 20px', fontSize: 13, fontWeight: 800, color: color === '#00e5bf' ? '#040404' : color, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'flex-start', opacity: saving === tpl.id ? 0.7 : 1 }}>
-                      {saving === tpl.id ? 'Saving…' : 'Save template'}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
           </motion.div>
         )}
 
@@ -200,19 +178,21 @@ function SettingsContent() {
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Current Plan</p>
                 <p style={{ color: '#e8e8e8', fontSize: 15, fontWeight: 700, margin: 0 }}>
-                  <span style={{ color: '#00e5bf', textTransform: 'capitalize' }}>{org?.plan ?? 'Starter'}</span>
+                  <span style={{ color: PLAN_ACCENT[currentPlan], textTransform: 'capitalize' }}>{PLAN_LABEL[currentPlan]}</span>
+                  <span style={{ fontSize: 12, color: '#444', marginLeft: 8 }}>{systemLimit} systems</span>
                 </p>
               </div>
               {org?.stripe_customer_id && (
                 <button onClick={openBillingPortal} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', padding: '9px 18px', fontSize: 13, fontWeight: 600, color: '#888', cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.15s' }}>
-                  Manage Billing & Invoices
+                  Manage Billing
                 </button>
               )}
             </div>
 
             <div className="r-grid-3 wall-grid" style={{ gap: 0 }}>
-              {PLANS.map(({ key, name, price, period, desc, accent }, i) => {
-                const isCurrent = org?.plan === key
+              {PLANS.map(({ key, name, price, period, desc, systems }) => {
+                const isCurrent = currentPlan === key
+                const accent = PLAN_ACCENT[key]
                 return (
                   <div
                     key={key}
@@ -223,7 +203,8 @@ function SettingsContent() {
                       <span style={{ fontSize: 22, fontWeight: 800, color: accent }}>{price}</span>
                       <span style={{ fontSize: 12, color: '#444' }}>{period}</span>
                     </p>
-                    <p style={{ fontSize: 12, color: '#444', margin: '0 0 20px' }}>{desc}</p>
+                    <p style={{ fontSize: 12, color: '#444', margin: '0 0 4px' }}>{desc}</p>
+                    <p style={{ fontSize: 11, color: '#555', margin: '0 0 20px' }}>Up to {systems} AI systems</p>
                     {isCurrent ? (
                       <span style={{ fontSize: 10, fontWeight: 700, color: '#36bd5f', background: 'rgba(54,189,95,0.08)', padding: '3px 10px', border: '1px solid rgba(54,189,95,0.15)', letterSpacing: '0.04em' }}>Current plan</span>
                     ) : (

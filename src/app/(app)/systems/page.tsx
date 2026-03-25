@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Shield } from 'lucide-react'
-import { AISystem, RiskLevel } from '@/types'
+import type { AISystem, RiskLevel } from '@/types'
 
 function daysUntil(target: Date): number {
   return Math.ceil((target.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -11,27 +11,27 @@ function daysUntil(target: Date): number {
 
 const ENFORCEMENT_DATE = new Date('2026-08-02T00:00:00.000Z')
 
-function riskColor(level: RiskLevel): string {
+function riskColor(level: RiskLevel | null): string {
   switch (level) {
     case 'unacceptable': return '#e54747'
     case 'high': return '#e54747'
     case 'limited': return '#f59e0b'
-    case 'minimal': return '#36bd5f'
+    case 'none': return '#36bd5f'
     default: return '#333'
   }
 }
 
-function riskLabel(level: RiskLevel): string {
+function riskLabel(level: RiskLevel | null): string {
   switch (level) {
     case 'unacceptable': return 'Unacceptable'
     case 'high': return 'High Risk'
     case 'limited': return 'Limited Risk'
-    case 'minimal': return 'Minimal Risk'
-    default: return 'Unknown'
+    case 'none': return 'Minimal Risk'
+    default: return 'Pending'
   }
 }
 
-function RiskBadge({ level }: { level: RiskLevel }) {
+function RiskBadge({ level }: { level: RiskLevel | null }) {
   const color = riskColor(level)
   return (
     <span style={{
@@ -45,6 +45,29 @@ function RiskBadge({ level }: { level: RiskLevel }) {
       textTransform: 'uppercase',
     }}>
       {riskLabel(level)}
+    </span>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const color = status === 'ready' || status === 'exported'
+    ? '#36bd5f'
+    : status === 'in-progress'
+      ? '#f59e0b'
+      : '#555'
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '2px 10px',
+      border: `1px solid ${color}44`,
+      background: `${color}12`,
+      color,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+    }}>
+      {status}
     </span>
   )
 }
@@ -113,7 +136,7 @@ export default function SystemsPage() {
 
         {/* Content */}
         {loading ? (
-          <div style={{ color: '#666', fontSize: 13, padding: '48px 0', textAlign: 'center' }}>Loading systems…</div>
+          <div style={{ color: '#666', fontSize: 13, padding: '48px 0', textAlign: 'center' }}>Loading systems...</div>
         ) : systems.length === 0 ? (
           /* Empty state */
           <div style={{
@@ -154,7 +177,7 @@ export default function SystemsPage() {
             }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                  {['System', 'Risk', 'Category', 'Obligations', ''].map((h) => (
+                  {['System', 'Risk', 'Category', 'Status', 'Progress', ''].map((h) => (
                     <th key={h} style={{
                       textAlign: 'left',
                       padding: '10px 16px',
@@ -169,27 +192,33 @@ export default function SystemsPage() {
               </thead>
               <tbody>
                 {systems.map((s) => {
-                  const pct = s.obligations_total > 0
-                    ? Math.round((s.obligations_complete / s.obligations_total) * 100)
-                    : 0
+                  const pct = s.pct_complete ?? 0
                   return (
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <td style={{ padding: '14px 16px', fontWeight: 700, color: '#ffffff' }}>{s.name}</td>
+                      <td style={{ padding: '14px 16px' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{s.name}</div>
+                        {s.owner_name && (
+                          <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{s.owner_name}</div>
+                        )}
+                      </td>
                       <td style={{ padding: '14px 16px' }}>
                         <RiskBadge level={s.risk_level} />
                       </td>
                       <td style={{ padding: '14px 16px', color: '#666', fontSize: 12 }}>
-                        {s.annex_iii_category
-                          ? s.annex_iii_category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                        {s.annex_category
+                          ? s.annex_category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
                           : <span style={{ color: '#333', fontStyle: 'italic' }}>Pending classification</span>
                         }
                       </td>
-                      <td style={{ padding: '14px 16px', minWidth: 180 }}>
+                      <td style={{ padding: '14px 16px' }}>
+                        <StatusBadge status={s.status} />
+                      </td>
+                      <td style={{ padding: '14px 16px', minWidth: 160 }}>
                         <div style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>
-                          {s.obligations_complete} / {s.obligations_total} obligations complete
+                          {pct}% complete
                         </div>
                         <div style={{ height: 3, background: '#131313', width: '100%' }}>
-                          <div style={{ height: 3, background: '#00e5bf', width: `${pct}%`, transition: 'width 0.4s ease' }} />
+                          <div style={{ height: 3, background: pct === 100 ? '#36bd5f' : '#00e5bf', width: `${pct}%`, transition: 'width 0.4s ease' }} />
                         </div>
                       </td>
                       <td style={{ padding: '14px 16px', textAlign: 'right' }}>

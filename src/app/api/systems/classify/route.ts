@@ -1,108 +1,122 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { unauthorized, badRequest, serverError } from '@/lib/api-error'
-import { QuestionnaireAnswer, RiskLevel, AnnexIIICategory } from '@/types'
+import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-error'
+import { checkAuthenticatedRateLimit, checkClassifyRateLimit } from '@/lib/ratelimit'
+import { classifySystem } from '@/lib/ai/classify'
 
-interface ClassifyBody {
-  answers: QuestionnaireAnswer[]
-}
+const classifySchema = z.object({
+  systemId: z.string().uuid(),
+  answers: z.array(z.object({
+    questionId: z.string(),
+    answer: z.string(),
+  })).min(1, 'At least one answer is required'),
+})
 
-interface ClassificationObligation {
-  id: string
-  article: string
-  title: string
-  description: string
-}
-
-const HIGH_RISK_OBLIGATIONS_EMPLOYMENT: ClassificationObligation[] = [
-  { id: '1', article: 'Art. 9', title: 'Risk management system', description: 'Establish and maintain a risk management system throughout the lifecycle.' },
-  { id: '2', article: 'Art. 10', title: 'Data governance', description: 'Implement data governance and management practices for training and validation data.' },
-  { id: '3', article: 'Art. 11', title: 'Technical documentation', description: 'Prepare technical documentation before placing the system on the market.' },
-  { id: '4', article: 'Art. 13', title: 'Transparency and information', description: 'Ensure the system is sufficiently transparent for users to interpret outputs.' },
-  { id: '5', article: 'Art. 14', title: 'Human oversight', description: 'Design with human oversight measures enabling supervisors to intervene or halt the system.' },
-]
-
-const HIGH_RISK_OBLIGATIONS_BIOMETRIC: ClassificationObligation[] = [
-  { id: '1', article: 'Art. 9', title: 'Risk management system', description: 'Establish and maintain a risk management system throughout the lifecycle.' },
-  { id: '2', article: 'Art. 10', title: 'Data governance', description: 'Biometric data requires strict governance; document all data sources, labeling, and quality measures.' },
-  { id: '3', article: 'Art. 11', title: 'Technical documentation', description: 'Prepare technical documentation including performance metrics and accuracy thresholds.' },
-  { id: '4', article: 'Art. 13', title: 'Transparency and information', description: 'Individuals must be informed when biometric identification is used.' },
-  { id: '5', article: 'Art. 14', title: 'Human oversight', description: 'Human oversight is mandatory for biometric identification systems in law enforcement or public spaces.' },
-]
-
-const HIGH_RISK_OBLIGATIONS_GENERAL: ClassificationObligation[] = [
-  { id: '1', article: 'Art. 9', title: 'Risk management system', description: 'Establish and maintain a risk management system throughout the lifecycle.' },
-  { id: '2', article: 'Art. 11', title: 'Technical documentation', description: 'Prepare technical documentation before placing the system on the market.' },
-  { id: '3', article: 'Art. 13', title: 'Transparency and information', description: 'Ensure the system is sufficiently transparent for users to interpret outputs.' },
-  { id: '4', article: 'Art. 14', title: 'Human oversight', description: 'Design with human oversight measures enabling supervisors to intervene or halt the system.' },
-]
-
-const LIMITED_RISK_OBLIGATIONS: ClassificationObligation[] = [
-  { id: '1', article: 'Art. 13', title: 'Transparency obligation', description: 'Users must be informed they are interacting with an AI system.' },
-  { id: '2', article: 'Art. 52', title: 'Transparency for certain AI systems', description: 'AI systems intended to interact with natural persons must disclose their AI nature.' },
-  { id: '3', article: 'Art. 28b', title: 'General-purpose AI obligations', description: 'Maintain technical documentation and comply with applicable copyright law.' },
-]
-
+// POST /api/systems/classify — classify a system and generate obligations
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) return unauthorized()
 
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'No organization' }, { status: 400 })
+    const { data: profile } = await supabase
+      .from('users')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single()
+    if (!profile) return unauthorized()
 
-    const body = await req.json() as ClassifyBody
-    if (!Array.isArray(body.answers)) return badRequest('answers array is required')
-
-    const answers = body.answers
-    const getAnswer = (id: string) => answers.find((a) => a.question_id === id)?.answer ?? ''
-
-    const q5 = getAnswer('q5') // employment
-    const q6 = getAnswer('q6') // essential services
-    const q7 = getAnswer('q7') // biometric
-    const q8 = getAnswer('q8') // harm severity
-    const q11 = getAnswer('q11') // safety-critical
-
-    let risk_level: RiskLevel = 'limited'
-    let annex_iii_category: AnnexIIICategory = 'none'
-    let articles_applicable: string[] = []
-    let obligations: ClassificationObligation[] = LIMITED_RISK_OBLIGATIONS
-
-    // Determine risk level and category using deterministic stub logic
-    if (q7 === 'yes') {
-      risk_level = 'high'
-      annex_iii_category = 'biometric'
-      articles_applicable = ['Art. 9', 'Art. 10', 'Art. 11', 'Art. 13', 'Art. 14', 'Art. 50']
-      obligations = HIGH_RISK_OBLIGATIONS_BIOMETRIC
-    } else if (q8 === 'Critical/life-impacting' || q11 === 'yes') {
-      risk_level = 'high'
-      annex_iii_category = 'critical_infrastructure'
-      articles_applicable = ['Art. 9', 'Art. 11', 'Art. 13', 'Art. 14', 'Art. 17']
-      obligations = HIGH_RISK_OBLIGATIONS_GENERAL
-    } else if (q5 === 'yes') {
-      risk_level = 'high'
-      annex_iii_category = 'employment'
-      articles_applicable = ['Art. 9', 'Art. 10', 'Art. 11', 'Art. 13', 'Art. 14']
-      obligations = HIGH_RISK_OBLIGATIONS_EMPLOYMENT
-    } else if (q6 === 'yes') {
-      risk_level = 'high'
-      annex_iii_category = 'essential_services'
-      articles_applicable = ['Art. 9', 'Art. 10', 'Art. 11', 'Art. 13', 'Art. 14']
-      obligations = HIGH_RISK_OBLIGATIONS_GENERAL
-    } else {
-      risk_level = 'limited'
-      annex_iii_category = 'none'
-      articles_applicable = ['Art. 13', 'Art. 52']
-      obligations = LIMITED_RISK_OBLIGATIONS
+    const rateCheck = await checkAuthenticatedRateLimit(user.id)
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
-    return NextResponse.json({
-      risk_level,
-      annex_iii_category: annex_iii_category === 'none' ? null : annex_iii_category,
-      articles_applicable,
-      obligations,
+    // AI-specific rate limit — 10 classifications per hour per org
+    const aiRateCheck = await checkClassifyRateLimit(profile.organization_id)
+    if (!aiRateCheck.allowed) {
+      return NextResponse.json({ error: 'Classification rate limit exceeded. Try again later.' }, { status: 429 })
+    }
+
+    const body = await req.json()
+    const parsed = classifySchema.safeParse(body)
+    if (!parsed.success) {
+      return badRequest(parsed.error.issues[0].message)
+    }
+
+    const { systemId, answers } = parsed.data
+
+    // Fetch the system (RLS scopes to org)
+    const { data: system, error: sysError } = await supabase
+      .from('systems')
+      .select('*')
+      .eq('id', systemId)
+      .eq('organization_id', profile.organization_id)
+      .single()
+
+    if (sysError || !system) return notFound('System')
+
+    // Classify via AI
+    const result = await classifySystem({
+      systemName: system.name,
+      systemDescription: system.description,
+      answers,
     })
+
+    // Upsert questionnaire answers
+    const answerRows = answers.map((a) => ({
+      system_id: systemId,
+      question_id: a.questionId,
+      answer: a.answer,
+    }))
+
+    const { error: answerError } = await supabase
+      .from('questionnaire_answers')
+      .upsert(answerRows, { onConflict: 'system_id,question_id' })
+
+    if (answerError) return serverError(answerError, 'classify: upsert answers')
+
+    // Update system with classification results
+    const { error: updateError } = await supabase
+      .from('systems')
+      .update({
+        risk_level: result.riskLevel,
+        annex_category: result.annexCategory,
+        classification_rationale: result.rationale,
+        immediate_actions: result.immediateActions,
+        status: 'in-progress',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', systemId)
+
+    if (updateError) return serverError(updateError, 'classify: update system')
+
+    // Delete existing obligations then insert new ones
+    await supabase
+      .from('obligations')
+      .delete()
+      .eq('system_id', systemId)
+
+    if (result.obligations.length > 0) {
+      const obligationRows = result.obligations.map((o, i) => ({
+        system_id: systemId,
+        obligation_key: o.key,
+        article: o.article,
+        title: o.title,
+        description: o.description,
+        evidence_required: o.evidenceRequired,
+        is_complete: false,
+        sort_order: i,
+      }))
+
+      const { error: oblError } = await supabase
+        .from('obligations')
+        .insert(obligationRows)
+
+      if (oblError) return serverError(oblError, 'classify: insert obligations')
+    }
+
+    return NextResponse.json({ result })
   } catch (err) {
     return serverError(err, 'POST /api/systems/classify')
   }
