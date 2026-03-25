@@ -23,12 +23,18 @@ function getClientIp(req: NextRequest): string {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req)
-  const { allowed, resetAt } = await checkPublicRateLimit(ip)
-  if (!allowed) {
-    return NextResponse.json(
-      { error: 'Too many requests. Please try again later.' },
-      { status: 429, headers: { 'Retry-After': String(resetAt - Math.floor(Date.now() / 1000)) } }
-    )
+
+  // Rate limit — skip if Redis is not configured (dev environment)
+  try {
+    const { allowed, resetAt } = await checkPublicRateLimit(ip)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(resetAt - Math.floor(Date.now() / 1000)) } }
+      )
+    }
+  } catch (rateLimitErr) {
+    console.warn('[waitlist] Rate limit check failed, proceeding without:', rateLimitErr)
   }
 
   const raw = await req.json().catch(() => null)

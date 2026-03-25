@@ -1383,28 +1383,32 @@ export default function LandingPage() {
                 <Magnetic>
                   <motion.button
                     onClick={() => {
-                      track({ event: 'founding_discount_clicked', cta_label: 'Claim founding discount', section: 'pricing', page: 'landing' })
-                      openWaitlist('founding')
+                      track({ event: plan.highlight ? 'founding_discount_clicked' : 'landing_cta_clicked', cta_label: plan.highlight ? 'Claim founding discount' : `Get started ${plan.name}`, section: 'pricing', page: 'landing' })
+                      openWaitlist(plan.highlight ? 'founding' : 'waitlist')
                     }}
                     whileHover={{
+                      y: -2,
                       boxShadow: plan.highlight
-                        ? '0 0 0 1px rgba(0,229,191,0.4), 0 0 32px rgba(0,229,191,0.18)'
-                        : 'none',
+                        ? '0 0 0 1px rgba(0,229,191,0.5), 0 0 40px rgba(0,229,191,0.22), 0 8px 32px rgba(0,0,0,0.4)'
+                        : '0 0 0 1px rgba(0,229,191,0.3), 0 0 24px rgba(0,229,191,0.1), 0 4px 16px rgba(0,0,0,0.3)',
                     }}
+                    whileTap={{ scale: 0.97 }}
                     className="hp-pricing-cta"
                     style={{
-                      display: 'block', width: '100%', textAlign: 'center',
-                      background: plan.highlight ? T.accent : 'transparent',
-                      color: plan.highlight ? T.bg : T.text,
-                      border: `1px solid ${plan.highlight ? T.accent : T.border}`,
-                      borderRadius: 100, padding: '12px 0', fontSize: 13, fontWeight: 700,
+                      display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      background: plan.highlight ? T.accent : T.surface2,
+                      color: plan.highlight ? T.bg : T.accent,
+                      border: `1px solid ${plan.highlight ? T.accent : 'rgba(0,229,191,0.2)'}`,
+                      borderRadius: 100, padding: '13px 0', fontSize: 13, fontWeight: 700,
                       cursor: 'pointer', fontFamily: FF, minHeight: 44,
                       boxShadow: plan.highlight
                         ? '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset'
-                        : 'none',
+                        : '0 1px 0 rgba(255,255,255,0.04) inset',
+                      transition: 'background 0.15s, border-color 0.15s',
                     }}
                   >
-                    Claim founding discount
+                    {plan.highlight ? 'Claim founding discount' : 'Get started'}
+                    <ArrowRight size={14} style={{ opacity: plan.highlight ? 1 : 0.6 }} />
                   </motion.button>
                 </Magnetic>
               </motion.div>

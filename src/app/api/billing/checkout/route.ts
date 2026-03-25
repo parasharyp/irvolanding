@@ -6,11 +6,11 @@ import { unauthorized } from '@/lib/api-error'
 
 const PRICE_IDS: Record<string, string> = {
   starter: process.env.STRIPE_PRICE_STARTER!,
-  studio: process.env.STRIPE_PRICE_STUDIO!,
-  firm: process.env.STRIPE_PRICE_FIRM!,
+  growth: process.env.STRIPE_PRICE_GROWTH!,
+  plus: process.env.STRIPE_PRICE_PLUS!,
 }
 
-const Schema = z.object({ plan: z.enum(['starter', 'studio', 'firm']) })
+const Schema = z.object({ plan: z.enum(['starter', 'growth', 'plus']) })
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
