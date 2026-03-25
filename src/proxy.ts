@@ -91,6 +91,16 @@ export async function proxy(request: NextRequest) {
     })
   }
 
+  // ── OAuth code redirect ──────────────────────────────────────────────────
+  // Supabase PKCE flow sends the auth code to Site URL (/).
+  // Intercept it and forward to our callback handler.
+  const authCode = request.nextUrl.searchParams.get('code')
+  if (authCode && (pathname === '/' || pathname === '')) {
+    const callbackUrl = request.nextUrl.clone()
+    callbackUrl.pathname = '/api/auth/callback'
+    return NextResponse.redirect(callbackUrl)
+  }
+
   // ── Auth layer ────────────────────────────────────────────────────────────
   let supabaseResponse = NextResponse.next({ request })
 
