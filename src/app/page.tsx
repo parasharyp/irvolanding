@@ -563,7 +563,7 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/waitlist', {
+      const response = await fetch('/api/waitlist', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: form.email.trim(),
@@ -571,18 +571,21 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
           company_name: form.company_name.trim() || undefined,
           source: cfg.source,
         }),
-      }).then((r) => r.json())
-      if (res.success) {
-        track({
-          event: 'waitlist_submitted',
-          cta_label: cfg.cta, section: 'modal', page: 'landing',
-        })
-        setSuccess("You\u2019re on the list. We\u2019ll reach out before launch with early access details.")
+      })
+      if (!response.ok) {
+        const text = await response.text()
+        try { const j = JSON.parse(text); setError(j.error ?? 'Something went wrong.') } catch { setError(`Server error (${response.status}). Please try again.`) }
       } else {
-        setError(res.error ?? 'Something went wrong. Please try again.')
+        const res = await response.json()
+        if (res.success) {
+          track({ event: 'waitlist_submitted', cta_label: cfg.cta, section: 'modal', page: 'landing' })
+          setSuccess("You\u2019re on the list. We\u2019ll reach out before launch with early access details.")
+        } else {
+          setError(res.error ?? 'Something went wrong. Please try again.')
+        }
       }
     } catch {
-      setError('Network error. Please try again.')
+      setError('Could not connect. Check your internet and try again.')
     }
     setLoading(false)
   }
