@@ -78,7 +78,7 @@ const FEATURES = [
 
 const PROBLEM_CARDS = [
   { stat: '40\u201360 hours',         title: 'per system',                 desc: 'Your compliance consultant won\u2019t start until June. Each workflow takes weeks to document manually \u2014 and you have twelve.' },
-  { stat: '\u20AC15,000\u2013\u20AC50,000', title: 'per engagement',       desc: 'Enterprise platforms start at \u20AC50k. Boutique firms bill \u20AC400/hour. Neither is built for a 40-person company.' },
+  { stat: '\u00A315,000\u2013\u00A350,000', title: 'per engagement',       desc: 'Enterprise platforms start at \u00A350k. Boutique firms bill \u00A3400/hour. Neither is built for a 40-person company.' },
   { stat: 'Zero',                      title: 'structured tooling',        desc: 'OneTrust targets Fortune 500. Generic templates leave gaps. No one builds the actual evidence pack regulators request.' },
 ]
 
@@ -981,7 +981,7 @@ export default function LandingPage() {
         </div>
         <div style={{ padding: '24px 32px', textAlign: 'center', borderLeft: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}` }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Maximum penalty</span>
-          <span style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: '-0.03em', lineHeight: 1, display: 'block', marginBottom: 2, opacity: 0.7 }}>&euro;35M</span>
+          <span style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: '-0.03em', lineHeight: 1, display: 'block', marginBottom: 2, opacity: 0.7 }}>&pound;35M</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: T.text2 }}>maximum fine</span>
         </div>
         <div style={{ padding: '24px 32px', textAlign: 'center' }}>
@@ -1364,7 +1364,7 @@ export default function LandingPage() {
                   margin: '0 0 4px', letterSpacing: '-0.04em',
                   fontVariantNumeric: 'tabular-nums', lineHeight: 1,
                 }}>
-                  &euro;{plan.price}{plan.plus ? '+' : ''}
+                  &pound;{plan.price}{plan.plus ? '+' : ''}
                 </p>
                 <p style={{ fontSize: 12, color: T.text2, margin: '0 0 32px' }}>per month</p>
 

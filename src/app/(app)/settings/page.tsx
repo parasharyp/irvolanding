@@ -87,9 +87,9 @@ function SettingsContent() {
   const systemLimit = PLAN_SYSTEM_LIMITS[currentPlan]
 
   const PLANS = [
-    { key: 'starter' as OrgPlan, name: 'Starter', price: '\u00a319', period: '/mo', desc: 'For individuals getting started', systems: PLAN_SYSTEM_LIMITS.starter },
-    { key: 'growth' as OrgPlan, name: 'Growth', price: '\u00a369', period: '/mo', desc: 'For growing teams', systems: PLAN_SYSTEM_LIMITS.growth },
-    { key: 'plus' as OrgPlan, name: 'Plus', price: '\u00a3149', period: '/mo', desc: 'For large organisations', systems: PLAN_SYSTEM_LIMITS.plus },
+    { key: 'starter' as OrgPlan, name: 'Starter', price: '\u00a3149', period: '/mo', desc: '1 user \u00B7 3 systems', systems: PLAN_SYSTEM_LIMITS.starter },
+    { key: 'growth' as OrgPlan, name: 'Growth', price: '\u00a3399', period: '/mo', desc: '5 users \u00B7 10 systems', systems: PLAN_SYSTEM_LIMITS.growth },
+    { key: 'plus' as OrgPlan, name: 'Plus', price: '\u00a3799', period: '/mo', desc: 'Unlimited users \u00B7 25+ systems', systems: PLAN_SYSTEM_LIMITS.plus },
   ]
 
   return (
