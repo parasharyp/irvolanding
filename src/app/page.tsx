@@ -77,15 +77,15 @@ const FEATURES = [
 ]
 
 const PROBLEM_CARDS = [
-  { stat: '40\u201360 hours',         title: 'per system',                 desc: 'Manually documenting each AI workflow takes weeks with consultants.' },
-  { stat: '\u20AC15,000\u2013\u20AC50,000', title: 'per engagement',       desc: 'Enterprise GRC platforms and law firms price out SMEs entirely.' },
-  { stat: 'Zero',                      title: 'structured tooling',        desc: 'No SME-focused tool builds the actual evidence pack regulators ask for.' },
+  { stat: '40\u201360 hours',         title: 'per system',                 desc: 'Your compliance consultant won\u2019t start until June. Each workflow takes weeks to document manually \u2014 and you have twelve.' },
+  { stat: '\u20AC15,000\u2013\u20AC50,000', title: 'per engagement',       desc: 'Enterprise platforms start at \u20AC50k. Boutique firms bill \u20AC400/hour. Neither is built for a 40-person company.' },
+  { stat: 'Zero',                      title: 'structured tooling',        desc: 'OneTrust targets Fortune 500. Generic templates leave gaps. No one builds the actual evidence pack regulators request.' },
 ]
 
 const SOLUTION_STEPS = [
-  { n: '01', title: 'Describe your AI system',   desc: 'Name it, describe the workflow, identify the data sources and model type.' },
-  { n: '02', title: 'Answer 12 questions',         desc: 'AI classifies risk level, maps Annex III category, generates your obligations.' },
-  { n: '03', title: 'Capture evidence, export',    desc: 'AI drafts evidence sections. Upload files. Download a regulator-ready PDF.' },
+  { n: '01', title: 'Describe your AI system',   desc: 'Name the workflow, describe what it does, identify who\u2019s affected. Two minutes.' },
+  { n: '02', title: 'Answer 12 questions',         desc: 'AI classifies your risk level, maps the Annex III category, and generates every obligation that applies. Instant.' },
+  { n: '03', title: 'Capture evidence, export',    desc: 'AI drafts each evidence section. You review, edit, upload supporting files. Download an 8-section PDF ready for any auditor.' },
 ]
 
 const WORKFLOW_STEPS = [
@@ -480,7 +480,7 @@ interface WaitlistForm { email: string; full_name: string; company_name: string 
 const WL_EMPTY: WaitlistForm = { email: '', full_name: '', company_name: '' }
 const WL_CONFIG = {
   waitlist:    { overline: 'JOIN THE WAITLIST',   headline: 'Be first when we launch',        sub: 'We will notify you before public access opens and share early documentation resources.',                                                cta: 'Join the Waitlist',       source: 'landing-waitlist' },
-  founding:    { overline: 'FOUNDING ACCESS',     headline: 'Claim your founding discount',   sub: 'Founding members lock in 30% off for the lifetime of their plan. Limited to the first 20 customers who pre-pay 3 months upfront.',    cta: 'Claim Founding Discount', source: 'landing-founding' },
+  founding:    { overline: 'FOUNDING ACCESS',     headline: 'Claim your founding discount',   sub: 'Founding members lock in 30\u00A0% off for the lifetime of their plan. Limited to the first 20 customers who pre-pay 3 months upfront. After submitting, we\u2019ll send you a secure payment link within one business day.',    cta: 'Reserve Founding Spot', source: 'landing-founding' },
   walkthrough: { overline: 'BOOK A WALKTHROUGH',  headline: 'See the product in 30 minutes',  sub: 'Leave your details and we will reach out within one business day to schedule a walkthrough.',                                         cta: 'Request Walkthrough',     source: 'landing-walkthrough' },
 }
 
@@ -723,6 +723,7 @@ export default function LandingPage() {
   const [waitlistModal, setWaitlistModal] = useState<WaitlistVariant | null>(null)
   const [mobileMenu, setMobileMenu] = useState(false)
   const prefersReducedMotion = useReducedMotion()
+  const daysLeft = useDaysLeft()
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40)
@@ -899,8 +900,7 @@ export default function LandingPage() {
               maxWidth: 520, margin: '0 auto 40px', letterSpacing: '-0.01em',
             }}
           >
-            Irvo classifies your AI workflows, maps your obligations, and generates
-            regulator-ready documentation &mdash; before the deadline hits.
+            The only tool that builds the evidence pack regulators will actually ask for.
           </motion.p>
 
           {/* CTAs */}
@@ -930,7 +930,7 @@ export default function LandingPage() {
             <Magnetic>
               <a
                 href="#how-it-works"
-                onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'See how it works', section: 'hero', page: 'landing' })}
+                onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'Watch the walkthrough', section: 'hero', page: 'landing' })}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   background: 'transparent', color: T.text2,
@@ -939,7 +939,7 @@ export default function LandingPage() {
                   transition: 'border-color 0.15s',
                 }}
               >
-                See how it works
+                Watch the walkthrough
               </a>
             </Magnetic>
           </motion.div>
@@ -949,7 +949,7 @@ export default function LandingPage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
             style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '24px 0 0', letterSpacing: '0.02em' }}
           >
-            No credit card required &middot; EU & UK coverage &middot; First system free
+            Covers all Annex III high-risk categories &middot; EU &amp; UK jurisdiction &middot; Guidance only, not legal advice
           </motion.p>
         </div>
 
@@ -973,32 +973,22 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* URGENCY BAR                                                            */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <div style={{ overflow: 'hidden', padding: '18px 0', background: T.surface, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
-        <motion.div
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 32, repeat: Infinity, ease: 'linear' }}
-          style={{ display: 'flex', gap: 0, width: 'max-content' }}
-        >
-          {[...Array(2)].map((_, outer) => (
-            <span key={outer} aria-hidden={outer > 0 ? 'true' : undefined} style={{ display: 'flex' }}>
-              {[
-                { text: `${useDaysLeft() ?? '\u2014'} DAYS UNTIL ENFORCEMENT`, accent: true },
-                { text: 'FINES UP TO \u20AC35M OR 7% OF GLOBAL TURNOVER', accent: false },
-                { text: '67% OF SMES DON\u2019T KNOW THEIR WORKFLOWS QUALIFY AS AI SYSTEMS', accent: false },
-                { text: 'AUGUST 2, 2026 \u2014 NO GRACE PERIOD', accent: true },
-              ].map((item, i) => (
-                <span key={i} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 28,
-                  fontSize: 11, color: item.accent ? T.accent : T.text2,
-                  fontWeight: 700, letterSpacing: '0.08em', padding: '0 32px', whiteSpace: 'nowrap',
-                }}>
-                  {item.text}
-                  <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.accentGlow, flexShrink: 0, display: 'inline-block' }} />
-                </span>
-              ))}
-            </span>
-          ))}
-        </motion.div>
+      <div className="r-grid-3" style={{ background: T.surface, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ padding: '24px 32px', textAlign: 'center' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Enforcement countdown</span>
+          <span style={{ fontSize: 36, fontWeight: 900, color: T.accent, letterSpacing: '-0.03em', lineHeight: 1, display: 'block', marginBottom: 2 }}>{daysLeft !== null ? daysLeft.toLocaleString() : '\u2014'}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.text2 }}>days until enforcement</span>
+        </div>
+        <div style={{ padding: '24px 32px', textAlign: 'center', borderLeft: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}` }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Maximum penalty</span>
+          <span style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: '-0.03em', lineHeight: 1, display: 'block', marginBottom: 2, opacity: 0.7 }}>&euro;35M</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.text2 }}>maximum fine</span>
+        </div>
+        <div style={{ padding: '24px 32px', textAlign: 'center' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Awareness gap</span>
+          <span style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: '-0.03em', lineHeight: 1, display: 'block', marginBottom: 2, opacity: 0.7 }}>67%</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.text2 }}>of SMEs unaware their workflows qualify</span>
+        </div>
       </div>
 
       <Divider />
@@ -1046,6 +1036,24 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* PITCH + ICP BRIDGE                                                     */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 32px', textAlign: 'center' }}>
+        <motion.div {...fadeUp()} style={{ maxWidth: 720, margin: '0 auto' }}>
+          <p style={{
+            fontSize: 'clamp(18px, 2.5vw, 24px)', fontWeight: 600, color: T.text,
+            lineHeight: 1.6, margin: '0 0 24px', letterSpacing: '-0.01em',
+          }}>
+            We turn each of your AI and automation workflows into a structured evidence pack
+            for your legal team &mdash; in hours instead of weeks, at a fraction of consulting cost.
+          </p>
+          <p style={{ fontSize: 14, color: T.text2, margin: 0 }}>
+            Built for compliance leads, ops directors, and CTOs at EU/UK companies with 10&ndash;500 employees.
+          </p>
+        </motion.div>
       </section>
 
       <Divider />
@@ -1222,11 +1230,51 @@ export default function LandingPage() {
               ))}
             </div>
 
+            {/* Product visual mock — styled wizard screenshot */}
+            <div style={{ padding: '24px 24px 0', borderTop: `1px solid ${T.border}` }}>
+              <div style={{
+                background: T.bg, border: `1px solid ${T.border}`, overflow: 'hidden',
+              }}>
+                {/* Mock app header */}
+                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.red, opacity: 0.5 }} />
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.amber, opacity: 0.5 }} />
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.green, opacity: 0.5 }} />
+                  <span style={{ flex: 1, textAlign: 'center', fontSize: 10, color: T.text3, fontWeight: 500 }}>irvo.co.uk/systems/new</span>
+                </div>
+                {/* Mock wizard content */}
+                <div style={{ padding: '20px 24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: T.bg }}>3</div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>Classification Result</span>
+                    <span style={{ fontSize: 10, color: T.text3, marginLeft: 'auto' }}>Step 3 of 5</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1 1 200px', padding: '14px 16px', background: T.surface, border: `1px solid rgba(229,71,71,0.3)` }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Risk Level</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: T.red }}>High Risk</div>
+                      <div style={{ fontSize: 10, color: T.text2, marginTop: 4 }}>Annex III.4.a — Employment</div>
+                    </div>
+                    <div style={{ flex: '1 1 200px', padding: '14px 16px', background: T.surface, border: `1px solid ${T.border}` }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Obligations</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: T.accent }}>5</div>
+                      <div style={{ fontSize: 10, color: T.text2, marginTop: 4 }}>Art. 9, 10, 11, 13, 14</div>
+                    </div>
+                    <div style={{ flex: '1 1 200px', padding: '14px 16px', background: T.surface, border: `1px solid ${T.border}` }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Immediate Actions</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: T.amber }}>3</div>
+                      <div style={{ fontSize: 10, color: T.text2, marginTop: 4 }}>Start documenting now</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Bottom bar */}
             <div style={{
               padding: '16px 24px', borderTop: `1px solid ${T.border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: T.surface2,
+              background: T.surface2, marginTop: 0,
             }}>
               <p style={{ fontSize: 12, color: T.text2, margin: 0 }}>
                 Output: 8-section PDF evidence pack &middot; Cover, classification, obligations, evidence, gaps, declaration
@@ -1300,7 +1348,7 @@ export default function LandingPage() {
                     padding: '3px 10px', borderRadius: 100,
                     letterSpacing: '0.08em', textTransform: 'uppercase',
                   }}>
-                    Most popular
+                    Recommended
                   </div>
                 )}
 
@@ -1362,6 +1410,43 @@ export default function LandingPage() {
           </div>
         </div>
       </motion.section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* CONCIERGE OFFER                                                        */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 32px' }}>
+        <motion.div {...fadeUp()} style={{
+          maxWidth: 720, margin: '0 auto', textAlign: 'center',
+          background: T.surface, border: `1px solid ${T.border}`, padding: '48px 40px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.accent }} />
+          <p style={{ ...S.overline, marginBottom: 16 }}>ZERO-RISK PILOT</p>
+          <h2 style={{ ...S.h2, fontSize: 'clamp(22px, 3vw, 32px)', marginBottom: 16 }}>
+            We&apos;ll document your first system for free
+          </h2>
+          <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.6, margin: '0 0 32px', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto' }}>
+            The first 10 customers get one AI workflow documented end-to-end by the founder &mdash; at zero cost.
+            You get a complete evidence pack. We get your feedback.
+          </p>
+          <Magnetic>
+            <motion.button
+              onClick={() => {
+                track({ event: 'walkthrough_clicked', cta_label: 'Book concierge session', section: 'concierge', page: 'landing' })
+                openWaitlist('walkthrough')
+              }}
+              whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 32px rgba(0,229,191,0.18)' }}
+              style={{
+                ...S.inlineBtn, gap: 10, background: T.accent, color: T.bg,
+                fontSize: 14, fontWeight: 800, padding: '14px 32px', borderRadius: 100, minHeight: 44,
+                boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
+              }}
+            >
+              Book a free concierge session <ArrowRight size={15} />
+            </motion.button>
+          </Magnetic>
+        </motion.div>
+      </section>
 
       <Divider />
 
@@ -1537,16 +1622,15 @@ export default function LandingPage() {
               {
                 title: 'Company',
                 links: [
-                  { label: 'About', href: '#' },
                   { label: 'Contact', href: 'mailto:hello@irvo.co.uk' },
                 ],
               },
               {
                 title: 'Legal',
                 links: [
-                  { label: 'Privacy', href: '#' },
-                  { label: 'Terms', href: '#' },
-                  { label: 'AI Act Reference', href: '#' },
+                  { label: 'Privacy', href: '/privacy' },
+                  { label: 'Terms', href: '/terms' },
+                  { label: 'EU AI Act Text', href: 'https://artificialintelligenceact.eu/' },
                 ],
               },
             ].map(({ title, links }) => (

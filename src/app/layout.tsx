@@ -10,8 +10,22 @@ const raleway = Raleway({
 })
 
 export const metadata: Metadata = {
-  title: 'Irvo — AI Act Compliance for SMEs',
-  description: 'Document, classify, and generate evidence packs for your AI systems. EU AI Act compliance made simple.',
+  title: 'Irvo — AI Act Evidence Packs for SMEs',
+  description: 'Turn each AI workflow into a structured, regulator-ready evidence pack in 20 minutes. EU AI Act compliance for companies with 10–500 employees.',
+  openGraph: {
+    title: 'Irvo — AI Act Evidence Packs for SMEs',
+    description: 'Turn each AI workflow into a structured, regulator-ready evidence pack in 20 minutes. Enforcement: August 2, 2026.',
+    url: 'https://irvo.co.uk',
+    siteName: 'Irvo',
+    type: 'website',
+    locale: 'en_GB',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Irvo — AI Act Evidence Packs for SMEs',
+    description: 'Turn each AI workflow into a structured, regulator-ready evidence pack in 20 minutes.',
+  },
+  robots: { index: true, follow: true },
 }
 
 export const viewport: Viewport = {
