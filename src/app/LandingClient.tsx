@@ -244,10 +244,6 @@ function FinalCtaBg() {
         }}
       />
       <div style={{
-        position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, transform: 'translateX(-50%)',
-        background: 'linear-gradient(transparent 0%, rgba(0,229,191,0.08) 40%, rgba(0,229,191,0.12) 60%, rgba(0,229,191,0.04) 85%, transparent 100%)',
-      }} />
-      <div style={{
         position: 'absolute', inset: 0,
         background: 'radial-gradient(ellipse 120% 100% at 50% 50%, transparent 25%, rgba(4,4,4,0.85) 100%)',
       }} />
