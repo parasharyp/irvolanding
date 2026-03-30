@@ -1596,87 +1596,42 @@ export default function LandingClient() {
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* FOOTER                                                                 */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <footer style={{ padding: '64px 32px', background: T.surface }}>
+      <footer style={{ padding: '48px 32px 32px', background: T.surface, borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <div className="r-grid-footer" style={{ marginBottom: 64 }}>
-            {/* Brand column */}
-            <div>
-              <div style={{ marginBottom: 16 }}><Logo size={24} /></div>
-              <p style={{
-                fontSize: 13, color: T.text2, lineHeight: 1.6, maxWidth: 240, margin: '0 0 20px',
-              }}>
-                AI compliance documentation, without the consultant bill.
-              </p>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['EU AI Act', 'GDPR Safe', 'Guidance Only'].map((b) => (
-                  <span key={b} style={{
-                    fontSize: 10, fontWeight: 600, color: T.text3,
-                    border: `1px solid ${T.border}`, padding: '3px 10px',
-                    borderRadius: 100, letterSpacing: '0.02em',
-                  }}>{b}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Link columns */}
-            {[
-              {
-                title: 'Product',
-                links: [
-                  { label: 'Features', href: '#features' },
-                  { label: 'Pricing', href: '#pricing' },
-                  { label: 'Guides', href: '/guides' },
-                ],
-              },
-              {
-                title: 'Company',
-                links: [
-                  { label: 'Contact', href: 'mailto:hello@irvo.co.uk' },
-                ],
-              },
-              {
-                title: 'Legal',
-                links: [
-                  { label: 'Privacy', href: '/privacy' },
-                  { label: 'Terms', href: '/terms' },
-                  { label: 'EU AI Act Text', href: 'https://artificialintelligenceact.eu/' },
-                ],
-              },
-            ].map(({ title, links }) => (
-              <div key={title}>
-                <h4 style={{
-                  color: T.text3, fontWeight: 600, fontSize: 11,
-                  marginBottom: 20, letterSpacing: '0.08em', textTransform: 'uppercase',
-                }}>{title}</h4>
-                <ul style={{
-                  listStyle: 'none', padding: 0, margin: 0,
-                  display: 'flex', flexDirection: 'column', gap: 12,
-                }}>
-                  {links.map(({ label, href }) => (
-                    <li key={label}>
-                      <motion.a
-                        href={href}
-                        whileHover={{ color: T.text }}
-                        style={{
-                          color: T.text2, textDecoration: 'none', fontSize: 13,
-                          display: 'inline-block', transition: 'color 0.15s',
-                        }}
-                      >{label}</motion.a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          {/* Top row: logo + nav links all horizontal */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>
+            <Logo size={22} />
+            <nav style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+              {[
+                { label: 'Features', href: '#features' },
+                { label: 'Pricing', href: '#pricing' },
+                { label: 'Guides', href: '/guides' },
+                { label: 'Contact', href: 'mailto:hello@irvo.co.uk' },
+                { label: 'Privacy', href: '/privacy' },
+                { label: 'Terms', href: '/terms' },
+              ].map(({ label, href }) => (
+                <a key={label} href={href} style={{ color: T.text2, textDecoration: 'none', fontSize: 13, transition: 'color 0.15s' }}>{label}</a>
+              ))}
+            </nav>
           </div>
 
+          {/* Bottom row: copyright + badges */}
           <div style={{
-            borderTop: `1px solid ${T.border}`, paddingTop: 24,
-            display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+            borderTop: `1px solid ${T.border}`, paddingTop: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
           }}>
             <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>
-              &copy; {new Date().getFullYear()} Irvo. Irvo does not provide legal advice.
+              &copy; {new Date().getFullYear()} Irvo. Guidance only, not legal advice.
             </p>
-            <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>irvo.co.uk</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {['EU AI Act', 'GDPR Safe'].map((b) => (
+                <span key={b} style={{
+                  fontSize: 10, fontWeight: 600, color: T.text3,
+                  border: `1px solid ${T.border}`, padding: '3px 10px',
+                  borderRadius: 100, letterSpacing: '0.02em',
+                }}>{b}</span>
+              ))}
+            </div>
           </div>
         </div>
       </footer>
