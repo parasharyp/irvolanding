@@ -58,6 +58,19 @@ input, textarea, select {
 
 /* ── Visibility helpers ───────────────────────────────────── */
 .mobile-only { display: none !important; }
+.desktop-only { display: flex; }
+
+/* ── Mobile nav overlay (hidden by default, shown on mobile when open) ── */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+}
+.mobile-nav-overlay.open { display: flex; }
 
 /* ── Homepage layout helpers (base / desktop) ─────────────── */
 .hp-section-pad  { padding: 120px 32px; }
@@ -102,6 +115,7 @@ input, textarea, select {
 
   /* Visibility */
   .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
 
   /* Mobile header bar */
   .app-mobile-header { display: flex !important; }
