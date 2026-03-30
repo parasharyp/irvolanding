@@ -633,6 +633,7 @@ export default function LandingClient() {
       {!prefersReducedMotion && <CursorSpotlight />}
       {!prefersReducedMotion && <CustomCursor />}
 
+      <div className="relative z-[2]">
       {/* ── MOBILE NAV OVERLAY ── */}
       <div
         className={`fixed inset-0 bg-[#040404] z-[200] flex-col p-6 overflow-y-auto ${mobileMenu ? 'flex' : 'hidden'}`}
@@ -1347,6 +1348,7 @@ export default function LandingClient() {
       <AnimatePresence>
         {waitlistModal && <WaitlistModal variant={waitlistModal} onClose={() => setWaitlistModal(null)} />}
       </AnimatePresence>
+      </div>{/* end content z-wrapper */}
     </div>
   )
 }
