@@ -996,11 +996,11 @@ export default function LandingClient() {
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* PROBLEM SECTION                                                        */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="hp-section-pad" style={{ background: T.surface }}>
+      <section style={{ padding: '80px 32px', background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div {...fadeUp()} style={{ marginBottom: 64 }}>
-            <p style={S.overline}>THE COMPLIANCE GAP</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)', maxWidth: 560 }}>
+          <motion.div {...fadeUp()} style={{ marginBottom: 36 }}>
+            <p style={{ ...S.overline, margin: '0 0 12px' }}>THE COMPLIANCE GAP</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(24px, 3.5vw, 40px)', maxWidth: 480 }}>
               Most SMEs are starting from zero
             </h2>
           </motion.div>
@@ -1011,25 +1011,25 @@ export default function LandingClient() {
                 key={card.title}
                 {...fadeInOnce(i * 0.08)}
                 style={{
-                  ...S.cardPad, ...S.wallCell, background: T.card,
+                  padding: '28px 24px', ...S.wallCell, background: T.card,
                   borderTop: `1px solid ${T.border}`, position: 'relative',
                 }}
               >
                 <p style={{
-                  fontSize: 'clamp(36px, 4vw, 56px)', fontWeight: 900,
+                  fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 900,
                   color: i === 2 ? T.red : T.text, letterSpacing: '-0.04em',
-                  lineHeight: 1, margin: '0 0 4px', opacity: i === 2 ? 0.6 : 0.7,
+                  lineHeight: 1, margin: '0 0 2px', opacity: i === 2 ? 0.6 : 0.7,
                   fontVariantNumeric: 'tabular-nums',
                 }}>
                   {card.stat}
                 </p>
                 <p style={{
-                  fontSize: 13, fontWeight: 700, color: T.text2,
-                  margin: '0 0 16px', letterSpacing: '-0.01em',
+                  fontSize: 12, fontWeight: 700, color: T.accent,
+                  margin: '0 0 10px', letterSpacing: '0.02em',
                 }}>
                   {card.title}
                 </p>
-                <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.6, margin: 0 }}>
+                <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.55, margin: 0 }}>
                   {card.desc}
                 </p>
               </motion.div>
