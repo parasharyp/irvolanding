@@ -196,6 +196,100 @@ function BrandDivider() {
   )
 }
 
+/* VISUAL EFFECTS — desktop only, disabled for reduced-motion */
+
+function HeroCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    let W = window.innerWidth, H = window.innerHeight
+    canvas.width = W; canvas.height = H
+    let mx = W / 2, my = H * 0.42
+    const N = 78
+    const pts = Array.from({ length: N }, (_, i) => ({
+      x: (i * 131.7 + 20) % W, y: (i * 97.4 + 15) % H,
+      vx: (((i * 13 + 7) % 21) - 10) * 0.032, vy: (((i * 9 + 3) % 21) - 10) * 0.032,
+      size: 1.1 + (i % 3) * 0.55,
+    }))
+    const LINK = 138, LINK2 = LINK * LINK, GLOW = 240, GLOW2 = GLOW * GLOW, PUSH = 160, PUSH2 = PUSH * PUSH
+    const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY }
+    const onResize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    window.addEventListener('resize', onResize)
+    let raf = 0
+    const draw = () => {
+      raf = requestAnimationFrame(draw)
+      ctx.clearRect(0, 0, W, H)
+      const cd2 = pts.map(p => { const dx = p.x - mx, dy = p.y - my; return dx * dx + dy * dy })
+      ctx.beginPath(); ctx.lineWidth = 0.5
+      for (let i = 0; i < N; i++) { if (cd2[i] < GLOW2) continue; for (let j = i + 1; j < N; j++) { if (cd2[j] < GLOW2) continue; const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y; if (dx * dx + dy * dy < LINK2) { ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y) } } }
+      ctx.strokeStyle = 'rgba(160,185,205,0.04)'; ctx.stroke()
+      ctx.lineWidth = 0.6
+      for (let i = 0; i < N; i++) { for (let j = i + 1; j < N; j++) { if (cd2[i] >= GLOW2 && cd2[j] >= GLOW2) continue; const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d2 = dx * dx + dy * dy; if (d2 < LINK2) { const prox = 1 - Math.sqrt(d2) / LINK, gfI = cd2[i] < GLOW2 ? 1 - Math.sqrt(cd2[i]) / GLOW : 0, gfJ = cd2[j] < GLOW2 ? 1 - Math.sqrt(cd2[j]) / GLOW : 0; ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.strokeStyle = `rgba(0,229,191,${(prox * Math.max(gfI, gfJ) * 0.38).toFixed(3)})`; ctx.stroke() } } }
+      for (let i = 0; i < N; i++) { const p = pts[i], d2 = cd2[i]; if (d2 < PUSH2 && d2 > 0) { const d = Math.sqrt(d2), f = ((PUSH - d) / PUSH) * 0.10; p.vx += ((p.x - mx) / d) * f; p.vy += ((p.y - my) / d) * f }; p.vx *= 0.974; p.vy *= 0.974; p.x += p.vx; p.y += p.vy; if (p.x < -12) p.x += W + 24; else if (p.x > W + 12) p.x -= W + 24; if (p.y < -12) p.y += H + 24; else if (p.y > H + 12) p.y -= H + 24; const gf = d2 < GLOW2 ? 1 - Math.sqrt(d2) / GLOW : 0, a = gf > 0 ? 0.10 + gf * 0.54 : 0.055; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = gf > 0.04 ? `rgba(0,229,191,${a.toFixed(3)})` : `rgba(180,200,215,${(a * 0.5).toFixed(3)})`; ctx.fill() }
+    }
+    raf = requestAnimationFrame(draw)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove); window.removeEventListener('resize', onResize) }
+  }, [])
+  return <canvas ref={canvasRef} aria-hidden="true" className="fixed inset-0 w-full h-full pointer-events-none z-0 hidden md:block" />
+}
+
+function CursorSpotlight() {
+  const innerRef = useRef<HTMLDivElement>(null)
+  const midRef = useRef<HTMLDivElement>(null)
+  const outerRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    let raf = 0, tx = window.innerWidth / 2, ty = window.innerHeight * 0.44
+    let mx = tx, my = ty, mvx = 0, mvy = 0, ox = tx, oy = ty, ovx = 0, ovy = 0
+    const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+      mvx = mvx * 0.76 + (tx - mx) * 0.11; mvy = mvy * 0.76 + (ty - my) * 0.11; mx += mvx; my += mvy
+      ovx = ovx * 0.84 + (tx - ox) * 0.052; ovy = ovy * 0.84 + (ty - oy) * 0.052; ox += ovx; oy += ovy
+      if (innerRef.current) innerRef.current.style.background = `radial-gradient(140px circle at ${tx}px ${ty}px, rgba(0,229,191,0.11) 0%, rgba(0,229,191,0.03) 55%, transparent 100%)`
+      if (midRef.current) midRef.current.style.background = `radial-gradient(480px circle at ${mx}px ${my}px, rgba(0,229,191,0.05) 0%, rgba(71,201,229,0.015) 60%, transparent 100%)`
+      if (outerRef.current) outerRef.current.style.background = `radial-gradient(880px circle at ${ox}px ${oy}px, rgba(0,229,191,0.022) 0%, transparent 62%)`
+    }
+    raf = requestAnimationFrame(tick)
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove) }
+  }, [])
+  return (
+    <>
+      <div ref={outerRef} className="fixed inset-0 z-[3] pointer-events-none hidden md:block" />
+      <div ref={midRef} className="fixed inset-0 z-[3] pointer-events-none hidden md:block" />
+      <div ref={innerRef} className="fixed inset-0 z-[3] pointer-events-none hidden md:block" />
+    </>
+  )
+}
+
+function CustomCursor() {
+  const dotRef = useRef<HTMLDivElement>(null)
+  const ringRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    let raf = 0, tx = -100, ty = -100, cx = tx, cy = ty, vx = 0, vy = 0
+    const onMove = (e: MouseEvent) => { tx = e.clientX; ty = e.clientY }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+      vx = vx * 0.85 + (tx - cx) * 0.10; vy = vy * 0.85 + (ty - cy) * 0.10; cx += vx; cy += vy
+      if (dotRef.current) dotRef.current.style.transform = `translate(${tx}px,${ty}px) translate(-50%,-50%)`
+      if (ringRef.current) ringRef.current.style.transform = `translate(${(cx - 12).toFixed(1)}px,${(cy - 12).toFixed(1)}px)`
+    }
+    raf = requestAnimationFrame(tick)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('mousemove', onMove) }
+  }, [])
+  return (
+    <>
+      <div ref={dotRef} className="fixed top-0 left-0 z-[9999] w-1 h-1 rounded-full bg-white/90 pointer-events-none will-change-transform hidden md:block" />
+      <div ref={ringRef} className="fixed top-0 left-0 z-[9998] w-6 h-6 rounded-full border border-white/45 pointer-events-none will-change-transform hidden md:block" />
+    </>
+  )
+}
+
 /* BACKGROUNDS */
 
 function GrainTexture() {
@@ -535,6 +629,9 @@ export default function LandingClient() {
       </a>
 
       {!prefersReducedMotion && <ScrollProgressBar />}
+      {!prefersReducedMotion && <HeroCanvas />}
+      {!prefersReducedMotion && <CursorSpotlight />}
+      {!prefersReducedMotion && <CustomCursor />}
 
       {/* ── MOBILE NAV OVERLAY ── */}
       <div
