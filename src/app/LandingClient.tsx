@@ -183,11 +183,6 @@ function ScrollProgressBar() {
   )
 }
 
-function BrandDivider() {
-  return (
-    <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-  )
-}
 
 /* VISUAL EFFECTS — desktop only, disabled for reduced-motion */
 
@@ -850,7 +845,7 @@ export default function LandingClient() {
         </div>
       </div>
 
-      <BrandDivider />
+
 
       {/* ── PROBLEM ── */}
       <section className="py-16 px-5 md:py-[120px] md:px-8 bg-[#0c0c0c]">
@@ -894,7 +889,7 @@ export default function LandingClient() {
         </div>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" className="py-16 px-5 md:py-[120px] md:px-8">
@@ -941,7 +936,7 @@ export default function LandingClient() {
         </div>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── FEATURES ── */}
       <section id="features" className="py-16 px-5 md:py-[120px] md:px-8 bg-[#0c0c0c]">
@@ -998,7 +993,7 @@ export default function LandingClient() {
         </div>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── PRODUCT VISUAL ── */}
       <section className="py-16 px-5 md:py-[120px] md:px-8">
@@ -1094,7 +1089,7 @@ export default function LandingClient() {
         </div>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── PRICING ── */}
       <section id="pricing" className="py-16 px-5 md:py-[120px] md:px-8 bg-[#0c0c0c]">
@@ -1199,7 +1194,7 @@ export default function LandingClient() {
         </Reveal>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── FAQ ── */}
       <section id="faq" className="py-16 px-5 md:py-[120px] md:px-8">
@@ -1231,7 +1226,7 @@ export default function LandingClient() {
         </div>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── FINAL CTA ── */}
       <section className="py-20 px-5 md:py-40 md:px-8 text-center relative overflow-hidden">
@@ -1287,7 +1282,7 @@ export default function LandingClient() {
         </div>
       </section>
 
-      <BrandDivider />
+
 
       {/* ── FOOTER ── */}
       <footer className="py-16 px-5 md:px-8 bg-[#0c0c0c]">
