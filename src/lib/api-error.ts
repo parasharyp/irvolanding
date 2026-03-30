@@ -22,3 +22,11 @@ export function notFound(resource = 'Resource') {
 export function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 })
 }
+
+export function rateLimited(resetAt?: number) {
+  const headers: Record<string, string> = {}
+  if (resetAt) {
+    headers['Retry-After'] = String(Math.max(1, resetAt - Math.floor(Date.now() / 1000)))
+  }
+  return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429, headers })
+}

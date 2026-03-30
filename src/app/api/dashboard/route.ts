@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { unauthorized, serverError } from '@/lib/api-error'
+import { serverError, rateLimited } from '@/lib/api-error'
+import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import type { RiskLevel, DashboardMetrics, DashboardSystemSummary, DashboardInsight } from '@/types'
 
@@ -98,27 +98,20 @@ function generateInsights(
 // GET /api/dashboard — rich metrics for the user's org
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
     // Fetch systems with full detail
     const { data: systems, error: sysError } = await supabase
       .from('systems')
       .select('id, name, risk_level, status, pct_complete, updated_at')
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
       .order('updated_at', { ascending: false })
 
     if (sysError) return serverError(sysError, 'GET /api/dashboard')

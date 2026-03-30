@@ -11,8 +11,8 @@ const PLAN_MAP: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
-    console.error('[stripe webhook] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET')
-    return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+    console.error('[stripe webhook] Missing required environment variables')
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-02-25.clover' })

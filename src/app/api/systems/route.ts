@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
-import { unauthorized, badRequest, serverError } from '@/lib/api-error'
+import { badRequest, serverError, rateLimited } from '@/lib/api-error'
+import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import { parseBody, requireJson } from '@/lib/validate-body'
 import { PLAN_SYSTEM_LIMITS } from '@/types'
@@ -10,26 +10,19 @@ import type { OrgPlan } from '@/types'
 // GET /api/systems — list all systems for the user's org
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
     const { data: systems, error } = await supabase
       .from('systems')
       .select('*')
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: false })
 
     if (error) return serverError(error, 'GET /api/systems')
@@ -48,20 +41,13 @@ const createSystemSchema = z.object({
 // POST /api/systems — create a new AI system
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
     const ctErr = requireJson(req); if (ctErr) return ctErr
@@ -75,7 +61,7 @@ export async function POST(req: NextRequest) {
     const { data: org } = await supabase
       .from('organizations')
       .select('plan')
-      .eq('id', profile.organization_id)
+      .eq('id', orgId)
       .single()
 
     if (!org) return serverError(new Error('Organization not found'), 'POST /api/systems')
@@ -83,7 +69,7 @@ export async function POST(req: NextRequest) {
     const { count } = await supabase
       .from('systems')
       .select('id', { count: 'exact', head: true })
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
 
     const limit = PLAN_SYSTEM_LIMITS[org.plan as OrgPlan] ?? 3
     if ((count ?? 0) >= limit) {
@@ -93,7 +79,7 @@ export async function POST(req: NextRequest) {
     const { data: system, error } = await supabase
       .from('systems')
       .insert({
-        organization_id: profile.organization_id,
+        organization_id: orgId,
         name: parsed.data.name,
         description: parsed.data.description,
       })

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
-import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-error'
+import { badRequest, notFound, serverError, rateLimited } from '@/lib/api-error'
+import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import { parseBody, requireJson } from '@/lib/validate-body'
 
@@ -11,27 +11,20 @@ type RouteContext = { params: Promise<{ id: string }> }
 export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
     const { data: system, error } = await supabase
       .from('systems')
       .select('*')
       .eq('id', id)
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
       .single()
 
     if (error || !system) return notFound('System')
@@ -63,20 +56,13 @@ const updateSystemSchema = z.object({
 export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
     const ctErr = requireJson(req); if (ctErr) return ctErr
@@ -90,7 +76,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       .from('systems')
       .update({ ...parsed.data, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
       .select()
       .single()
 
@@ -106,27 +92,20 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
     const { error } = await supabase
       .from('systems')
       .delete()
       .eq('id', id)
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
 
     if (error) return serverError(error, 'DELETE /api/systems/[id]')
 

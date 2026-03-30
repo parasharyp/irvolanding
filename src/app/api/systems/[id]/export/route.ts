@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
-import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-error'
+import { badRequest, notFound, serverError, rateLimited } from '@/lib/api-error'
+import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
+import { parseBody, requireJson } from '@/lib/validate-body'
 import { generateEvidencePack } from '@/lib/pdf'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -15,23 +16,17 @@ const exportSchema = z.object({
 export async function POST(req: NextRequest, context: RouteContext) {
   try {
     const { id: systemId } = await context.params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return unauthorized()
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-    if (!profile) return unauthorized()
+    const auth = await getAuthContext()
+    if ('error' in auth) return auth.error
+    const { supabase, user, orgId } = auth
 
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      return rateLimited(rateCheck.resetAt)
     }
 
-    const body = await req.json()
+    const ctErr = requireJson(req); if (ctErr) return ctErr
+    const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr
     const parsed = exportSchema.safeParse(body)
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0].message)
@@ -42,7 +37,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
       .from('systems')
       .select('*')
       .eq('id', systemId)
-      .eq('organization_id', profile.organization_id)
+      .eq('organization_id', orgId)
       .single()
 
     if (sysError || !system) return notFound('System')
@@ -65,7 +60,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     const { data: org } = await supabase
       .from('organizations')
       .select('name')
-      .eq('id', profile.organization_id)
+      .eq('id', orgId)
       .single()
 
     // Generate PDF

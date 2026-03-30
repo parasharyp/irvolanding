@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
-import { unauthorized } from '@/lib/api-error'
+import { rateLimited } from '@/lib/api-error'
+import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import { parseBody, requireJson } from '@/lib/validate-body'
 
@@ -16,23 +16,19 @@ const Schema = z.object({ plan: z.enum(['starter', 'growth', 'plus']) })
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return unauthorized()
+  const auth = await getAuthContext()
+  if ('error' in auth) return auth.error
+  const { supabase, user, orgId } = auth
 
   const rateCheck = await checkAuthenticatedRateLimit(user.id)
   if (!rateCheck.allowed) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+    return rateLimited(rateCheck.resetAt)
   }
 
   const ctErr = requireJson(request); if (ctErr) return ctErr
   const { data: body, error: bodyErr } = await parseBody(request); if (bodyErr) return bodyErr
   const parsed = Schema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid plan' }, { status: 422 })
-
-  const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-  const orgId = userData?.organization_id
-  if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
   const { data: org } = await supabase.from('organizations').select('*').eq('id', orgId).single()
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
