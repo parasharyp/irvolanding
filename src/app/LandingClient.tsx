@@ -185,14 +185,7 @@ function ScrollProgressBar() {
 
 function BrandDivider() {
   return (
-    <div className="flex justify-center py-1">
-      <div
-        className="w-[2px] h-[40px]"
-        style={{
-          background: 'linear-gradient(to bottom, transparent, #00e5bf 30%, #00e5bf 70%, transparent)',
-        }}
-      />
-    </div>
+    <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
   )
 }
 
