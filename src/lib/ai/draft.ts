@@ -1,5 +1,6 @@
-import OpenAI from 'openai'
 import { DRAFT_SECTION_PROMPT } from './prompts'
+import { sanitizeInput } from './sanitize'
+import { getAIClient, getModelId } from './client'
 
 interface DraftContext {
   systemName: string
@@ -16,24 +17,6 @@ interface DraftFromDbContext {
   existingContent?: string
 }
 
-function getClient(): OpenAI {
-  const apiKey = process.env.OPENROUTER_API_KEY ?? process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    throw new Error('AI drafting is not available. No API key configured.')
-  }
-
-  if (process.env.OPENROUTER_API_KEY) {
-    return new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
-  }
-
-  return new OpenAI({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-    baseURL: 'https://api.anthropic.com/v1',
-  })
-}
 
 export async function draftEvidenceSection(
   context: DraftContext | DraftFromDbContext
@@ -51,27 +34,25 @@ export async function draftEvidenceSection(
       }
 
   const userMessage = `## System
-Name: ${normalized.systemName}
-Description: ${normalized.systemDescription}
+Name: ${sanitizeInput(normalized.systemName)}
+Description: ${sanitizeInput(normalized.systemDescription)}
 
 ## Obligation
-Title: ${normalized.obligationTitle}
-Description: ${normalized.obligationDescription}
+Title: ${sanitizeInput(normalized.obligationTitle)}
+Description: ${sanitizeInput(normalized.obligationDescription)}
 
 ## Evidence Required
-${normalized.evidenceRequired}
+${sanitizeInput(normalized.evidenceRequired)}
 
-${normalized.existingContent ? `## Existing Content (revise and improve)\n${normalized.existingContent}` : '## No existing content — draft from scratch.'}
+${normalized.existingContent ? `## Existing Content (revise and improve)\n${sanitizeInput(normalized.existingContent, 10000)}` : '## No existing content — draft from scratch.'}
 
 Draft this evidence section now.`
 
   try {
-    const client = getClient()
+    const client = getAIClient()
 
     const response = await client.chat.completions.create({
-      model: process.env.OPENROUTER_API_KEY
-        ? 'anthropic/claude-sonnet-4'
-        : 'claude-sonnet-4-6-20250514',
+      model: getModelId(),
       max_tokens: 2048,
       messages: [
         { role: 'system', content: DRAFT_SECTION_PROMPT },

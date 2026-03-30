@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized, badRequest, serverError } from '@/lib/api-error'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
+import { parseBody, requireJson } from '@/lib/validate-body'
 import { PLAN_SYSTEM_LIMITS } from '@/types'
 import type { OrgPlan } from '@/types'
 
@@ -63,7 +64,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
-    const body = await req.json()
+    const ctErr = requireJson(req); if (ctErr) return ctErr
+    const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr
     const parsed = createSystemSchema.safeParse(body)
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0].message)

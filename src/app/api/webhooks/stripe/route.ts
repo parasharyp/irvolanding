@@ -3,8 +3,6 @@ import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/server'
 import { isWebhookAlreadyProcessed } from '@/lib/ratelimit'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
-
 const PLAN_MAP: Record<string, string> = {
   [process.env.STRIPE_PRICE_STARTER ?? '']: 'starter',
   [process.env.STRIPE_PRICE_GROWTH ?? '']: 'growth',
@@ -12,13 +10,20 @@ const PLAN_MAP: Record<string, string> = {
 }
 
 export async function POST(request: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('[stripe webhook] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET')
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-02-25.clover' })
+
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')
   if (!sig) return NextResponse.json({ error: 'Webhook verification failed' }, { status: 400 })
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET)
   } catch {
     return NextResponse.json({ error: 'Webhook verification failed' }, { status: 400 })
   }

@@ -40,34 +40,6 @@ export async function checkPublicRateLimit(ip: string): Promise<{ allowed: boole
   return { allowed: result.allowed, resetAt: result.resetAt }
 }
 
-// 20 reminder emails per hour per org
-export async function checkReminderRateLimit(organizationId: string): Promise<{
-  allowed: boolean
-  remaining: number
-  resetAt: number
-}> {
-  return slidingWindow(`reminder_rate:${organizationId}`, 20, 3600)
-}
-
-// 3 reminder emails per day per invoice (prevents spamming a single client)
-export async function checkInvoiceReminderLimit(invoiceId: string): Promise<{ allowed: boolean; resetAt: number }> {
-  const result = await slidingWindow(`invoice_remind:${invoiceId}`, 3, 86400)
-  return { allowed: result.allowed, resetAt: result.resetAt }
-}
-
-// 10 emails per hour to a single recipient address across all orgs
-export async function checkRecipientReminderLimit(email: string): Promise<{ allowed: boolean; resetAt: number }> {
-  const key = `recipient_remind:${email.toLowerCase()}`
-  const result = await slidingWindow(key, 10, 3600)
-  return { allowed: result.allowed, resetAt: result.resetAt }
-}
-
-// 3 CSV imports per hour per org
-export async function checkCsvImportRateLimit(orgId: string): Promise<{ allowed: boolean; resetAt: number }> {
-  const result = await slidingWindow(`csv_import:${orgId}`, 3, 3600)
-  return { allowed: result.allowed, resetAt: result.resetAt }
-}
-
 // 100 authenticated API requests per minute per user
 export async function checkAuthenticatedRateLimit(userId: string): Promise<{ allowed: boolean; resetAt: number }> {
   const result = await slidingWindow(`auth_rate:${userId}`, 100, 60)
@@ -84,11 +56,9 @@ export async function isWebhookAlreadyProcessed(eventId: string): Promise<boolea
   return result === null
 }
 
-// 1 request per 24h per IP for document-generation public endpoints (legal demand / CCJ)
-// Stricter than checkPublicRateLimit to deter harassment/fraud use
-export async function checkPublicLegalLimit(ip: string): Promise<{ allowed: boolean; resetAt: number }> {
-  const key = `public_legal:${ip}`
-  const result = await slidingWindow(key, 1, 86400)
+// 5 signups per hour per IP — prevents account farming
+export async function checkSignupRateLimit(ip: string): Promise<{ allowed: boolean; resetAt: number }> {
+  const result = await slidingWindow(`signup_rate:${ip}`, 5, 3600)
   return { allowed: result.allowed, resetAt: result.resetAt }
 }
 
@@ -104,10 +74,3 @@ export async function checkDraftRateLimit(orgId: string): Promise<{ allowed: boo
   return { allowed: result.allowed, resetAt: result.resetAt }
 }
 
-// Per-IP rate limit for cron attempts — 5 per hour
-// Secondary defence: slows brute force if CRON_SECRET leaks
-export async function checkCronAttemptLimit(ip: string): Promise<{ allowed: boolean; resetAt: number }> {
-  const key = `cron_attempt:${ip}`
-  const result = await slidingWindow(key, 5, 3600)
-  return { allowed: result.allowed, resetAt: result.resetAt }
-}

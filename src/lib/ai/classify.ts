@@ -1,7 +1,8 @@
-import OpenAI from 'openai'
 import { z } from 'zod'
 import type { ClassificationResult } from '@/types'
 import { CLASSIFY_SYSTEM_PROMPT } from './prompts'
+import { sanitizeInput } from './sanitize'
+import { getAIClient, getModelId } from './client'
 
 const VALID_RISK_LEVELS = ['none', 'limited', 'high', 'unacceptable'] as const
 const VALID_OBLIGATION_KEYS = [
@@ -54,39 +55,22 @@ interface ClassifyInput {
   answers: { questionId: string; answer: string }[]
 }
 
-function getClient(): OpenAI {
-  const apiKey = process.env.OPENROUTER_API_KEY ?? process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    throw new Error('No AI API key configured (OPENROUTER_API_KEY or ANTHROPIC_API_KEY)')
-  }
 
-  // If OpenRouter key, use OpenRouter base URL. Otherwise use Anthropic-compatible endpoint.
-  if (process.env.OPENROUTER_API_KEY) {
-    return new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
-  }
-
-  // Fallback: use OpenAI SDK pointed at Anthropic (for future flexibility)
-  return new OpenAI({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-    baseURL: 'https://api.anthropic.com/v1',
-  })
-}
 
 export async function classifySystem(
   input: ClassifyInput
 ): Promise<ClassificationResult> {
   const { systemName, systemDescription, answers } = input
 
+  const safeName = sanitizeInput(systemName)
+  const safeDesc = sanitizeInput(systemDescription)
   const answersFormatted = answers
-    .map((a, i) => `Q${i + 1} [${a.questionId}]: ${a.answer}`)
+    .map((a, i) => `Q${i + 1} [${a.questionId}]: ${sanitizeInput(a.answer)}`)
     .join('\n')
 
   const userMessage = `## AI System
-Name: ${systemName}
-Description: ${systemDescription}
+Name: ${safeName}
+Description: ${safeDesc}
 
 ## Questionnaire Answers
 ${answersFormatted}
@@ -94,12 +78,10 @@ ${answersFormatted}
 Classify this system under the EU AI Act. Return JSON only.`
 
   try {
-    const client = getClient()
+    const client = getAIClient()
 
     const response = await client.chat.completions.create({
-      model: process.env.OPENROUTER_API_KEY
-        ? 'anthropic/claude-sonnet-4'
-        : 'claude-sonnet-4-6-20250514',
+      model: getModelId(),
       max_tokens: 2048,
       messages: [
         { role: 'system', content: CLASSIFY_SYSTEM_PROMPT },

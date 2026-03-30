@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { QUESTIONNAIRE } from '@/lib/ai/questionnaire'
-import type { RiskLevel, ClassificationResult } from '@/types'
+import type { ClassificationResult } from '@/types'
+import { riskColor } from '@/lib/risk'
 
 interface SystemFormData {
   name: string
@@ -14,16 +15,6 @@ interface SystemFormData {
   business_process: string
   data_sources: string
   model_type: string
-}
-
-function riskColor(level: RiskLevel): string {
-  switch (level) {
-    case 'unacceptable': return '#e54747'
-    case 'high': return '#e54747'
-    case 'limited': return '#f59e0b'
-    case 'none': return '#36bd5f'
-    default: return '#666'
-  }
 }
 
 const inputStyle: React.CSSProperties = {

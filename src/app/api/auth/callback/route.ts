@@ -5,7 +5,14 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
   const code = searchParams.get('code')
   const rawRedirect = searchParams.get('redirect') ?? '/dashboard'
-  const redirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard'
+  // Strict redirect validation: must start with /, not //, not /\, no encoded slashes, no protocol
+  const redirect = /^\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]*$/.test(rawRedirect)
+    && !rawRedirect.startsWith('//')
+    && !rawRedirect.includes('\\')
+    && !rawRedirect.includes('%2f')
+    && !rawRedirect.includes('%5c')
+    ? rawRedirect
+    : '/dashboard'
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`)

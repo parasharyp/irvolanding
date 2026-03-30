@@ -4,21 +4,12 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { QUESTIONNAIRE } from '@/lib/ai/questionnaire'
-import type { AISystem, RiskLevel } from '@/types'
+import type { AISystem } from '@/types'
+import { riskColor } from '@/lib/risk'
 
 interface AnswerRow {
   question_id: string
   answer: string
-}
-
-function riskColor(level: RiskLevel | null): string {
-  switch (level) {
-    case 'unacceptable': return '#e54747'
-    case 'high': return '#e54747'
-    case 'limited': return '#f59e0b'
-    case 'none': return '#36bd5f'
-    default: return '#555'
-  }
 }
 
 export default function QuestionnaireReviewPage() {

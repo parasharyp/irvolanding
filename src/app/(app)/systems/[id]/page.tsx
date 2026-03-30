@@ -3,17 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import type { AISystem, Obligation, EvidenceItem, RiskLevel } from '@/types'
-
-function riskColor(level: RiskLevel | null): string {
-  switch (level) {
-    case 'unacceptable': return '#e54747'
-    case 'high': return '#e54747'
-    case 'limited': return '#f59e0b'
-    case 'none': return '#36bd5f'
-    default: return '#555'
-  }
-}
+import type { AISystem, Obligation, EvidenceItem } from '@/types'
+import { riskColor } from '@/lib/risk'
 
 export default function SystemDetailPage() {
   const params = useParams()

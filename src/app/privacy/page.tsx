@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'Irvo privacy policy — how we collect, use, and safeguard your information. GDPR compliant. EU AI Act compliance platform for SMEs.',
+  alternates: { canonical: 'https://irvo.co.uk/privacy' },
+}
 
 export default function PrivacyPage() {
   return (

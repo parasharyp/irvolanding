@@ -1,5 +1,6 @@
 'use client'
 
+import { forwardRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Settings, LogOut, X, Shield } from 'lucide-react'
@@ -26,12 +27,12 @@ interface SidebarProps {
   onMobileClose?: () => void
 }
 
-export default function Sidebar({
+const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar({
   plan = 'starter',
   orgName,
   mobileOpen = false,
   onMobileClose,
-}: SidebarProps) {
+}, ref) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -44,6 +45,8 @@ export default function Sidebar({
 
   return (
     <aside
+      ref={ref}
+      aria-label="App navigation"
       className={`sidebar-root${mobileOpen ? ' sidebar-open' : ''}`}
       style={{
         width: 220,
@@ -61,6 +64,7 @@ export default function Sidebar({
       <button
         className="sidebar-close-btn"
         onClick={onMobileClose}
+        aria-label="Close navigation menu"
         style={{
           display: 'none',
           alignItems: 'center',
@@ -98,7 +102,7 @@ export default function Sidebar({
             </span>
           </div>
         </motion.div>
-        <p style={{ margin: '2px 0 0', fontSize: 9, color: '#2e2e2e', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase' }}>AI Compliance</p>
+        <p style={{ margin: '2px 0 0', fontSize: 9, color: '#555', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase' }}>AI Compliance</p>
       </div>
 
       {/* Org + plan */}
@@ -162,7 +166,7 @@ export default function Sidebar({
                     textDecoration: 'none',
                     fontSize: 13,
                     fontWeight: active ? 700 : 500,
-                    color: active ? '#ffffff' : '#404040',
+                    color: active ? '#ffffff' : '#666',
                     zIndex: 1,
                     transition: 'color 0.15s',
                     minHeight: 44,
@@ -185,7 +189,7 @@ export default function Sidebar({
             transition={{ duration: 2.2, repeat: Infinity }}
             style={{ width: 5, height: 5, borderRadius: '50%', background: '#00e5bf' }}
           />
-          <span style={{ fontSize: 10, color: '#2e2e2e', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Systems online</span>
+          <span style={{ fontSize: 10, color: '#555', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Systems online</span>
         </div>
       </div>
 
@@ -207,7 +211,7 @@ export default function Sidebar({
             cursor: 'pointer',
             fontSize: 13,
             fontWeight: 500,
-            color: '#2e2e2e',
+            color: '#555',
             fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif',
             transition: 'color 0.15s',
             minHeight: 44,
@@ -219,4 +223,6 @@ export default function Sidebar({
       </div>
     </aside>
   )
-}
+})
+
+export default Sidebar

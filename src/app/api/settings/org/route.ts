@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { serverError, unauthorized } from '@/lib/api-error'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
+import { parseBody, requireJson } from '@/lib/validate-body'
 
 const UpdateOrgSchema = z.object({ name: z.string().min(1) })
 
@@ -42,7 +43,8 @@ export async function PATCH(request: NextRequest) {
   const orgId = await getOrgId(supabase, user.id)
   if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 400 })
 
-  const body = await request.json()
+  const ctErr = requireJson(request); if (ctErr) return ctErr
+  const { data: body, error: bodyErr } = await parseBody(request); if (bodyErr) return bodyErr
   const parsed = UpdateOrgSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
 

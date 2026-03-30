@@ -3,6 +3,8 @@ import Stripe from 'stripe'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized } from '@/lib/api-error'
+import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
+import { parseBody, requireJson } from '@/lib/validate-body'
 
 const PRICE_IDS: Record<string, string> = {
   starter: process.env.STRIPE_PRICE_STARTER!,
@@ -18,7 +20,13 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return unauthorized()
 
-  const body = await request.json()
+  const rateCheck = await checkAuthenticatedRateLimit(user.id)
+  if (!rateCheck.allowed) {
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+  }
+
+  const ctErr = requireJson(request); if (ctErr) return ctErr
+  const { data: body, error: bodyErr } = await parseBody(request); if (bodyErr) return bodyErr
   const parsed = Schema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid plan' }, { status: 422 })
 

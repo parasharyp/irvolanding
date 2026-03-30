@@ -17,10 +17,11 @@ export function generateRequestId(): string {
 
 // ─── IP extraction ───────────────────────────────────────────────────────────
 
-/** Extracts the real client IP from Vercel/Cloudflare forwarded headers. */
+/** Extracts the real client IP from Vercel/Cloudflare forwarded headers.
+ *  Uses the rightmost (last proxy) IP to prevent x-forwarded-for spoofing. */
 export function extractIp(headers: { get(name: string): string | null }): string {
   return (
-    headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
     headers.get('x-real-ip') ??
     'unknown'
   )

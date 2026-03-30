@@ -4,32 +4,13 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Shield } from 'lucide-react'
 import type { AISystem, RiskLevel } from '@/types'
+import { riskColor, riskLabel } from '@/lib/risk'
 
 function daysUntil(target: Date): number {
   return Math.ceil((target.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
 }
 
 const ENFORCEMENT_DATE = new Date('2026-08-02T00:00:00.000Z')
-
-function riskColor(level: RiskLevel | null): string {
-  switch (level) {
-    case 'unacceptable': return '#e54747'
-    case 'high': return '#e54747'
-    case 'limited': return '#f59e0b'
-    case 'none': return '#36bd5f'
-    default: return '#333'
-  }
-}
-
-function riskLabel(level: RiskLevel | null): string {
-  switch (level) {
-    case 'unacceptable': return 'Unacceptable'
-    case 'high': return 'High Risk'
-    case 'limited': return 'Limited Risk'
-    case 'none': return 'Minimal Risk'
-    default: return 'Pending'
-  }
-}
 
 function RiskBadge({ level }: { level: RiskLevel | null }) {
   const color = riskColor(level)

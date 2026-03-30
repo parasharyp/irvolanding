@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-error'
 import { checkAuthenticatedRateLimit, checkDraftRateLimit } from '@/lib/ratelimit'
 import { draftEvidenceSection } from '@/lib/ai/draft'
+import { parseBody, requireJson } from '@/lib/validate-body'
 
 const draftSchema = z.object({
   systemId: z.string().uuid(),
@@ -35,7 +36,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Draft rate limit exceeded. Try again later.' }, { status: 429 })
     }
 
-    const body = await req.json()
+    const ctErr = requireJson(req); if (ctErr) return ctErr
+    const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr
     const parsed = draftSchema.safeParse(body)
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0].message)

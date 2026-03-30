@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, color: '#555', marginBottom: 6, letterSpacing: '0.04em' }}>
+                  <label htmlFor="email" style={{ display: 'block', fontSize: 11, color: '#555', marginBottom: 6, letterSpacing: '0.04em' }}>
                     Email address
                   </label>
                   <div style={{ position: 'relative' }}>

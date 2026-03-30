@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized } from '@/lib/api-error'
+import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
 
@@ -9,6 +10,11 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return unauthorized()
+
+  const rateCheck = await checkAuthenticatedRateLimit(user.id)
+  if (!rateCheck.allowed) {
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+  }
 
   const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
   const orgId = userData?.organization_id

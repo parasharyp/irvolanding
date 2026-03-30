@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: 'Irvo terms of service — conditions for using our EU AI Act compliance platform. Guidance only, not legal advice.',
+  alternates: { canonical: 'https://irvo.co.uk/terms' },
+}
 
 export default function TermsPage() {
   return (

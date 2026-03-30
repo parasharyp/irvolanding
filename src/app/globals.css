@@ -47,10 +47,6 @@ input, textarea, select {
 /* ── Responsive grids ─────────────────────────────────────── */
 .r-grid-2     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .r-grid-3     { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.r-grid-4     { display: grid; grid-template-columns: repeat(4, 1fr); }
-.r-grid-6     { display: grid; grid-template-columns: repeat(6, 1fr); }
-.r-grid-chart { display: grid; grid-template-columns: 1fr 1fr 340px; }
-.r-grid-footer { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
 
 /* Shared-wall borders */
 .wall-grid { border: 1px solid rgba(255,255,255,0.07); border-right: none; gap: 0 !important; }
@@ -65,13 +61,6 @@ input, textarea, select {
 
 /* ── Homepage layout helpers (base / desktop) ─────────────── */
 .hp-section-pad  { padding: 120px 32px; }
-.hp-hero-pad     { padding: 120px 32px 80px; }
-.hp-cta-pad      { padding: 160px 32px; }
-.hp-law-grid     { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-.hp-esc-grid     { display: grid; grid-template-columns: 1fr 1fr; }
-.hp-modal-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.hp-modal-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.hp-pricing-header { display: flex; align-items: flex-end; justify-content: space-between; }
 
 /* ── App shell ────────────────────────────────────────────── */
 .app-mobile-header { display: none; }
@@ -83,20 +72,6 @@ input, textarea, select {
   top: 0;
   flex-shrink: 0;
 }
-
-/* ── Homepage mobile nav overlay ──────────────────────────── */
-.mobile-nav-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #040404;
-  z-index: 200;
-  flex-direction: column;
-  padding: 24px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.mobile-nav-overlay.open { display: flex; }
 
 /* ── iPhone notch safe areas ──────────────────────────────── */
 @supports (padding: env(safe-area-inset-top)) {
@@ -117,10 +92,6 @@ input, textarea, select {
   /* Grid collapse */
   .r-grid-2     { grid-template-columns: 1fr; }
   .r-grid-3     { grid-template-columns: 1fr; gap: 12px; }
-  .r-grid-4     { grid-template-columns: 1fr 1fr; }
-  .r-grid-6     { grid-template-columns: 1fr 1fr; }
-  .r-grid-chart { grid-template-columns: 1fr; }
-  .r-grid-footer { grid-template-columns: 1fr 1fr; gap: 32px; }
 
   /* Wall grids: switch to bottom borders on mobile */
   .wall-grid { border: none !important; border-right: none !important; }
@@ -131,7 +102,6 @@ input, textarea, select {
 
   /* Visibility */
   .mobile-only { display: flex !important; }
-  .desktop-only { display: none !important; }
 
   /* Mobile header bar */
   .app-mobile-header { display: flex !important; }
@@ -172,81 +142,20 @@ input, textarea, select {
     padding: 40px 24px !important;
   }
 
-  /* Pay page */
-  .pay-main { padding: 32px 16px 64px !important; }
-
   /* ── Homepage section padding */
   .hp-section-pad { padding: 64px 20px !important; }
-  .hp-hero-pad {
-    padding: 80px 16px 40px !important;
-    min-height: auto !important;
-    height: auto !important;
-  }
-  .hp-hero-pad h1 {
-    font-size: clamp(28px, 8vw, 48px) !important;
-  }
-  .hp-cta-pad { padding: 80px 20px !important; }
-
-  /* ── Wizard workflow steps: stack vertically on mobile */
-  .hp-wizard-steps {
-    flex-direction: column !important;
-    gap: 12px !important;
-    align-items: stretch !important;
-  }
-  .hp-wizard-steps > div {
-    flex: none !important;
-  }
-  .hp-wizard-step-line {
-    display: none !important;
-  }
-
-  /* ── Product mock: stack cards vertically */
-  .hp-mock-stats {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-  .hp-mock-stats > div {
-    flex: none !important;
-  }
-
-  /* ── Pricing CTA: constrain on mobile */
-  .hp-pricing-cta {
-    padding: 12px 24px !important;
-    font-size: 13px !important;
-    border-radius: 0 !important;
-  }
-
-  /* ── Hide scroll indicator on mobile */
-  .hp-scroll-indicator {
-    display: none !important;
-  }
 
   /* ── Urgency bar: stack on mobile */
   .r-grid-3 {
     grid-template-columns: 1fr !important;
   }
-
-  /* ── Homepage 2-col grids that use inline styles → collapse */
-  .hp-law-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-  .hp-esc-grid { grid-template-columns: 1fr !important; }
-
-  /* ── EscalationModal form grids */
-  .hp-modal-grid-2 { display: grid; grid-template-columns: 1fr !important; }
-  .hp-modal-grid-3 { display: grid; grid-template-columns: 1fr !important; }
-
-  /* ── Pricing header: stack vertically */
-  .hp-pricing-header { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════ */
 /* PHONE — 480px                                               */
 /* ═══════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .r-grid-4     { grid-template-columns: 1fr; }
-  .r-grid-6     { grid-template-columns: 1fr 1fr; }
-  .r-grid-footer { grid-template-columns: 1fr; gap: 24px; }
-
-  /* Hide the Days column (5th) in invoice table on small screens */
+  /* Hide the 5th column in data tables on small screens */
   .table-scroll th:nth-child(5),
   .table-scroll td:nth-child(5) { display: none; }
 

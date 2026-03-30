@@ -28,13 +28,6 @@ export interface User {
 // ─── AI Systems ─────────────────────────────────────────────────────────
 export type RiskLevel = 'none' | 'limited' | 'high' | 'unacceptable'
 
-export type ModelType =
-  | 'rule-based'
-  | 'ml-model'
-  | 'llm'
-  | 'human-in-loop'
-  | 'other'
-
 export type SystemStatus = 'draft' | 'in-progress' | 'ready' | 'exported'
 
 export interface AISystem {
@@ -73,14 +66,6 @@ export interface QuestionnaireQuestion {
   type: QuestionType
   options?: QuestionOption[]
   triggersHighRisk?: boolean
-}
-
-export interface QuestionnaireAnswer {
-  id?: string
-  system_id: string
-  question_id: string
-  answer: string
-  answered_at?: string
 }
 
 // ─── Obligations ────────────────────────────────────────────────────────
@@ -157,11 +142,42 @@ export interface ClassificationResult {
 }
 
 // ─── Dashboard ──────────────────────────────────────────────────────────
+export interface DashboardSystemSummary {
+  id: string
+  name: string
+  risk_level: RiskLevel | null
+  status: SystemStatus
+  pct_complete: number
+  obligation_count: number
+  obligations_complete: number
+  evidence_count: number
+  evidence_ai_drafted: number
+  updated_at: string
+}
+
+export interface DashboardInsight {
+  type: 'warning' | 'action' | 'info' | 'success'
+  title: string
+  description: string
+  system_id?: string
+  system_name?: string
+}
+
 export interface DashboardMetrics {
   total_systems: number
   systems_by_risk: Record<RiskLevel, number>
   avg_completion: number
   systems_ready: number
   systems_draft: number
+  systems_in_progress: number
+  systems_exported: number
   days_until_deadline: number
+  // New: richer data
+  compliance_score: number // 0-100 weighted score
+  total_obligations: number
+  obligations_complete: number
+  total_evidence: number
+  evidence_ai_drafted: number
+  systems: DashboardSystemSummary[]
+  insights: DashboardInsight[]
 }

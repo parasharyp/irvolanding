@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-error'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
+import { parseBody, requireJson } from '@/lib/validate-body'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -93,7 +94,8 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
     if (!system) return notFound('System')
 
-    const body = await req.json()
+    const ctErr = requireJson(req); if (ctErr) return ctErr
+    const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr
     const parsed = createEvidenceSchema.safeParse(body)
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0].message)

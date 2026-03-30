@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-error'
 import { checkAuthenticatedRateLimit, checkClassifyRateLimit } from '@/lib/ratelimit'
 import { classifySystem } from '@/lib/ai/classify'
+import { parseBody, requireJson } from '@/lib/validate-body'
 
 const classifySchema = z.object({
   systemId: z.string().uuid(),
@@ -38,7 +39,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Classification rate limit exceeded. Try again later.' }, { status: 429 })
     }
 
-    const body = await req.json()
+    const ctErr = requireJson(req); if (ctErr) return ctErr
+    const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr
     const parsed = classifySchema.safeParse(body)
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0].message)

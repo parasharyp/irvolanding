@@ -26,9 +26,9 @@ const gridBg: React.CSSProperties = {
 }
 
 const steps = [
-  { num: '01', title: 'Add invoices' },
-  { num: '02', title: 'Reminders run automatically' },
-  { num: '03', title: 'Interest claimed daily' },
+  { num: '01', title: 'Describe your AI system' },
+  { num: '02', title: 'Answer 12 risk questions' },
+  { num: '03', title: 'Export your evidence pack' },
 ]
 
 export default function SignupPage() {
@@ -87,7 +87,7 @@ export default function SignupPage() {
   const labelStyle: React.CSSProperties = {
     display: 'block',
     fontSize: '11px',
-    color: '#666',
+    color: '#888',
     marginBottom: '6px',
     letterSpacing: '0.04em',
   }
@@ -124,7 +124,7 @@ export default function SignupPage() {
         Create account
       </p>
       <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#e8e8e8', letterSpacing: '-0.02em', marginBottom: '32px' }}>
-        Start recovering.
+        Start documenting.
       </h2>
 
       <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -263,10 +263,10 @@ export default function SignupPage() {
             lineHeight: 1.1,
             marginBottom: '16px',
           }}>
-            Get paid.<br />Every invoice.
+            Compliance<br />made simple.
           </h1>
-          <p style={{ fontSize: '15px', color: '#666', marginBottom: '56px', lineHeight: 1.6, maxWidth: '360px' }}>
-            Set up in 3 minutes. No contracts. Cancel anytime.
+          <p style={{ fontSize: '15px', color: '#888', marginBottom: '56px', lineHeight: 1.6, maxWidth: '360px' }}>
+            Document your AI systems. Generate evidence packs. Be ready before August 2, 2026.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>

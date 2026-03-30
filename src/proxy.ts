@@ -11,8 +11,6 @@ import {
 // ─── Auth-gated routes ───────────────────────────────────────────────────────
 const PROTECTED_PREFIXES = [
   '/dashboard',
-  '/invoices',
-  '/clients',
   '/settings',
   '/systems',
 ]
