@@ -1117,11 +1117,11 @@ export default function LandingClient() {
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* FEATURES                                                               */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <section id="features" className="hp-section-pad" style={{ background: T.surface }}>
+      <section id="features" style={{ padding: '80px 32px', background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
-            <p style={S.overline}>CAPABILITIES</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)', maxWidth: 600 }}>
+          <motion.div {...fadeUp()} style={{ marginBottom: 36 }}>
+            <p style={{ ...S.overline, margin: '0 0 12px' }}>CAPABILITIES</p>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(24px, 3.5vw, 40px)', maxWidth: 520 }}>
               Everything the Act requires. Nothing it doesn&apos;t.
             </h2>
           </motion.div>
@@ -1132,7 +1132,7 @@ export default function LandingClient() {
                 key={f.title}
                 {...fadeInOnce((i % 3) * 0.07)}
                 style={{
-                  ...S.cardPad, ...S.wallCell, background: T.card,
+                  padding: '24px 22px', ...S.wallCell, background: T.card,
                   borderLeft: '2px solid transparent', borderTop: `1px solid ${T.border}`,
                   position: 'relative', overflow: 'hidden', transition: 'border-left-color 0.25s',
                 }}
@@ -1142,18 +1142,18 @@ export default function LandingClient() {
               >
                 <div data-glow="" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }} />
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                    <f.icon size={17} color="rgba(255,255,255,0.28)" />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <f.icon size={15} color="rgba(255,255,255,0.28)" />
                     <span style={{
                       fontSize: 9, fontWeight: 800, color: T.accent,
                       letterSpacing: '0.08em', fontVariantNumeric: 'tabular-nums' as const, opacity: 0.6,
                     }}>{String(i + 1).padStart(2, '0')}</span>
                   </div>
                   <h3 style={{
-                    fontSize: 15, fontWeight: 800, color: T.text,
-                    margin: '0 0 10px', letterSpacing: '-0.02em',
+                    fontSize: 14, fontWeight: 800, color: T.text,
+                    margin: '0 0 6px', letterSpacing: '-0.02em',
                   }}>{f.title}</h3>
-                  <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+                  <p style={{ fontSize: 12.5, color: T.text2, lineHeight: 1.55, margin: 0 }}>{f.desc}</p>
                 </div>
               </motion.div>
             ))}
