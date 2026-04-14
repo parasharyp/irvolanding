@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import {
   Shield, CheckCircle, Clock, Target, AlertTriangle,
   ArrowRight, Sparkles, FileText, BarChart3, Zap,
   TrendingUp, Activity, Brain,
+  BookOpen, Eye, Briefcase, Scale, RefreshCw, Users, Database,
 } from 'lucide-react'
 import { DashboardMetrics, DashboardInsight, DashboardSystemSummary, RiskLevel } from '@/types'
 
@@ -36,6 +38,16 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   exported: { label: 'Exported', color: '#00e5bf' },
 }
 
+const COMPLIANCE_PACK: { href: string; label: string; article: string; desc: string; icon: typeof BookOpen }[] = [
+  { href: '/literacy', label: 'Literacy', article: 'Art. 4', desc: 'Staff AI literacy briefing', icon: BookOpen },
+  { href: '/risk-review', label: 'Risk Review', article: 'Art. 9', desc: 'Annual risk-management review', icon: RefreshCw },
+  { href: '/deployer', label: 'Deployer', article: 'Art. 26', desc: 'Deployer obligations pack', icon: Briefcase },
+  { href: '/fria', label: 'FRIA', article: 'Art. 27', desc: 'Fundamental rights impact', icon: Scale },
+  { href: '/registration', label: 'Registration', article: 'Art. 49', desc: 'EU database dossier', icon: Database },
+  { href: '/transparency', label: 'Transparency', article: 'Art. 50', desc: 'Disclosure + C2PA pack', icon: Eye },
+  { href: '/governance', label: 'Governance', article: 'Internal', desc: 'Policy · RACI · committee', icon: Users },
+]
+
 const INSIGHT_CONFIG: Record<DashboardInsight['type'], { icon: typeof AlertTriangle; color: string; bg: string }> = {
   warning: { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.06)' },
   action: { icon: Zap, color: '#00e5bf', bg: 'rgba(0,229,191,0.06)' },
@@ -65,7 +77,7 @@ function ScoreRing({ score }: { score: number }) {
   const color = score >= 80 ? '#36bd5f' : score >= 50 ? '#f59e0b' : score >= 25 ? '#e54747' : '#666'
 
   return (
-    <div style={{ position: 'relative', width: size, height: size }}>
+    <div style={{ position: 'relative', width: size, height: size }} role="img" aria-label={`Compliance score: ${score} out of 100`}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#131313" strokeWidth={stroke} />
         <circle
@@ -81,7 +93,7 @@ function ScoreRing({ score }: { score: number }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       }}>
         <div style={{ fontSize: 36, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.03em' }}>{score}</div>
-        <div style={{ fontSize: 9, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>Score</div>
+        <div style={{ fontSize: 9, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>Score</div>
       </div>
     </div>
   )
@@ -132,6 +144,7 @@ function RiskBar({ systems_by_risk, total }: { systems_by_risk: Record<RiskLevel
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const days = daysUntil(ENFORCEMENT_DATE)
   const deadlineColor = days < 60 ? '#e54747' : days < 180 ? '#f59e0b' : '#36bd5f'
@@ -141,7 +154,7 @@ export default function DashboardPage() {
     fetch('/api/dashboard')
       .then((r) => r.json())
       .then((d) => { setMetrics(d.metrics ?? null); setLoading(false) })
-      .catch(() => setLoading(false))
+      .catch(() => { setError('Failed to load dashboard data.'); setLoading(false) })
   }, [])
 
   const isEmpty = !loading && (!metrics || metrics.total_systems === 0)
@@ -153,13 +166,13 @@ export default function DashboardPage() {
       fontFamily: 'var(--font-raleway), Raleway, Helvetica, Arial, sans-serif',
       color: '#e8e8e8',
     }}>
-      <div style={{ padding: 32, maxWidth: 1200 }}>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} style={{ padding: 32, maxWidth: 1200 }}>
 
         {/* Page heading */}
         <div style={{ marginBottom: 28, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', margin: '0 0 4px', letterSpacing: '-0.01em' }}>Compliance Command Centre</h1>
-            <p style={{ fontSize: 13, color: '#555', margin: 0 }}>EU AI Act — real-time compliance intelligence</p>
+            <p style={{ fontSize: 13, color: '#999', margin: 0 }}>EU AI Act — real-time compliance intelligence</p>
           </div>
           <Link
             href="/systems/new"
@@ -173,9 +186,43 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Loading */}
+        {/* Loading skeleton */}
         {loading && (
-          <div style={{ color: '#555', fontSize: 13, padding: '24px 0' }}>Loading compliance data...</div>
+          <div className="r-grid-3 dash-skeleton-grid" style={{ gap: 1 }}>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', padding: 28, height: 160 }}>
+                <div className="skeleton-pulse" style={{ width: '40%', height: 10, marginBottom: 16 }} />
+                <div className="skeleton-pulse" style={{ width: '60%', height: 32, marginBottom: 12 }} />
+                <div className="skeleton-pulse" style={{ width: '80%', height: 10 }} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div role="alert" style={{
+            color: '#e54747', background: 'rgba(229,71,71,0.06)',
+            border: '1px solid rgba(229,71,71,0.12)', padding: '16px 20px',
+            fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span>{error}</span>
+            <button
+              onClick={() => {
+                setError(null); setLoading(true)
+                fetch('/api/dashboard').then(r => r.json())
+                  .then(d => { setMetrics(d.metrics ?? null); setLoading(false) })
+                  .catch(() => { setError('Failed to load dashboard data.'); setLoading(false) })
+              }}
+              style={{
+                background: 'none', border: '1px solid rgba(229,71,71,0.3)',
+                color: '#e54747', padding: '4px 12px', fontSize: 12,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Retry
+            </button>
+          </div>
         )}
 
         {/* Empty state */}
@@ -186,7 +233,7 @@ export default function DashboardPage() {
           }}>
             <Shield size={40} strokeWidth={1.5} style={{ color: '#333', marginBottom: 20 }} />
             <p style={{ color: '#e8e8e8', fontSize: 18, fontWeight: 800, margin: '0 0 8px' }}>Start your compliance journey</p>
-            <p style={{ color: '#555', fontSize: 13, margin: '0 0 8px', maxWidth: 440, marginLeft: 'auto', marginRight: 'auto' }}>
+            <p style={{ color: '#999', fontSize: 13, margin: '0 0 8px', maxWidth: 440, marginLeft: 'auto', marginRight: 'auto' }}>
               Document your first AI system to get risk classification, obligation mapping, and AI-assisted evidence drafting.
             </p>
             <p style={{ color: '#444', fontSize: 12, margin: '0 0 32px' }}>
@@ -218,7 +265,7 @@ export default function DashboardPage() {
               }}>
                 <ScoreRing score={metrics.compliance_score} />
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
                     AI Compliance Score
                   </div>
                   <div style={{ fontSize: 13, color: '#888', lineHeight: 1.5 }}>
@@ -238,14 +285,14 @@ export default function DashboardPage() {
                 padding: '28px 24px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <Clock size={13} strokeWidth={2} style={{ color: '#555' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Enforcement Deadline</span>
+                  <Clock size={13} strokeWidth={2} style={{ color: '#999' }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Enforcement Deadline</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
                   <span style={{ fontSize: 48, fontWeight: 900, color: deadlineColor, lineHeight: 1, letterSpacing: '-0.03em' }}>{days}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: deadlineColor, opacity: 0.7 }}>days</span>
                 </div>
-                <div style={{ fontSize: 12, color: '#555', marginBottom: 12 }}>August 2, 2026 — EU AI Act</div>
+                <div style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>August 2, 2026 — EU AI Act</div>
                 {/* Deadline progress bar */}
                 <div style={{ height: 4, background: '#131313', marginBottom: 6 }}>
                   <div style={{
@@ -269,7 +316,7 @@ export default function DashboardPage() {
                   padding: '16px 24px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Systems</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Systems</div>
                     <div style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{metrics.systems_ready} ready · {metrics.systems_in_progress + metrics.systems_draft} in progress</div>
                   </div>
                   <div style={{ fontSize: 28, fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{metrics.total_systems}</div>
@@ -279,7 +326,7 @@ export default function DashboardPage() {
                   padding: '16px 24px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Obligations</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Obligations</div>
                     <div style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{metrics.obligations_complete} of {metrics.total_obligations} complete</div>
                   </div>
                   <div style={{ fontSize: 28, fontWeight: 900, color: metrics.total_obligations > 0 ? '#00e5bf' : '#555', lineHeight: 1 }}>
@@ -291,7 +338,7 @@ export default function DashboardPage() {
                   padding: '16px 24px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Evidence Items</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Evidence Items</div>
                     <div style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{metrics.evidence_ai_drafted} AI-drafted</div>
                   </div>
                   <div style={{ fontSize: 28, fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{metrics.total_evidence}</div>
@@ -305,10 +352,55 @@ export default function DashboardPage() {
               padding: '20px 24px', marginBottom: 2,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <BarChart3 size={13} strokeWidth={2} style={{ color: '#555' }} />
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Risk Distribution</span>
+                <BarChart3 size={13} strokeWidth={2} style={{ color: '#999' }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Risk Distribution</span>
               </div>
               <RiskBar systems_by_risk={metrics.systems_by_risk} total={metrics.total_systems} />
+            </div>
+
+            {/* ─── Compliance Pack ───────────────────────────────────── */}
+            <div style={{
+              background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)',
+              padding: '24px', marginBottom: 2,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FileText size={14} strokeWidth={2} style={{ color: '#00e5bf' }} />
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#e8e8e8', letterSpacing: '-0.01em' }}>Compliance Pack</span>
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  7 modules · each a signable PDF
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 1 }}>
+                {COMPLIANCE_PACK.map((m) => {
+                  const Icon = m.icon
+                  return (
+                    <Link
+                      key={m.href}
+                      href={m.href}
+                      className="link-hover"
+                      style={{
+                        display: 'flex', flexDirection: 'column', gap: 6,
+                        padding: '16px 14px', background: '#080808',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        textDecoration: 'none', color: '#e8e8e8',
+                        minHeight: 98,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Icon size={14} strokeWidth={2} style={{ color: '#00e5bf' }} />
+                        <span style={{ fontSize: 9, fontWeight: 800, color: '#666', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{m.article}</span>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#e8e8e8' }}>{m.label}</div>
+                      <div style={{ fontSize: 11, color: '#666', lineHeight: 1.4 }}>{m.desc}</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#00e5bf', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 'auto' }}>
+                        Generate <ArrowRight size={10} />
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
 
             {/* ─── Two Column: Insights + Systems ────────────────────── */}
@@ -337,6 +429,7 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={i}
+                        className="dash-insight"
                         style={{
                           background: config.bg,
                           border: `1px solid ${config.color}15`,
@@ -383,7 +476,7 @@ export default function DashboardPage() {
                     <span style={{ fontSize: 12, fontWeight: 800, color: '#e8e8e8', letterSpacing: '-0.01em' }}>Systems Overview</span>
                   </div>
                   <Link href="/systems" style={{
-                    fontSize: 10, fontWeight: 700, color: '#555', textDecoration: 'none',
+                    fontSize: 10, fontWeight: 700, color: '#999', textDecoration: 'none',
                     textTransform: 'uppercase', letterSpacing: '0.06em',
                     display: 'flex', alignItems: 'center', gap: 4,
                   }}>
@@ -399,15 +492,13 @@ export default function DashboardPage() {
                       <Link
                         key={sys.id}
                         href={`/systems/${sys.id}`}
+                        className="dash-sys-row"
                         style={{
                           display: 'flex', alignItems: 'center', gap: 12,
                           padding: '12px 14px', background: '#080808',
                           border: '1px solid rgba(255,255,255,0.04)',
                           textDecoration: 'none', color: 'inherit',
-                          transition: 'border-color 0.15s',
                         }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.04)' }}
                       >
                         {/* Risk dot */}
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: riskColor, flexShrink: 0 }} />
@@ -435,7 +526,7 @@ export default function DashboardPage() {
                               transition: 'width 0.3s ease',
                             }} />
                           </div>
-                          <div style={{ fontSize: 9, color: '#555', marginTop: 3, textAlign: 'right', fontWeight: 600 }}>
+                          <div style={{ fontSize: 9, color: '#999', marginTop: 3, textAlign: 'right', fontWeight: 600 }}>
                             {sys.pct_complete}%
                           </div>
                         </div>
@@ -471,8 +562,8 @@ export default function DashboardPage() {
                 padding: '24px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <FileText size={13} strokeWidth={2} style={{ color: '#555' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Obligation Coverage</span>
+                  <FileText size={13} strokeWidth={2} style={{ color: '#999' }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Obligation Coverage</span>
                 </div>
                 {metrics.total_obligations > 0 ? (
                   <>
@@ -490,7 +581,7 @@ export default function DashboardPage() {
                         transition: 'width 0.5s ease',
                       }} />
                     </div>
-                    <div style={{ fontSize: 11, color: '#555' }}>
+                    <div style={{ fontSize: 11, color: '#999' }}>
                       {metrics.total_obligations - metrics.obligations_complete} obligations remaining
                     </div>
                   </>
@@ -506,7 +597,7 @@ export default function DashboardPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                   <Sparkles size={13} strokeWidth={2} style={{ color: '#00e5bf' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>AI-Powered Compliance</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>AI-Powered Compliance</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
                   <span style={{ fontSize: 32, fontWeight: 900, color: '#00e5bf', lineHeight: 1 }}>
@@ -514,7 +605,7 @@ export default function DashboardPage() {
                   </span>
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#444' }}>AI-drafted sections</span>
                 </div>
-                <div style={{ fontSize: 11, color: '#555', lineHeight: 1.6 }}>
+                <div style={{ fontSize: 11, color: '#999', lineHeight: 1.6 }}>
                   {metrics.total_evidence > 0 && metrics.evidence_ai_drafted > 0
                     ? `${Math.round((metrics.evidence_ai_drafted / metrics.total_evidence) * 100)}% of your evidence was AI-assisted — saving hours of manual documentation.`
                     : 'Use AI drafting on any obligation to generate regulator-ready evidence in seconds.'}
@@ -536,14 +627,15 @@ export default function DashboardPage() {
                 padding: '24px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <TrendingUp size={13} strokeWidth={2} style={{ color: '#555' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Next Steps</span>
+                  <TrendingUp size={13} strokeWidth={2} style={{ color: '#999' }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Next Steps</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {/* Contextual first action */}
                   {metrics.systems.length > 0 && metrics.systems[0].pct_complete < 100 && (
                     <Link
                       href={`/systems/${metrics.systems[0].id}`}
+                      className="link-hover"
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 14px', background: 'rgba(0,229,191,0.06)',
@@ -556,7 +648,7 @@ export default function DashboardPage() {
                         <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           Continue: {metrics.systems[0].name}
                         </div>
-                        <div style={{ fontSize: 10, color: '#555', marginTop: 1 }}>{metrics.systems[0].pct_complete}% complete</div>
+                        <div style={{ fontSize: 10, color: '#999', marginTop: 1 }}>{metrics.systems[0].pct_complete}% complete</div>
                       </div>
                       <ArrowRight size={12} style={{ color: '#00e5bf', flexShrink: 0 }} />
                     </Link>
@@ -564,6 +656,7 @@ export default function DashboardPage() {
 
                   <Link
                     href="/systems/new"
+                    className="link-hover"
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '10px 14px', background: '#080808',
@@ -571,13 +664,14 @@ export default function DashboardPage() {
                       textDecoration: 'none', color: '#888', fontSize: 12, fontWeight: 600,
                     }}
                   >
-                    <Shield size={14} style={{ color: '#555', flexShrink: 0 }} />
+                    <Shield size={14} style={{ color: '#999', flexShrink: 0 }} />
                     <span>Document new AI system</span>
-                    <ArrowRight size={12} style={{ color: '#555', flexShrink: 0, marginLeft: 'auto' }} />
+                    <ArrowRight size={12} style={{ color: '#999', flexShrink: 0, marginLeft: 'auto' }} />
                   </Link>
 
                   <Link
                     href="/systems"
+                    className="link-hover"
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '10px 14px', background: '#080808',
@@ -585,14 +679,15 @@ export default function DashboardPage() {
                       textDecoration: 'none', color: '#888', fontSize: 12, fontWeight: 600,
                     }}
                   >
-                    <BarChart3 size={14} style={{ color: '#555', flexShrink: 0 }} />
+                    <BarChart3 size={14} style={{ color: '#999', flexShrink: 0 }} />
                     <span>View all systems</span>
-                    <ArrowRight size={12} style={{ color: '#555', flexShrink: 0, marginLeft: 'auto' }} />
+                    <ArrowRight size={12} style={{ color: '#999', flexShrink: 0, marginLeft: 'auto' }} />
                   </Link>
 
                   {metrics.systems_ready > 0 && (
                     <Link
                       href={`/systems/${metrics.systems.find(s => s.status === 'ready')?.id ?? metrics.systems[0].id}`}
+                      className="link-hover"
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 14px', background: '#080808',
@@ -602,7 +697,7 @@ export default function DashboardPage() {
                     >
                       <FileText size={14} style={{ color: '#36bd5f', flexShrink: 0 }} />
                       <span>Export evidence pack</span>
-                      <ArrowRight size={12} style={{ color: '#555', flexShrink: 0, marginLeft: 'auto' }} />
+                      <ArrowRight size={12} style={{ color: '#999', flexShrink: 0, marginLeft: 'auto' }} />
                     </Link>
                   )}
                 </div>
@@ -610,7 +705,7 @@ export default function DashboardPage() {
             </div>
           </>
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }
