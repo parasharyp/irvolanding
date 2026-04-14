@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { GOVERNANCE_SCALES } from '@/lib/ai/governance'
+import ModuleGate from '@/components/ModuleGate'
 
 const FONT = "var(--font-raleway), Raleway, Helvetica, Arial, sans-serif"
 
@@ -12,7 +13,7 @@ const SCALE_LABELS: Record<string, string> = {
   medium: 'Medium (51–250 staff)',
 }
 
-export default function GovernancePage() {
+function GovernancePageInner() {
   const [scale, setScale] = useState<string>('small')
   const [loading, setLoading] = useState(false)
 
@@ -92,4 +93,8 @@ export default function GovernancePage() {
       </div>
     </div>
   )
+}
+
+export default function GovernancePage() {
+  return <ModuleGate module="governance"><GovernancePageInner /></ModuleGate>
 }

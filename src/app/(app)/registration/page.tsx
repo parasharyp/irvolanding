@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { REGISTRATION_ROLES } from '@/lib/ai/registration'
 import { createClient } from '@/lib/supabase/client'
+import ModuleGate from '@/components/ModuleGate'
 
 const FONT = "var(--font-raleway), Raleway, Helvetica, Arial, sans-serif"
 
@@ -15,7 +16,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 interface SystemRow { id: string; name: string; risk_level: string | null; annex_category: string | null }
 
-export default function RegistrationPage() {
+function RegistrationPageInner() {
   const [systems, setSystems] = useState<SystemRow[]>([])
   const [systemId, setSystemId] = useState<string>('')
   const [role, setRole] = useState<string>('deployer-annex-iii')
@@ -164,4 +165,8 @@ export default function RegistrationPage() {
       )}
     </div>
   )
+}
+
+export default function RegistrationPage() {
+  return <ModuleGate module="registration"><RegistrationPageInner /></ModuleGate>
 }

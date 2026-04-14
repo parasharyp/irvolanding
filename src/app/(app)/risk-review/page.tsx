@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import ModuleGate from '@/components/ModuleGate'
 
 const FONT = "var(--font-raleway), Raleway, Helvetica, Arial, sans-serif"
 
 interface SystemRow { id: string; name: string; risk_level: string | null; annex_category: string | null }
 
-export default function RiskReviewPage() {
+function RiskReviewPageInner() {
   const [systems, setSystems] = useState<SystemRow[]>([])
   const [systemId, setSystemId] = useState<string>('')
   const currentYear = new Date().getFullYear()
@@ -139,4 +140,8 @@ export default function RiskReviewPage() {
       )}
     </div>
   )
+}
+
+export default function RiskReviewPage() {
+  return <ModuleGate module="risk-review"><RiskReviewPageInner /></ModuleGate>
 }

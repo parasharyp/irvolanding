@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { WORKPLACE_CONTEXTS } from '@/lib/ai/deployer'
+import ModuleGate from '@/components/ModuleGate'
 
 const FONT = "var(--font-raleway), Raleway, Helvetica, Arial, sans-serif"
 
@@ -17,7 +18,7 @@ const CONTEXT_LABELS: Record<string, string> = {
   'internal-operations': 'Internal operations',
 }
 
-export default function DeployerPage() {
+function DeployerPageInner() {
   const [contexts, setContexts] = useState<Set<string>>(new Set(['customer-facing', 'internal-operations']))
   const [loading, setLoading] = useState(false)
 
@@ -141,4 +142,8 @@ export default function DeployerPage() {
       </div>
     </div>
   )
+}
+
+export default function DeployerPage() {
+  return <ModuleGate module="deployer"><DeployerPageInner /></ModuleGate>
 }

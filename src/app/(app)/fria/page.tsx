@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AFFECTED_GROUP_CATEGORIES } from '@/lib/ai/fria'
 import { createClient } from '@/lib/supabase/client'
+import ModuleGate from '@/components/ModuleGate'
 
 const FONT = "var(--font-raleway), Raleway, Helvetica, Arial, sans-serif"
 
@@ -27,7 +28,7 @@ interface SystemRow {
   annex_category: string | null
 }
 
-export default function FriaPage() {
+function FriaPageInner() {
   const [systems, setSystems] = useState<SystemRow[]>([])
   const [systemId, setSystemId] = useState<string>('')
   const [context, setContext] = useState<string>('')
@@ -235,4 +236,8 @@ export default function FriaPage() {
       </div>
     </div>
   )
+}
+
+export default function FriaPage() {
+  return <ModuleGate module="fria"><FriaPageInner /></ModuleGate>
 }
