@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { serverError, rateLimited } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
-import type { RiskLevel, DashboardMetrics, DashboardSystemSummary, DashboardInsight } from '@/types'
+import type { RiskLevel, DashboardMetrics, DashboardSystemSummary, DashboardInsight, OrgPlan } from '@/types'
 
 // Risk weights for compliance score calculation
 const RISK_WEIGHTS: Record<RiskLevel, number> = {
@@ -238,7 +238,11 @@ export async function GET() {
       insights,
     }
 
-    return NextResponse.json({ metrics })
+    const { data: org } = await supabase
+      .from('organizations').select('plan').eq('id', orgId).single()
+    const plan = (org?.plan ?? 'starter') as OrgPlan
+
+    return NextResponse.json({ metrics, plan })
   } catch (err) {
     return serverError(err, 'GET /api/dashboard')
   }

@@ -9,7 +9,8 @@ import {
   TrendingUp, Activity, Brain,
   BookOpen, Eye, Briefcase, Scale, RefreshCw, Users, Database,
 } from 'lucide-react'
-import { DashboardMetrics, DashboardInsight, DashboardSystemSummary, RiskLevel } from '@/types'
+import { DashboardMetrics, DashboardInsight, DashboardSystemSummary, RiskLevel, OrgPlan, hasModuleAccess, MODULE_MIN_PLAN, type ComplianceModule } from '@/types'
+import { Lock } from 'lucide-react'
 
 const ENFORCEMENT_DATE = new Date('2026-08-02T00:00:00.000Z')
 
@@ -38,15 +39,17 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   exported: { label: 'Exported', color: '#00e5bf' },
 }
 
-const COMPLIANCE_PACK: { href: string; label: string; article: string; desc: string; icon: typeof BookOpen }[] = [
-  { href: '/literacy', label: 'Literacy', article: 'Art. 4', desc: 'Staff AI literacy briefing', icon: BookOpen },
-  { href: '/risk-review', label: 'Risk Review', article: 'Art. 9', desc: 'Annual risk-management review', icon: RefreshCw },
-  { href: '/deployer', label: 'Deployer', article: 'Art. 26', desc: 'Deployer obligations pack', icon: Briefcase },
-  { href: '/fria', label: 'FRIA', article: 'Art. 27', desc: 'Fundamental rights impact', icon: Scale },
-  { href: '/registration', label: 'Registration', article: 'Art. 49', desc: 'EU database dossier', icon: Database },
-  { href: '/transparency', label: 'Transparency', article: 'Art. 50', desc: 'Disclosure + C2PA pack', icon: Eye },
-  { href: '/governance', label: 'Governance', article: 'Internal', desc: 'Policy · RACI · committee', icon: Users },
+const COMPLIANCE_PACK: { module: ComplianceModule; href: string; label: string; article: string; desc: string; icon: typeof BookOpen }[] = [
+  { module: 'literacy', href: '/literacy', label: 'Literacy', article: 'Art. 4', desc: 'Staff AI literacy briefing', icon: BookOpen },
+  { module: 'risk-review', href: '/risk-review', label: 'Risk Review', article: 'Art. 9', desc: 'Annual risk-management review', icon: RefreshCw },
+  { module: 'deployer', href: '/deployer', label: 'Deployer', article: 'Art. 26', desc: 'Deployer obligations pack', icon: Briefcase },
+  { module: 'fria', href: '/fria', label: 'FRIA', article: 'Art. 27', desc: 'Fundamental rights impact', icon: Scale },
+  { module: 'registration', href: '/registration', label: 'Registration', article: 'Art. 49', desc: 'EU database dossier', icon: Database },
+  { module: 'transparency', href: '/transparency', label: 'Transparency', article: 'Art. 50', desc: 'Disclosure + C2PA pack', icon: Eye },
+  { module: 'governance', href: '/governance', label: 'Governance', article: 'Internal', desc: 'Policy · RACI · committee', icon: Users },
 ]
+
+const PLAN_LABEL: Record<OrgPlan, string> = { starter: 'Starter', growth: 'Growth', plus: 'Plus' }
 
 const INSIGHT_CONFIG: Record<DashboardInsight['type'], { icon: typeof AlertTriangle; color: string; bg: string }> = {
   warning: { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.06)' },
@@ -143,6 +146,7 @@ function RiskBar({ systems_by_risk, total }: { systems_by_risk: Record<RiskLevel
 /* ─── Main Dashboard ──────────────────────────────────────────────────── */
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [plan, setPlan] = useState<OrgPlan>('starter')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -153,7 +157,7 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch('/api/dashboard')
       .then((r) => r.json())
-      .then((d) => { setMetrics(d.metrics ?? null); setLoading(false) })
+      .then((d) => { setMetrics(d.metrics ?? null); setPlan((d.plan ?? 'starter') as OrgPlan); setLoading(false) })
       .catch(() => { setError('Failed to load dashboard data.'); setLoading(false) })
   }, [])
 
@@ -375,10 +379,12 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 1 }}>
                 {COMPLIANCE_PACK.map((m) => {
                   const Icon = m.icon
+                  const unlocked = hasModuleAccess(plan, m.module)
+                  const required = MODULE_MIN_PLAN[m.module]
                   return (
                     <Link
                       key={m.href}
-                      href={m.href}
+                      href={unlocked ? m.href : '/settings'}
                       className="link-hover"
                       style={{
                         display: 'flex', flexDirection: 'column', gap: 6,
@@ -386,17 +392,26 @@ export default function DashboardPage() {
                         border: '1px solid rgba(255,255,255,0.05)',
                         textDecoration: 'none', color: '#e8e8e8',
                         minHeight: 98,
+                        opacity: unlocked ? 1 : 0.55,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Icon size={14} strokeWidth={2} style={{ color: '#00e5bf' }} />
+                        {unlocked
+                          ? <Icon size={14} strokeWidth={2} style={{ color: '#00e5bf' }} />
+                          : <Lock size={14} strokeWidth={2} style={{ color: '#666' }} />}
                         <span style={{ fontSize: 9, fontWeight: 800, color: '#666', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{m.article}</span>
                       </div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#e8e8e8' }}>{m.label}</div>
                       <div style={{ fontSize: 11, color: '#666', lineHeight: 1.4 }}>{m.desc}</div>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#00e5bf', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 'auto' }}>
-                        Generate <ArrowRight size={10} />
-                      </div>
+                      {unlocked ? (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#00e5bf', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 'auto' }}>
+                          Generate <ArrowRight size={10} />
+                        </div>
+                      ) : (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 'auto' }}>
+                          {PLAN_LABEL[required]}+ plan <ArrowRight size={10} />
+                        </div>
+                      )}
                     </Link>
                   )
                 })}

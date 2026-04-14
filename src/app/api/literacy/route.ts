@@ -4,6 +4,7 @@ import { badRequest, serverError, rateLimited } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit, checkDraftRateLimit } from '@/lib/ratelimit'
 import { generateLiteracyBriefing, LITERACY_ROLES, type LiteracyRole } from '@/lib/ai/literacy'
+import { requireModule } from '@/lib/plan-access'
 import { renderLiteracyPdf } from '@/lib/pdf-literacy'
 import { parseBody, requireJson } from '@/lib/validate-body'
 import { formatDate } from '@/lib/utils'
@@ -23,6 +24,9 @@ export async function POST(req: NextRequest) {
     if (!rate.allowed) return rateLimited(rate.resetAt)
     const aiRate = await checkDraftRateLimit(orgId)
     if (!aiRate.allowed) return rateLimited(aiRate.resetAt)
+
+    const gate = await requireModule(supabase, orgId, 'literacy')
+    if (!gate.ok) return gate.response
 
     const ctErr = requireJson(req); if (ctErr) return ctErr
     const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr

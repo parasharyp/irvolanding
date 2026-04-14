@@ -11,6 +11,7 @@ import {
   type BrandTone,
 } from '@/lib/ai/transparency'
 import { renderTransparencyPdf } from '@/lib/pdf-transparency'
+import { requireModule } from '@/lib/plan-access'
 import { parseBody, requireJson } from '@/lib/validate-body'
 import { formatDate } from '@/lib/utils'
 
@@ -31,6 +32,9 @@ export async function POST(req: NextRequest) {
     if (!rate.allowed) return rateLimited(rate.resetAt)
     const aiRate = await checkDraftRateLimit(orgId)
     if (!aiRate.allowed) return rateLimited(aiRate.resetAt)
+
+    const gate = await requireModule(supabase, orgId, 'transparency')
+    if (!gate.ok) return gate.response
 
     const ctErr = requireJson(req); if (ctErr) return ctErr
     const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr

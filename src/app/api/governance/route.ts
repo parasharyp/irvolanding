@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { badRequest, serverError, rateLimited } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit, checkDraftRateLimit } from '@/lib/ratelimit'
+import { requireModule } from '@/lib/plan-access'
 import { generateGovernancePack, GOVERNANCE_SCALES, type GovernanceScale } from '@/lib/ai/governance'
 import { renderGovernancePdf } from '@/lib/pdf-governance'
 import { parseBody, requireJson } from '@/lib/validate-body'
@@ -23,6 +24,9 @@ export async function POST(req: NextRequest) {
     if (!rate.allowed) return rateLimited(rate.resetAt)
     const aiRate = await checkDraftRateLimit(orgId)
     if (!aiRate.allowed) return rateLimited(aiRate.resetAt)
+
+    const gate = await requireModule(supabase, orgId, 'governance')
+    if (!gate.ok) return gate.response
 
     const ctErr = requireJson(req); if (ctErr) return ctErr
     const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr

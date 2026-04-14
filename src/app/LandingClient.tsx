@@ -101,9 +101,9 @@ interface PricingPlan {
   highlight?: boolean; plus?: boolean
 }
 const PRICING: PricingPlan[] = [
-  { name: 'Starter', price: 149, desc: '1 user \u00B7 3 systems', features: ['3 AI systems', 'PDF export', 'Risk classification', 'Obligations map', 'Basic templates', 'Email support'] },
-  { name: 'Growth',  price: 399, desc: 'Up to 5 users \u00B7 10 systems', highlight: true, features: ['10 AI systems', '5 users', 'PDF + Word export', 'AI drafting assistance', 'Custom templates', 'Priority support'] },
-  { name: 'Plus',    price: 799, desc: 'Unlimited users', plus: true, features: ['25+ AI systems', 'Unlimited users', 'Auditor view', 'API access', 'Custom templates', 'Dedicated support'] },
+  { name: 'Starter', price: 149, desc: '1 user \u00B7 3 systems \u00B7 2 modules', features: ['3 AI systems', 'Risk classification + obligations', 'Evidence pack PDF export', 'Art. 4 Literacy Briefing', 'Art. 50 Transparency Pack', 'Email support'] },
+  { name: 'Growth',  price: 399, desc: 'Up to 5 users \u00B7 10 systems \u00B7 4 modules', highlight: true, features: ['Everything in Starter', '10 AI systems \u00B7 5 users', 'AI drafting assistance', 'Art. 26 Deployer Obligations', 'AI Governance Pack (policy + RACI)', 'Priority support'] },
+  { name: 'Plus',    price: 799, desc: 'Full 7-module compliance pack', plus: true, features: ['Everything in Growth', '25+ AI systems \u00B7 unlimited users', 'Art. 27 FRIA Wizard', 'Art. 9 Annual Risk Reviews', 'Art. 49 EU Database Registration', 'Dedicated support \u00B7 API access'] },
 ]
 
 const FAQS = [

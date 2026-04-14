@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { badRequest, serverError, rateLimited, notFound } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit, checkDraftRateLimit } from '@/lib/ratelimit'
+import { requireModule } from '@/lib/plan-access'
 import { generateRegistrationDossier, REGISTRATION_ROLES, type RegistrationRole } from '@/lib/ai/registration'
 import { renderRegistrationPdf } from '@/lib/pdf-registration'
 import { parseBody, requireJson } from '@/lib/validate-body'
@@ -26,6 +27,9 @@ export async function POST(req: NextRequest) {
     if (!rate.allowed) return rateLimited(rate.resetAt)
     const aiRate = await checkDraftRateLimit(orgId)
     if (!aiRate.allowed) return rateLimited(aiRate.resetAt)
+
+    const gate = await requireModule(supabase, orgId, 'registration')
+    if (!gate.ok) return gate.response
 
     const ctErr = requireJson(req); if (ctErr) return ctErr
     const { data: body, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr

@@ -7,6 +7,32 @@ export const PLAN_SYSTEM_LIMITS: Record<OrgPlan, number> = {
   plus: 25,
 }
 
+export type ComplianceModule =
+  | 'literacy'
+  | 'transparency'
+  | 'deployer'
+  | 'governance'
+  | 'fria'
+  | 'risk-review'
+  | 'registration'
+
+// Each module is unlocked at its minimum plan tier and above.
+export const MODULE_MIN_PLAN: Record<ComplianceModule, OrgPlan> = {
+  literacy: 'starter',
+  transparency: 'starter',
+  deployer: 'growth',
+  governance: 'growth',
+  fria: 'plus',
+  'risk-review': 'plus',
+  registration: 'plus',
+}
+
+const PLAN_RANK: Record<OrgPlan, number> = { starter: 0, growth: 1, plus: 2 }
+
+export function hasModuleAccess(plan: OrgPlan, module: ComplianceModule): boolean {
+  return PLAN_RANK[plan] >= PLAN_RANK[MODULE_MIN_PLAN[module]]
+}
+
 export interface Organization {
   id: string
   name: string
