@@ -3,7 +3,7 @@
 import { forwardRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Settings, LogOut, X, Shield, BookOpen, Eye, Briefcase } from 'lucide-react'
+import { LayoutDashboard, Settings, LogOut, X, Shield, BookOpen, Eye, Briefcase, Scale } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { OrgPlan } from '@/types'
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/literacy', label: 'Literacy (Art. 4)', icon: BookOpen },
   { href: '/transparency', label: 'Transparency (Art. 50)', icon: Eye },
   { href: '/deployer', label: 'Deployer (Art. 26)', icon: Briefcase },
+  { href: '/fria', label: 'FRIA (Art. 27)', icon: Scale },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
