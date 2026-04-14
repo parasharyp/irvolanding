@@ -26,7 +26,7 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: 11,
-  color: '#555',
+  color: '#999',
   marginBottom: 6,
   letterSpacing: '0.04em',
 }
@@ -53,19 +53,23 @@ type Tab = typeof TABS[number]['key']
 function SettingsContent() {
   const searchParams = useSearchParams()
   const billingMsg = searchParams.get('billing')
+  const initialTab = (searchParams.get('tab') === 'billing' ? 'billing' : 'org') as Tab
+  const highlightPlan = searchParams.get('highlight') as OrgPlan | null
 
   const [org, setOrg] = useState<Organization | null>(null)
+  const [orgError, setOrgError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(
     billingMsg === 'success' ? 'Subscription updated successfully!' : null
   )
-  const [activeTab, setActiveTab] = useState<Tab>('org')
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab)
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<{ name: string }>({ resolver: zodResolver(orgSchema) })
 
   useEffect(() => {
-    fetch('/api/settings/org').then((r) => r.json()).then((o) => {
-      setOrg(o); reset({ name: o.name })
-    })
+    fetch('/api/settings/org')
+      .then((r) => { if (!r.ok) throw new Error('Failed to load'); return r.json() })
+      .then((o) => { setOrg(o); reset({ name: o.name }) })
+      .catch(() => setOrgError('Failed to load organisation settings.'))
   }, [])
 
   const saveOrg = async (data: { name: string }) => {
@@ -87,9 +91,9 @@ function SettingsContent() {
   const systemLimit = PLAN_SYSTEM_LIMITS[currentPlan]
 
   const PLANS = [
-    { key: 'starter' as OrgPlan, name: 'Starter', price: '\u00a3149', period: '/mo', desc: '1 user \u00B7 3 systems', systems: PLAN_SYSTEM_LIMITS.starter },
-    { key: 'growth' as OrgPlan, name: 'Growth', price: '\u00a3399', period: '/mo', desc: '5 users \u00B7 10 systems', systems: PLAN_SYSTEM_LIMITS.growth },
-    { key: 'plus' as OrgPlan, name: 'Plus', price: '\u00a3799', period: '/mo', desc: 'Unlimited users \u00B7 25+ systems', systems: PLAN_SYSTEM_LIMITS.plus },
+    { key: 'starter' as OrgPlan, name: 'Starter', price: '\u00a3149', period: '/mo', desc: '1 user \u00B7 3 systems', systems: PLAN_SYSTEM_LIMITS.starter, modules: 'Literacy + Transparency' },
+    { key: 'growth' as OrgPlan, name: 'Growth', price: '\u00a3399', period: '/mo', desc: '5 users \u00B7 10 systems', systems: PLAN_SYSTEM_LIMITS.growth, modules: '+ Deployer + Governance' },
+    { key: 'plus' as OrgPlan, name: 'Plus', price: '\u00a3799', period: '/mo', desc: 'Unlimited users \u00B7 25+ systems', systems: PLAN_SYSTEM_LIMITS.plus, modules: '+ FRIA + Risk Review + Registration' },
   ]
 
   return (
@@ -107,11 +111,21 @@ function SettingsContent() {
         )}
       </AnimatePresence>
 
+      {/* Error state */}
+      {orgError && (
+        <div role="alert" style={{ color: '#e54747', background: 'rgba(229,71,71,0.06)', border: '1px solid rgba(229,71,71,0.12)', padding: '12px 16px', fontSize: 13, marginBottom: 24 }}>
+          {orgError}
+        </div>
+      )}
+
       {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: 32 }}>
+      <div role="tablist" className="settings-tabs" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: 32 }}>
         {TABS.map(({ key, label }) => (
           <button
             key={key}
+            role="tab"
+            className="settings-tab"
+            aria-selected={activeTab === key}
             onClick={() => setActiveTab(key)}
             style={{
               background: 'none', border: 'none',
@@ -128,8 +142,22 @@ function SettingsContent() {
       </div>
 
       {/* Tab content */}
+      {!org && !orgError && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', padding: '20px 28px' }}>
+            <div className="skeleton-pulse" style={{ height: 10, width: 80, background: '#131313', marginBottom: 10 }} />
+            <div className="skeleton-pulse" style={{ height: 16, width: 120, background: '#131313' }} />
+          </div>
+          <div style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.07)', padding: 28 }}>
+            <div className="skeleton-pulse" style={{ height: 10, width: 140, background: '#131313', marginBottom: 20 }} />
+            <div className="skeleton-pulse" style={{ height: 36, width: '100%', background: '#131313', marginBottom: 16 }} />
+            <div className="skeleton-pulse" style={{ height: 36, width: 120, background: '#131313' }} />
+          </div>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
-        {activeTab === 'org' && (
+        {activeTab === 'org' && org && (
           <motion.div key="org" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
             {/* Plan display card */}
             <div style={{
@@ -190,21 +218,30 @@ function SettingsContent() {
             </div>
 
             <div className="r-grid-3 wall-grid" style={{ gap: 0 }}>
-              {PLANS.map(({ key, name, price, period, desc, systems }) => {
+              {PLANS.map(({ key, name, price, period, desc, systems, modules }) => {
                 const isCurrent = currentPlan === key
+                const isHighlight = highlightPlan === key
                 const accent = PLAN_ACCENT[key]
+                const borderColor = isHighlight ? '#f59e0b' : (isCurrent ? accent : 'transparent')
                 return (
                   <div
                     key={key}
-                    style={{ borderRight: '1px solid rgba(255,255,255,0.07)', borderTop: `2px solid ${isCurrent ? accent : 'transparent'}`, padding: 24, background: isCurrent ? 'rgba(255,255,255,0.02)' : 'transparent', position: 'relative', transition: 'background 0.2s' }}
+                    className="plan-card"
+                    style={{ borderRight: '1px solid rgba(255,255,255,0.07)', borderTop: `2px solid ${borderColor}`, padding: 24, background: isCurrent ? 'rgba(255,255,255,0.02)' : (isHighlight ? 'rgba(245,158,11,0.04)' : 'transparent'), position: 'relative' }}
                   >
+                    {isHighlight && !isCurrent && (
+                      <div style={{ position: 'absolute', top: -10, right: 12, background: '#f59e0b', color: '#040404', fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', padding: '3px 8px', textTransform: 'uppercase' }}>
+                        Recommended
+                      </div>
+                    )}
                     <p style={{ fontSize: 15, fontWeight: 800, color: '#e8e8e8', margin: '0 0 4px' }}>{name}</p>
                     <p style={{ margin: '0 0 4px' }}>
                       <span style={{ fontSize: 22, fontWeight: 800, color: accent }}>{price}</span>
                       <span style={{ fontSize: 12, color: '#444' }}>{period}</span>
                     </p>
                     <p style={{ fontSize: 12, color: '#444', margin: '0 0 4px' }}>{desc}</p>
-                    <p style={{ fontSize: 11, color: '#555', margin: '0 0 20px' }}>Up to {systems} AI systems</p>
+                    <p style={{ fontSize: 11, color: '#999', margin: '0 0 6px' }}>Up to {systems} AI systems</p>
+                    <p style={{ fontSize: 11, color: accent, fontWeight: 700, margin: '0 0 20px', lineHeight: 1.4 }}>{modules}</p>
                     {isCurrent ? (
                       <span style={{ fontSize: 10, fontWeight: 700, color: '#36bd5f', background: 'rgba(54,189,95,0.08)', padding: '3px 10px', border: '1px solid rgba(54,189,95,0.15)', letterSpacing: '0.04em' }}>Current plan</span>
                     ) : (

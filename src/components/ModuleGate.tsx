@@ -58,7 +58,7 @@ export default function ModuleGate({ module, children }: Props) {
           Upgrade to <strong style={{ color: '#00e5bf' }}>{PLAN_LABEL[required]}</strong> to unlock this compliance module and its signable PDF generator.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <Link href="/settings" style={{
+          <Link href={`/settings?tab=billing&highlight=${required}`} style={{
             background: '#00e5bf', color: '#040404', textDecoration: 'none',
             padding: '12px 24px', fontSize: 13, fontWeight: 800, borderRadius: 100,
           }}>
