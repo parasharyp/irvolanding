@@ -19,9 +19,9 @@ export default function Icon() {
       >
         {/* Bold serif I — teal mark */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-          <div style={{ width: 108, height: 18, background: '#00e5bf' }} />
-          <div style={{ width: 22, height: 100, background: '#00e5bf' }} />
-          <div style={{ width: 108, height: 18, background: '#00e5bf' }} />
+          <div style={{ width: 108, height: 18, background: '#e8e8e8' }} />
+          <div style={{ width: 22, height: 100, background: '#e8e8e8' }} />
+          <div style={{ width: 108, height: 18, background: '#e8e8e8' }} />
         </div>
       </div>
     ),
