@@ -33,16 +33,21 @@ const SPRING_EASE = [0.16, 1, 0.3, 1] as [number, number, number, number]
 // ─── Shared style helpers ────────────────────────────────────────────────────
 const S = {
   overline: {
-    fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase' as const,
-    letterSpacing: '0.08em', margin: '0 0 20px', display: 'block' as const,
+    fontSize: 11, fontWeight: 700, color: T.accent, textTransform: 'uppercase' as const,
+    letterSpacing: '0.12em', margin: '0 0 24px', display: 'flex' as const,
+    alignItems: 'center' as const, gap: 14,
+  },
+  sectionNum: {
+    fontSize: 11, fontWeight: 800, color: T.text3, letterSpacing: '0.08em',
+    fontVariantNumeric: 'tabular-nums' as const, display: 'inline-block' as const,
   },
   h2: {
-    fontWeight: 800, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.15,
+    fontWeight: 900, letterSpacing: '-0.025em', margin: 0, lineHeight: 1.02,
   } as React.CSSProperties,
   wallCell: {
     borderRight: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`,
   },
-  cardPad: { padding: '40px 32px' },
+  cardPad: { padding: '48px 40px' },
   inlineBtn: {
     display: 'inline-flex', alignItems: 'center', gap: 8, border: 'none',
     cursor: 'pointer', fontFamily: FF,
@@ -50,6 +55,21 @@ const S = {
   listItem: {
     display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: T.text2,
   },
+}
+
+// ─── Section label (numbered) ────────────────────────────────────────────────
+function SectionLabel({ num, children }: { num?: string; children: React.ReactNode }) {
+  return (
+    <p style={S.overline}>
+      {num && (
+        <>
+          <span style={{ color: T.text3, fontWeight: 800 }}>({num})</span>
+          <span style={{ width: 28, height: 1, background: T.border }} />
+        </>
+      )}
+      <span>{children}</span>
+    </p>
+  )
 }
 
 // ─── Animation helpers ───────────────────────────────────────────────────────
@@ -673,7 +693,7 @@ function WaitlistModal({ variant, onClose }: { variant: WaitlistVariant; onClose
                   type="submit" disabled={loading}
                   whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   style={{
-                    flex: 2, background: T.accent, border: 'none', borderRadius: 100,
+                    flex: 2, background: T.accent, border: 'none', borderRadius: 0,
                     padding: '12px 0', fontSize: 13, fontWeight: 800, color: T.bg,
                     cursor: loading ? 'default' : 'pointer', fontFamily: FF,
                     opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center',
@@ -776,7 +796,7 @@ export default function LandingClient() {
           <button onClick={() => { setMobileMenu(false); openWaitlist('waitlist') }}
             style={{
               background: T.accent, color: T.bg, fontSize: 15, fontWeight: 700,
-              padding: '14px 0', borderRadius: 100, border: 'none', cursor: 'pointer',
+              padding: '14px 0', borderRadius: 0, border: 'none', cursor: 'pointer',
               fontFamily: FF, minHeight: 44,
             }}>
             Start documenting
@@ -821,9 +841,9 @@ export default function LandingClient() {
               <button
                 onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
                 style={{
-                  background: T.accent, color: T.bg, fontSize: 13, fontWeight: 700,
-                  padding: '9px 22px', borderRadius: 100, border: 'none', cursor: 'pointer',
-                  fontFamily: FF, letterSpacing: '-0.01em', minHeight: 44,
+                  background: T.accent, color: T.bg, fontSize: 11, fontWeight: 800,
+                  padding: '11px 22px', borderRadius: 0, border: 'none', cursor: 'pointer',
+                  fontFamily: FF, letterSpacing: '0.1em', textTransform: 'uppercase', minHeight: 44,
                   boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
                 }}
               >Start documenting</button>
@@ -842,118 +862,133 @@ export default function LandingClient() {
       {/* HERO                                                                   */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       <section className="hp-hero-pad" style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', textAlign: 'center', position: 'relative', overflow: 'hidden',
+        minHeight: '100vh', display: 'flex', alignItems: 'center',
+        position: 'relative', overflow: 'hidden',
       }}>
         <HeroBg />
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 900 }}>
-          {/* Overline badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: SPRING_EASE }}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 10,
-              border: '1px solid rgba(229,71,71,0.4)', borderRadius: 100,
-              padding: '7px 16px', marginBottom: 48,
-              fontSize: 11, letterSpacing: '0.08em', fontWeight: 600,
-              background: 'rgba(4,4,4,0.82)', backdropFilter: 'blur(8px)',
-            }}
-          >
+        <div className="hp-hero-grid" style={{
+          position: 'relative', zIndex: 1, width: '100%', maxWidth: 1400,
+          margin: '0 auto', display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.55fr) minmax(0, 1fr)',
+          gap: 64, alignItems: 'end',
+        }}>
+          {/* LEFT — display headline + eyebrow */}
+          <div>
             <motion.div
-              animate={{ opacity: [1, 0.2, 1] }}
-              transition={{ duration: 1.3, repeat: Infinity }}
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.6, ease: SPRING_EASE }}
               style={{
-                width: 5, height: 5, borderRadius: '50%', background: T.red,
-                boxShadow: '0 0 6px rgba(229,71,71,0.8)', flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', gap: 12,
+                border: `1px solid ${T.border}`,
+                padding: '8px 14px', marginBottom: 44,
+                fontSize: 10, letterSpacing: '0.14em', fontWeight: 700,
+                background: 'rgba(4,4,4,0.75)', backdropFilter: 'blur(8px)',
+                textTransform: 'uppercase',
+              }}
+            >
+              <motion.div
+                animate={{ opacity: [1, 0.2, 1] }}
+                transition={{ duration: 1.3, repeat: Infinity }}
+                style={{
+                  width: 5, height: 5, background: T.red,
+                  boxShadow: '0 0 6px rgba(229,71,71,0.8)', flexShrink: 0,
+                }}
+              />
+              <span style={{ color: T.text3, fontWeight: 800 }}>(00)</span>
+              <span style={{ color: T.text2 }}>EU AI Act</span>
+              <span style={{ width: 1, height: 10, background: T.border, flexShrink: 0 }} />
+              <span style={{ color: T.red, fontWeight: 800 }}>Enforcement · August 2, 2026</span>
+            </motion.div>
+
+            <StaggeredHeadline
+              words={['Your', 'AI', 'systems', 'need', 'evidence', 'packs.']}
+              style={{
+                fontSize: 'clamp(44px, 7.2vw, 112px)',
+                letterSpacing: '-0.035em',
+                lineHeight: 0.96,
               }}
             />
-            <span style={{ color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }}>
-              EU AI ACT
-            </span>
-            <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.12)', flexShrink: 0 }} />
-            <span style={{ color: T.red, fontWeight: 700, textTransform: 'uppercase' }}>
-              ENFORCEMENT: AUGUST 2, 2026
-            </span>
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.7, ease: SPRING_EASE }}
+            >
+              <h1 style={{
+                fontSize: 'clamp(44px, 7.2vw, 112px)', fontWeight: 900, lineHeight: 0.96,
+                letterSpacing: '-0.035em', margin: '0', color: T.accent,
+              }}>
+                Build them in minutes.
+              </h1>
+            </motion.div>
+          </div>
 
-          {/* Staggered headline */}
-          <StaggeredHeadline
-            words={['Your', 'AI', 'systems', 'need', 'evidence', 'packs.']}
-          />
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.7, ease: SPRING_EASE }}
-          >
-            <h1 style={{
-              fontSize: 'clamp(36px, 5.5vw, 80px)', fontWeight: 900, lineHeight: 1.0,
-              letterSpacing: '-0.04em', margin: '0 0 32px', color: T.accent,
-            }}>
-              Build them in minutes.
-            </h1>
-          </motion.div>
+          {/* RIGHT — supporting column */}
+          <div className="hp-hero-right" style={{ paddingBottom: 8 }}>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85, duration: 0.6 }}
+              style={{
+                fontSize: 17, color: T.text2, lineHeight: 1.55,
+                margin: '0 0 36px', maxWidth: 380,
+              }}
+            >
+              The only tool that builds the evidence pack regulators will actually ask for.
+              EU and UK jurisdiction, all Annex III categories.
+            </motion.p>
 
-          {/* Subtext */}
-          <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.85, duration: 0.6 }}
-            style={{
-              fontSize: 18, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6,
-              maxWidth: 520, margin: '0 auto 40px', letterSpacing: '-0.01em',
-            }}
-          >
-            The only tool that builds the evidence pack regulators will actually ask for.
-          </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0 }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}
+            >
+              <Magnetic>
+                <motion.button
+                  onClick={() => {
+                    track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'hero', page: 'landing' })
+                    openWaitlist('waitlist')
+                  }}
+                  whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 48px rgba(0,229,191,0.22)' }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    ...S.inlineBtn, background: T.accent, color: T.bg,
+                    fontSize: 13, fontWeight: 800, padding: '18px 32px', borderRadius: 0,
+                    letterSpacing: '0.08em', textTransform: 'uppercase', minHeight: 52,
+                    boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
+                  }}
+                >
+                  Start documenting <ArrowRight size={14} />
+                </motion.button>
+              </Magnetic>
+              <Magnetic>
+                <a
+                  href="#how-it-works"
+                  onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'Watch the walkthrough', section: 'hero', page: 'landing' })}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    background: 'transparent', color: T.text2,
+                    fontSize: 13, fontWeight: 700, padding: '18px 28px', borderRadius: 0,
+                    textDecoration: 'none', border: `1px solid ${T.border}`, minHeight: 52,
+                    transition: 'border-color 0.15s, color 0.15s',
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                  }}
+                >
+                  Watch the walkthrough
+                </a>
+              </Magnetic>
+            </motion.div>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-            style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}
-          >
-            <Magnetic>
-              <motion.button
-                onClick={() => {
-                  track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'hero', page: 'landing' })
-                  openWaitlist('waitlist')
-                }}
-                whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 48px rgba(0,229,191,0.22)' }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  ...S.inlineBtn, background: T.accent, color: T.bg,
-                  fontSize: 15, fontWeight: 800, padding: '16px 36px', borderRadius: 100,
-                  letterSpacing: '-0.01em', minHeight: 48,
-                  boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
-                }}
-              >
-                Start documenting <ArrowRight size={16} />
-              </motion.button>
-            </Magnetic>
-            <Magnetic>
-              <a
-                href="#how-it-works"
-                onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'Watch the walkthrough', section: 'hero', page: 'landing' })}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: 'transparent', color: T.text2,
-                  fontSize: 15, fontWeight: 600, padding: '16px 32px', borderRadius: 100,
-                  textDecoration: 'none', border: `1px solid ${T.border}`, minHeight: 48,
-                  transition: 'border-color 0.15s',
-                }}
-              >
-                Watch the walkthrough
-              </a>
-            </Magnetic>
-          </motion.div>
-
-          {/* Trust line */}
-          <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
-            style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '24px 0 0', letterSpacing: '0.02em' }}
-          >
-            Covers all Annex III high-risk categories &middot; EU &amp; UK jurisdiction &middot; Guidance only, not legal advice
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
+              style={{
+                fontSize: 11, color: T.text3, margin: '32px 0 0',
+                letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
+                lineHeight: 1.7, maxWidth: 360,
+              }}
+            >
+              Annex III coverage · EU &amp; UK · Guidance, not legal advice
+            </motion.p>
+          </div>
         </div>
 
         {/* Scroll indicator */}
@@ -1003,9 +1038,9 @@ export default function LandingClient() {
       <section className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 64 }}>
-            <p style={S.overline}>THE COMPLIANCE GAP</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)', maxWidth: 560 }}>
-              Most SMEs are starting from zero
+            <SectionLabel num="01">The compliance gap</SectionLabel>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', maxWidth: 640 }}>
+              Most SMEs are starting from zero.
             </h2>
           </motion.div>
 
@@ -1068,9 +1103,9 @@ export default function LandingClient() {
       <section id="how-it-works" className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 64 }}>
-            <p style={S.overline}>HOW IRVO WORKS</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)', maxWidth: 600 }}>
-              From workflow to evidence pack in 20 minutes
+            <SectionLabel num="02">How Irvo works</SectionLabel>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', maxWidth: 720 }}>
+              Workflow to evidence pack.<br /><span style={{ color: T.text2 }}>Twenty minutes.</span>
             </h2>
           </motion.div>
 
@@ -1124,9 +1159,9 @@ export default function LandingClient() {
       <section id="features" className="hp-section-pad" style={{ background: T.surface }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
-            <p style={S.overline}>CAPABILITIES</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)', maxWidth: 600 }}>
-              Everything the Act requires. Nothing it doesn&apos;t.
+            <SectionLabel num="03">Capabilities</SectionLabel>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', maxWidth: 680 }}>
+              Everything the Act requires. <span style={{ color: T.text2 }}>Nothing it doesn&apos;t.</span>
             </h2>
           </motion.div>
 
@@ -1173,9 +1208,9 @@ export default function LandingClient() {
       <section className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 64 }}>
-            <p style={S.overline}>THE 5-STEP WIZARD</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)' }}>
-              Twelve questions. One complete evidence pack.
+            <SectionLabel num="04">The wizard</SectionLabel>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', maxWidth: 820 }}>
+              Twelve questions. <span style={{ color: T.text2 }}>One complete evidence pack.</span>
             </h2>
           </motion.div>
 
@@ -1290,8 +1325,9 @@ export default function LandingClient() {
                 }}
                 style={{
                   ...S.inlineBtn, background: T.accent, color: T.bg,
-                  fontSize: 12, fontWeight: 700, padding: '8px 20px',
-                  borderRadius: 100, minHeight: 44,
+                  fontSize: 11, fontWeight: 800, padding: '12px 22px',
+                  borderRadius: 0, minHeight: 44,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
                 }}
               >
                 Start documenting <ArrowRight size={13} />
@@ -1315,14 +1351,14 @@ export default function LandingClient() {
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} className="hp-pricing-header" style={{ marginBottom: 64 }}>
             <div>
-              <p style={S.overline}>PRICING</p>
-              <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)', margin: '0 0 16px' }}>
-                Built for SME budgets. Not enterprise procurement.
+              <SectionLabel num="05">Pricing</SectionLabel>
+              <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', margin: '0 0 24px', maxWidth: 780 }}>
+                Built for SME budgets. <span style={{ color: T.text2 }}>Not enterprise procurement.</span>
               </h2>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: T.accentDim, border: '1px solid rgba(0,229,191,0.2)',
-                borderRadius: 100, padding: '7px 16px',
+                borderRadius: 0, padding: '7px 16px',
               }}>
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0 }} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: T.accent, letterSpacing: '0.02em' }}>
@@ -1349,7 +1385,7 @@ export default function LandingClient() {
                   <div style={{
                     position: 'absolute', top: 14, right: 14,
                     fontSize: 9, fontWeight: 800, color: T.bg, background: T.accent,
-                    padding: '3px 10px', borderRadius: 100,
+                    padding: '3px 10px', borderRadius: 0,
                     letterSpacing: '0.08em', textTransform: 'uppercase',
                   }}>
                     Recommended
@@ -1402,8 +1438,9 @@ export default function LandingClient() {
                       background: plan.highlight ? T.accent : T.surface2,
                       color: plan.highlight ? T.bg : T.accent,
                       border: `1px solid ${plan.highlight ? T.accent : 'rgba(0,229,191,0.2)'}`,
-                      borderRadius: 100, padding: '13px 0', fontSize: 13, fontWeight: 700,
+                      borderRadius: 0, padding: '15px 0', fontSize: 11, fontWeight: 800,
                       cursor: 'pointer', fontFamily: FF, minHeight: 44,
+                      letterSpacing: '0.1em', textTransform: 'uppercase',
                       boxShadow: plan.highlight
                         ? '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset'
                         : '0 1px 0 rgba(255,255,255,0.04) inset',
@@ -1430,9 +1467,11 @@ export default function LandingClient() {
           position: 'relative', overflow: 'hidden',
         }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.accent }} />
-          <p style={{ ...S.overline, marginBottom: 16 }}>ZERO-RISK PILOT</p>
-          <h2 style={{ ...S.h2, fontSize: 'clamp(22px, 3vw, 32px)', marginBottom: 16 }}>
-            We&apos;ll document your first system for free
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <SectionLabel>Zero-risk pilot</SectionLabel>
+          </div>
+          <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.6vw, 44px)', marginBottom: 20 }}>
+            We&apos;ll document your first system for free.
           </h2>
           <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.6, margin: '0 0 32px', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto' }}>
             The first 10 customers get one AI workflow documented end-to-end by the founder &mdash; at zero cost.
@@ -1447,7 +1486,8 @@ export default function LandingClient() {
               whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 32px rgba(0,229,191,0.18)' }}
               style={{
                 ...S.inlineBtn, gap: 10, background: T.accent, color: T.bg,
-                fontSize: 14, fontWeight: 800, padding: '14px 32px', borderRadius: 100, minHeight: 44,
+                fontSize: 12, fontWeight: 800, padding: '16px 32px', borderRadius: 0, minHeight: 48,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
                 boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
               }}
             >
@@ -1465,9 +1505,9 @@ export default function LandingClient() {
       <section id="faq" className="hp-section-pad">
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
-            <p style={S.overline}>FAQ</p>
-            <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 4vw, 48px)' }}>
-              Every question before the decision.
+            <SectionLabel num="06">Questions</SectionLabel>
+            <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', maxWidth: 780 }}>
+              Every question <span style={{ color: T.text2 }}>before the decision.</span>
             </h2>
           </motion.div>
 
@@ -1532,7 +1572,7 @@ export default function LandingClient() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 40,
               background: 'rgba(0,229,191,0.06)', border: '1px solid rgba(0,229,191,0.22)',
-              borderRadius: 100, padding: '7px 18px',
+              borderRadius: 0, padding: '7px 18px',
             }}>
               <motion.div
                 animate={{ opacity: [1, 0.3, 1] }}
@@ -1557,12 +1597,12 @@ export default function LandingClient() {
                   whileTap={{ scale: 0.98 }}
                   style={{
                     ...S.inlineBtn, gap: 10, background: T.accent, color: T.bg,
-                    fontSize: 16, fontWeight: 800, padding: '16px 40px', borderRadius: 100,
-                    letterSpacing: '-0.01em', minHeight: 48,
+                    fontSize: 13, fontWeight: 800, padding: '20px 40px', borderRadius: 0,
+                    letterSpacing: '0.1em', textTransform: 'uppercase', minHeight: 52,
                     boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
                   }}
                 >
-                  Claim founding discount <ArrowRight size={18} />
+                  Claim founding discount <ArrowRight size={16} />
                 </motion.button>
               </Magnetic>
               <Magnetic>
@@ -1575,8 +1615,9 @@ export default function LandingClient() {
                   whileTap={{ scale: 0.98 }}
                   style={{
                     ...S.inlineBtn, gap: 10, background: 'transparent', color: T.text2,
-                    fontSize: 15, fontWeight: 600, padding: '16px 32px', borderRadius: 100,
-                    border: `1px solid ${T.border}`, transition: 'border-color 0.15s', minHeight: 48,
+                    fontSize: 12, fontWeight: 800, padding: '20px 32px', borderRadius: 0,
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    border: `1px solid ${T.border}`, transition: 'border-color 0.15s, color 0.15s', minHeight: 52,
                   }}
                 >
                   Book a walkthrough
@@ -1628,7 +1669,7 @@ export default function LandingClient() {
                 <span key={b} style={{
                   fontSize: 10, fontWeight: 600, color: T.text3,
                   border: `1px solid ${T.border}`, padding: '3px 10px',
-                  borderRadius: 100, letterSpacing: '0.02em',
+                  borderRadius: 0, letterSpacing: '0.02em',
                 }}>{b}</span>
               ))}
             </div>

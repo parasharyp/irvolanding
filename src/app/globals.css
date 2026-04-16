@@ -63,6 +63,58 @@ input, textarea, select {
 /* ── Visibility helpers ───────────────────────────────────── */
 .mobile-only { display: none !important; }
 
+/* ── Skeleton shimmer ────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-pulse {
+  background: linear-gradient(90deg, #0c0c0c 25%, #181818 50%, #0c0c0c 75%) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite !important;
+}
+
+/* ── Progress bar glow on 100% ───────────────────────────────── */
+@keyframes progress-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(54,189,95,0.3); }
+  50% { box-shadow: 0 0 14px rgba(54,189,95,0.5); }
+}
+.progress-complete { animation: progress-glow 2s ease-in-out infinite; }
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: #00e5bf;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ── Interactive hover helpers ────────────────────────────────── */
+.sys-table-row { transition: background 0.15s ease; }
+.sys-table-row:hover { background: rgba(255,255,255,0.04); }
+
+.link-hover { transition: color 0.15s ease, opacity 0.15s ease; }
+.link-hover:hover { color: #00e5bf !important; opacity: 1; }
+
+.dash-sys-row { transition: background 0.15s ease, border-color 0.15s ease; }
+.dash-sys-row:hover { background: rgba(255,255,255,0.03) !important; border-color: rgba(0,229,191,0.15) !important; }
+
+.dash-insight { transition: background 0.15s ease, border-color 0.15s ease; }
+.dash-insight:hover { border-color: rgba(255,255,255,0.15) !important; background: rgba(255,255,255,0.02) !important; }
+
+.plan-card { transition: background 0.2s ease, border-color 0.2s ease; }
+.plan-card:hover { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.12) !important; }
+
+.quiz-option { transition: all 0.15s ease; }
+.quiz-option:hover { background: rgba(0,229,191,0.04) !important; border-color: rgba(0,229,191,0.15) !important; }
+
+.settings-tab { transition: color 0.15s ease, border-color 0.15s ease; }
+.settings-tab:not([aria-selected="true"]):hover { color: #ccc !important; }
+
 /* ── Homepage layout helpers (base / desktop) ─────────────── */
 .hp-section-pad  { padding: 120px 32px; }
 .hp-hero-pad     { padding: 120px 32px 80px; }
@@ -72,6 +124,7 @@ input, textarea, select {
 .hp-modal-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .hp-modal-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 .hp-pricing-header { display: flex; align-items: flex-end; justify-content: space-between; }
+.hp-hero-grid { width: 100%; }
 
 /* ── App shell ────────────────────────────────────────────── */
 .app-mobile-header { display: none; }
@@ -183,7 +236,12 @@ input, textarea, select {
     height: auto !important;
   }
   .hp-hero-pad h1 {
-    font-size: clamp(28px, 8vw, 48px) !important;
+    font-size: clamp(36px, 11vw, 64px) !important;
+  }
+  .hp-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+    align-items: start !important;
   }
   .hp-cta-pad { padding: 80px 20px !important; }
 
@@ -236,6 +294,49 @@ input, textarea, select {
 
   /* ── Pricing header: stack vertically */
   .hp-pricing-header { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
+
+  /* ── Systems page ─────────────────────────── */
+  .sys-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .sys-deadline-banner { padding: 10px 16px !important; }
+
+  /* Hide Category (3rd) and Progress (5th) columns on tablet */
+  .table-scroll th:nth-child(3),
+  .table-scroll td:nth-child(3),
+  .table-scroll th:nth-child(5),
+  .table-scroll td:nth-child(5) { display: none !important; }
+
+  /* ── System detail ────────────────────────── */
+  .sys-detail-pad { padding: 16px !important; }
+  .sys-meta-row { flex-direction: column !important; gap: 12px !important; }
+  .sys-btn-row { flex-wrap: wrap !important; gap: 8px !important; }
+  .evidence-actions { flex-wrap: wrap !important; gap: 8px !important; }
+  .obligation-card { padding: 16px !important; }
+  .sys-toast {
+    left: 12px !important;
+    right: 12px !important;
+    top: 12px !important;
+  }
+
+  /* ── New system wizard ────────────────────── */
+  .wizard-steps { gap: 6px !important; }
+  .wizard-step-line { display: none !important; }
+  .wizard-step-label { display: none !important; }
+  .wizard-card { padding: 20px !important; }
+  .wizard-owner-row { flex-direction: column !important; gap: 16px !important; }
+
+  /* ── Dashboard ────────────────────────────── */
+  .dash-skeleton-grid { grid-template-columns: 1fr !important; }
+
+  /* ── Settings ─────────────────────────────── */
+  .settings-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .settings-tabs::-webkit-scrollbar { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -253,5 +354,17 @@ input, textarea, select {
   /* Tighter page padding */
   .app-main > div {
     padding: 68px 12px 24px !important;
+  }
+
+  /* Even tighter obligation cards */
+  .obligation-card { padding: 12px !important; }
+
+  /* Full-width evidence action buttons */
+  .evidence-actions { flex-direction: column !important; }
+  .evidence-actions > button,
+  .evidence-actions > label {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
   }
 }

@@ -16,9 +16,9 @@ export default function Icon() {
           background: '#040404',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 6, height: 80, background: '#00e5bf', borderRadius: 3 }} />
-          <div style={{ fontSize: 90, fontWeight: 900, color: '#e8e8e8', fontFamily: 'sans-serif', letterSpacing: '-2px', lineHeight: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 5, height: 96, background: '#00e5bf' }} />
+          <div style={{ fontSize: 108, fontWeight: 900, color: '#e8e8e8', fontFamily: 'sans-serif', letterSpacing: '-4px', lineHeight: 1 }}>
             I
           </div>
         </div>
