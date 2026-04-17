@@ -495,13 +495,14 @@ const cardGlowLeave = (e: React.MouseEvent<HTMLDivElement>) => {
 }
 
 // ─── WaitlistModal ───────────────────────────────────────────────────────────
-type WaitlistVariant = 'waitlist' | 'founding' | 'walkthrough'
+type WaitlistVariant = 'waitlist' | 'founding' | 'walkthrough' | 'audit'
 interface WaitlistForm { email: string; full_name: string; company_name: string }
 const WL_EMPTY: WaitlistForm = { email: '', full_name: '', company_name: '' }
 const WL_CONFIG = {
   waitlist:    { overline: 'JOIN THE WAITLIST',   headline: 'Be first when we launch',        sub: 'We will notify you before public access opens and share early documentation resources.',                                                cta: 'Join the Waitlist',       source: 'landing-waitlist' },
   founding:    { overline: 'FOUNDING ACCESS',     headline: 'Claim your founding discount',   sub: 'Founding members lock in 30\u00A0% off for the lifetime of their plan. Limited to the first 20 customers who pre-pay 3 months upfront. After submitting, we\u2019ll send you a secure payment link within one business day.',    cta: 'Reserve Founding Spot', source: 'landing-founding' },
   walkthrough: { overline: 'BOOK A WALKTHROUGH',  headline: 'See the product in 30 minutes',  sub: 'Leave your details and we will reach out within one business day to schedule a walkthrough.',                                         cta: 'Request Walkthrough',     source: 'landing-walkthrough' },
+  audit:       { overline: 'READINESS AUDIT',     headline: 'Get your first evidence pack',   sub: 'One AI system, fully documented. Risk classification, obligations mapping, AI-drafted evidence, 8-section PDF \u2014 plus a 30-minute walkthrough. \u00A3297 one-time. We\u2019ll send a secure payment link within one business day.', cta: 'Get My Readiness Audit', source: 'landing-audit' },
 }
 
 function Field({ label, id, name, value, onChange, type = 'text', placeholder, required }: {
@@ -782,9 +783,9 @@ export default function LandingClient() {
               {item}
             </a>
           ))}
-          <button onClick={() => { setMobileMenu(false); track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'mobile-nav', page: 'landing' }); openWaitlist('waitlist') }}
+          <button onClick={() => { setMobileMenu(false); track({ event: 'audit_cta_clicked', cta_label: 'Readiness audit', section: 'mobile-nav', page: 'landing' }); openWaitlist('audit') }}
             style={{ fontSize: 22, fontWeight: 700, color: T.accent, textDecoration: 'none', padding: '14px 0', background: 'transparent', border: 'none', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', fontFamily: FF, textAlign: 'left', minHeight: 44 } as React.CSSProperties}>
-            Start documenting
+            Readiness audit — £297
           </button>
         </nav>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 32 }}>
@@ -793,13 +794,13 @@ export default function LandingClient() {
             padding: '14px 0', textAlign: 'center', border: `1px solid ${T.border}`, minHeight: 44,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>Sign in</Link>
-          <button onClick={() => { setMobileMenu(false); openWaitlist('waitlist') }}
+          <button onClick={() => { setMobileMenu(false); openWaitlist('audit') }}
             style={{
               background: T.accent, color: T.bg, fontSize: 15, fontWeight: 700,
               padding: '14px 0', borderRadius: 0, border: 'none', cursor: 'pointer',
-              fontFamily: FF, minHeight: 44,
+              fontFamily: FF, minHeight: 44, letterSpacing: '0.06em', textTransform: 'uppercase',
             }}>
-            Start documenting
+            Readiness audit — £297
           </button>
         </div>
       </div>
@@ -839,14 +840,14 @@ export default function LandingClient() {
             <Link href="/login" style={{ fontSize: 13, color: T.text2, textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
             <Magnetic>
               <button
-                onClick={() => { track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'nav', page: 'landing' }); openWaitlist('waitlist') }}
+                onClick={() => { track({ event: 'audit_cta_clicked', cta_label: 'Get audit', section: 'nav', page: 'landing' }); openWaitlist('audit') }}
                 style={{
                   background: T.accent, color: T.bg, fontSize: 11, fontWeight: 800,
                   padding: '11px 22px', borderRadius: 0, border: 'none', cursor: 'pointer',
                   fontFamily: FF, letterSpacing: '0.1em', textTransform: 'uppercase', minHeight: 44,
                   boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
                 }}
-              >Start documenting</button>
+              >Readiness audit — £297</button>
             </Magnetic>
           </div>
           <button className="mobile-only" onClick={() => setMobileMenu(true)} aria-label="Open menu" aria-expanded={mobileMenu} style={{
@@ -930,11 +931,19 @@ export default function LandingClient() {
               transition={{ delay: 0.85, duration: 0.6 }}
               style={{
                 fontSize: 17, color: T.text2, lineHeight: 1.55,
-                margin: '0 0 36px', maxWidth: 380,
+                margin: '0 0 12px', maxWidth: 380,
               }}
             >
-              The only tool that builds the evidence pack regulators will actually ask for.
-              EU and UK jurisdiction, all Annex III categories.
+              Get your first evidence pack in 20 minutes. One system, fully documented, regulator-ready PDF.
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: 0.95, duration: 0.5 }}
+              style={{
+                fontSize: 14, color: T.text3, margin: '0 0 32px', maxWidth: 380,
+              }}
+            >
+              Consultants charge &pound;15,000&ndash;&pound;50,000. Your first evidence pack: <span style={{ color: T.accent, fontWeight: 800 }}>&pound;297</span>.
             </motion.p>
 
             <motion.div
@@ -945,8 +954,8 @@ export default function LandingClient() {
               <Magnetic>
                 <motion.button
                   onClick={() => {
-                    track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'hero', page: 'landing' })
-                    openWaitlist('waitlist')
+                    track({ event: 'audit_cta_clicked', cta_label: 'Get readiness audit', section: 'hero', page: 'landing' })
+                    openWaitlist('audit')
                   }}
                   whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 48px rgba(0,229,191,0.22)' }}
                   whileTap={{ scale: 0.98 }}
@@ -957,13 +966,13 @@ export default function LandingClient() {
                     boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
                   }}
                 >
-                  Start documenting <ArrowRight size={14} />
+                  Get readiness audit &mdash; &pound;297 <ArrowRight size={14} />
                 </motion.button>
               </Magnetic>
               <Magnetic>
                 <a
                   href="#how-it-works"
-                  onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'Watch the walkthrough', section: 'hero', page: 'landing' })}
+                  onClick={() => track({ event: 'landing_cta_clicked', cta_label: 'Book a free walkthrough', section: 'hero', page: 'landing' })}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     background: 'transparent', color: T.text2,
@@ -973,7 +982,7 @@ export default function LandingClient() {
                     letterSpacing: '0.08em', textTransform: 'uppercase',
                   }}
                 >
-                  Watch the walkthrough
+                  Book a free walkthrough
                 </a>
               </Magnetic>
             </motion.div>
@@ -1016,7 +1025,7 @@ export default function LandingClient() {
         <div style={{ padding: '24px 32px', textAlign: 'center' }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Enforcement countdown</span>
           <span style={{ fontSize: 36, fontWeight: 900, color: T.accent, letterSpacing: '-0.03em', lineHeight: 1, display: 'block', marginBottom: 2 }}>{daysLeft !== null ? daysLeft.toLocaleString() : '\u2014'}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: T.text2 }}>days until enforcement</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.text2 }}>days until fines begin</span>
         </div>
         <div style={{ padding: '24px 32px', textAlign: 'center', borderLeft: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}` }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Maximum penalty</span>
@@ -1320,8 +1329,8 @@ export default function LandingClient() {
               </p>
               <button
                 onClick={() => {
-                  track({ event: 'landing_cta_clicked', cta_label: 'Start documenting', section: 'workflow', page: 'landing' })
-                  openWaitlist('waitlist')
+                  track({ event: 'audit_cta_clicked', cta_label: 'Get readiness audit', section: 'workflow', page: 'landing' })
+                  openWaitlist('audit')
                 }}
                 style={{
                   ...S.inlineBtn, background: T.accent, color: T.bg,
@@ -1330,7 +1339,7 @@ export default function LandingClient() {
                   letterSpacing: '0.1em', textTransform: 'uppercase',
                 }}
               >
-                Start documenting <ArrowRight size={13} />
+                Get readiness audit <ArrowRight size={13} />
               </button>
             </div>
           </motion.div>
@@ -1340,7 +1349,73 @@ export default function LandingClient() {
       <Divider />
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* PRICING                                                                */}
+      {/* READINESS AUDIT — PRIMARY CONVERSION PATH                              */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 32px' }}>
+        <motion.div {...fadeUp()} style={{
+          maxWidth: 720, margin: '0 auto', textAlign: 'center',
+          background: T.surface, border: `1px solid ${T.border}`, padding: '48px 40px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.accent }} />
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <SectionLabel>Start here</SectionLabel>
+          </div>
+          <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.6vw, 44px)', marginBottom: 12 }}>
+            Not sure where you stand?
+          </h2>
+          <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.6vw, 44px)', marginBottom: 24, color: T.accent }}>
+            Start with one system.
+          </h2>
+          <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.6, margin: '0 0 24px', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto' }}>
+            One AI workflow, fully documented. Risk classification, obligations mapping, AI-drafted evidence, 8-section PDF &mdash; plus a 30-minute walkthrough with the founder.
+          </p>
+          <p style={{ fontSize: 13, color: T.text3, margin: '0 0 32px' }}>
+            Consultants charge &pound;15,000&ndash;&pound;50,000. Your first evidence pack: <span style={{ color: T.accent, fontWeight: 800, fontSize: 28, letterSpacing: '-0.03em' }}>&pound;297</span> <span style={{ color: T.text3 }}>one-time</span>
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Magnetic>
+              <motion.button
+                onClick={() => {
+                  track({ event: 'audit_cta_clicked', cta_label: 'Get readiness audit', section: 'audit-offer', page: 'landing' })
+                  openWaitlist('audit')
+                }}
+                whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 32px rgba(0,229,191,0.18)' }}
+                style={{
+                  ...S.inlineBtn, gap: 10, background: T.accent, color: T.bg,
+                  fontSize: 12, fontWeight: 800, padding: '16px 32px', borderRadius: 0, minHeight: 48,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
+                }}
+              >
+                Get my readiness audit <ArrowRight size={15} />
+              </motion.button>
+            </Magnetic>
+            <Magnetic>
+              <motion.button
+                onClick={() => {
+                  track({ event: 'walkthrough_clicked', cta_label: 'Book free walkthrough', section: 'audit-offer', page: 'landing' })
+                  openWaitlist('walkthrough')
+                }}
+                whileHover={{ borderColor: T.borderMid }}
+                style={{
+                  ...S.inlineBtn, gap: 10, background: 'transparent', color: T.text2,
+                  fontSize: 12, fontWeight: 800, padding: '16px 28px', borderRadius: 0, minHeight: 48,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  border: `1px solid ${T.border}`, transition: 'border-color 0.15s',
+                }}
+              >
+                Book a free walkthrough
+              </motion.button>
+            </Magnetic>
+          </div>
+        </motion.div>
+      </section>
+
+      <Divider />
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* PRICING — SUBSCRIPTION TIERS                                           */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       <motion.section
         id="pricing"
@@ -1351,9 +1426,9 @@ export default function LandingClient() {
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <motion.div {...fadeUp()} className="hp-pricing-header" style={{ marginBottom: 64 }}>
             <div>
-              <SectionLabel num="05">Pricing</SectionLabel>
+              <SectionLabel num="05">Ongoing compliance</SectionLabel>
               <h2 style={{ ...S.h2, fontSize: 'clamp(36px, 5vw, 64px)', margin: '0 0 24px', maxWidth: 780 }}>
-                Built for SME budgets. <span style={{ color: T.text2 }}>Not enterprise procurement.</span>
+                Document every system. <span style={{ color: T.text2 }}>Stay compliant.</span>
               </h2>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -1457,46 +1532,6 @@ export default function LandingClient() {
         </div>
       </motion.section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* CONCIERGE OFFER                                                        */}
-      {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <section style={{ padding: '80px 32px' }}>
-        <motion.div {...fadeUp()} style={{
-          maxWidth: 720, margin: '0 auto', textAlign: 'center',
-          background: T.surface, border: `1px solid ${T.border}`, padding: '48px 40px',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.accent }} />
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <SectionLabel>Zero-risk pilot</SectionLabel>
-          </div>
-          <h2 style={{ ...S.h2, fontSize: 'clamp(28px, 3.6vw, 44px)', marginBottom: 20 }}>
-            We&apos;ll document your first system for free.
-          </h2>
-          <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.6, margin: '0 0 32px', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto' }}>
-            The first 10 customers get one AI workflow documented end-to-end by the founder &mdash; at zero cost.
-            You get a complete evidence pack. We get your feedback.
-          </p>
-          <Magnetic>
-            <motion.button
-              onClick={() => {
-                track({ event: 'walkthrough_clicked', cta_label: 'Book concierge session', section: 'concierge', page: 'landing' })
-                openWaitlist('walkthrough')
-              }}
-              whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 32px rgba(0,229,191,0.18)' }}
-              style={{
-                ...S.inlineBtn, gap: 10, background: T.accent, color: T.bg,
-                fontSize: 12, fontWeight: 800, padding: '16px 32px', borderRadius: 0, minHeight: 48,
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-                boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
-              }}
-            >
-              Book a free concierge session <ArrowRight size={15} />
-            </motion.button>
-          </Magnetic>
-        </motion.div>
-      </section>
-
       <Divider />
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
@@ -1563,10 +1598,10 @@ export default function LandingClient() {
             </h2>
 
             <p style={{
-              fontSize: 18, color: T.text2, margin: '0 auto 40px',
+              fontSize: 18, color: T.text2, margin: '0 auto 24px',
               lineHeight: 1.6, maxWidth: 520,
             }}>
-              Start documenting your AI systems today. First 20 customers get 30% off for life.
+              One system. 20 minutes. Regulator-ready PDF. Start with a &pound;297 readiness audit &mdash; or lock in 30% off for life as a founding subscriber.
             </p>
 
             <div style={{
@@ -1590,8 +1625,8 @@ export default function LandingClient() {
               <Magnetic>
                 <motion.button
                   onClick={() => {
-                    track({ event: 'founding_discount_clicked', cta_label: 'Claim founding discount', section: 'final-cta', page: 'landing' })
-                    openWaitlist('founding')
+                    track({ event: 'audit_cta_clicked', cta_label: 'Get readiness audit', section: 'final-cta', page: 'landing' })
+                    openWaitlist('audit')
                   }}
                   whileHover={{ boxShadow: '0 0 0 1px rgba(0,229,191,0.4), 0 0 48px rgba(0,229,191,0.22)' }}
                   whileTap={{ scale: 0.98 }}
@@ -1602,14 +1637,14 @@ export default function LandingClient() {
                     boxShadow: '0 0 24px rgba(0,229,191,0.15), 0 1px 0 rgba(255,255,255,0.12) inset',
                   }}
                 >
-                  Claim founding discount <ArrowRight size={16} />
+                  Get readiness audit &mdash; &pound;297 <ArrowRight size={16} />
                 </motion.button>
               </Magnetic>
               <Magnetic>
                 <motion.button
                   onClick={() => {
-                    track({ event: 'walkthrough_clicked', cta_label: 'Book a walkthrough', section: 'final-cta', page: 'landing' })
-                    openWaitlist('walkthrough')
+                    track({ event: 'founding_discount_clicked', cta_label: 'Claim founding discount', section: 'final-cta', page: 'landing' })
+                    openWaitlist('founding')
                   }}
                   whileHover={{ borderColor: T.borderMid }}
                   whileTap={{ scale: 0.98 }}
@@ -1620,7 +1655,7 @@ export default function LandingClient() {
                     border: `1px solid ${T.border}`, transition: 'border-color 0.15s, color 0.15s', minHeight: 52,
                   }}
                 >
-                  Book a walkthrough
+                  Claim founding discount
                 </motion.button>
               </Magnetic>
             </div>

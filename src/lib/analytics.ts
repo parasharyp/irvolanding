@@ -1,5 +1,6 @@
 export type AnalyticsEvent =
   | 'landing_cta_clicked'
+  | 'audit_cta_clicked'
   | 'waitlist_submitted'
   | 'waitlist_duplicate'
   | 'founding_discount_clicked'
