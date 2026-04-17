@@ -33,8 +33,8 @@ const friaSchema = z.object({
   fundamentalRightsAtRisk: z.array(z.object({
     right: z.string(),
     riskDescription: z.string(),
-    severity: z.string(),
-    likelihood: z.string(),
+    severity: z.enum(['Low', 'Medium', 'High']).catch('Medium'),
+    likelihood: z.enum(['Low', 'Medium', 'High']).catch('Medium'),
   })).min(1),
   specificHarms: z.string().min(1),
   humanOversightMeasures: z.string().min(1),
@@ -104,7 +104,8 @@ export async function generateFriaReport(input: FriaInput): Promise<FriaReport> 
   const safeAnnex = input.annexCategory ? sanitizeInput(input.annexCategory, 200) : 'not specified'
   const groupsText = input.affectedGroups.map((g) => `- ${sanitizeInput(g, 100)}`).join('\n')
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 ${safeOrg}
 
 ## System
@@ -118,6 +119,7 @@ ${safeContext}
 
 ## Affected groups
 ${groupsText || '- general-public'}
+</user_data>
 
 Draft the Article 27 Fundamental Rights Impact Assessment. Return JSON only.`
 

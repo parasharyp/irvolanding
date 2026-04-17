@@ -89,7 +89,8 @@ export async function generateTransparencyPack(input: TransparencyInput): Promis
   const surfacesText = input.surfaces.map((s) => `- ${s}`).join('\n') || '- (none declared)'
   const safeContext = sanitizeInput(input.productContext ?? '', 1000)
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 ${safeOrg}
 
 ## Brand tone
@@ -100,6 +101,7 @@ ${surfacesText}
 
 ## Additional product context
 ${safeContext || '(none)'}
+</user_data>
 
 Draft the Article 50 transparency pack. Return JSON only.`
 

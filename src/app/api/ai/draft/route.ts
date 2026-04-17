@@ -18,6 +18,15 @@ export async function POST(req: NextRequest) {
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth
 
+    const { data: org } = await supabase
+      .from('organizations').select('plan').eq('id', orgId).single()
+    if ((org?.plan ?? 'starter') === 'starter') {
+      return NextResponse.json(
+        { error: 'AI drafting requires the Growth plan or higher.', requiredPlan: 'growth', currentPlan: org?.plan ?? 'starter' },
+        { status: 403 },
+      )
+    }
+
     const rateCheck = await checkAuthenticatedRateLimit(user.id)
     if (!rateCheck.allowed) {
       return rateLimited(rateCheck.resetAt)

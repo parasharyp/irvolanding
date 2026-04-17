@@ -12,7 +12,7 @@ import { Check, Shield } from 'lucide-react'
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(12, 'Password must be at least 12 characters'),
 })
 type FormData = z.infer<typeof schema>
 
@@ -35,7 +35,13 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rawRedirect = searchParams.get('redirect') ?? ''
-  const redirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard'
+  const redirect = rawRedirect.startsWith('/')
+    && !rawRedirect.startsWith('//')
+    && !rawRedirect.includes('\\')
+    && !rawRedirect.toLowerCase().includes('%2f')
+    && !rawRedirect.toLowerCase().includes('%5c')
+    ? rawRedirect
+    : '/dashboard'
   const [error, setError] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
@@ -122,7 +128,7 @@ function LoginForm() {
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-        <span style={{ fontSize: 11, color: '#555', fontWeight: 500 }}>or</span>
+        <span style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>or</span>
         <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
       </div>
 
@@ -134,13 +140,14 @@ function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
+            aria-describedby={errors.email ? 'email-error' : undefined}
             style={inputStyle('email')}
             {...register('email')}
             onFocus={() => setFocusedField('email')}
             onBlur={() => setFocusedField(null)}
           />
           {errors.email && (
-            <p style={{ marginTop: '4px', fontSize: '12px', color: '#e54747' }}>{errors.email.message}</p>
+            <p id="email-error" role="alert" style={{ marginTop: '4px', fontSize: '12px', color: '#e54747' }}>{errors.email.message}</p>
           )}
         </div>
 
@@ -150,18 +157,19 @@ function LoginForm() {
             id="password"
             type="password"
             autoComplete="current-password"
+            aria-describedby={errors.password ? 'password-error' : undefined}
             style={inputStyle('password')}
             {...register('password')}
             onFocus={() => setFocusedField('password')}
             onBlur={() => setFocusedField(null)}
           />
           {errors.password && (
-            <p style={{ marginTop: '4px', fontSize: '12px', color: '#e54747' }}>{errors.password.message}</p>
+            <p id="password-error" role="alert" style={{ marginTop: '4px', fontSize: '12px', color: '#e54747' }}>{errors.password.message}</p>
           )}
         </div>
 
         {error && (
-          <div style={{
+          <div role="alert" style={{
             color: '#e54747',
             background: 'rgba(229,71,71,0.06)',
             border: '1px solid rgba(229,71,71,0.12)',
@@ -292,7 +300,7 @@ export default function LoginPage() {
         }}
       >
         <div style={{ width: '100%', maxWidth: '360px', margin: 'auto' }}>
-          <p style={{ fontSize: '10px', color: '#555', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '20px' }}>
+          <p style={{ fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '20px' }}>
             Sign in
           </p>
           <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#e8e8e8', letterSpacing: '-0.02em', marginBottom: '32px' }}>
@@ -304,10 +312,10 @@ export default function LoginPage() {
           </Suspense>
 
           <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <Link href="/reset-password" style={{ fontSize: '13px', color: '#555', textDecoration: 'none' }}>
+            <Link href="/reset-password" style={{ fontSize: '13px', color: '#999', textDecoration: 'none' }}>
               Forgot password?
             </Link>
-            <Link href="/signup" style={{ fontSize: '13px', color: '#555', textDecoration: 'none' }}>
+            <Link href="/signup" style={{ fontSize: '13px', color: '#999', textDecoration: 'none' }}>
               No account? Get started &rarr;
             </Link>
           </div>

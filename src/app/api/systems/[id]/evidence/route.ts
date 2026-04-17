@@ -4,6 +4,7 @@ import { badRequest, notFound, serverError, rateLimited } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import { parseBody, requireJson } from '@/lib/validate-body'
+import { validateUuid } from '@/lib/validate-params'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -11,6 +12,7 @@ type RouteContext = { params: Promise<{ id: string }> }
 export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const { id: systemId } = await context.params
+    const idErr = validateUuid(systemId); if (idErr) return idErr
     const auth = await getAuthContext()
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth
@@ -38,7 +40,15 @@ export async function GET(_req: NextRequest, context: RouteContext) {
 
     if (error) return serverError(error, 'GET /api/systems/[id]/evidence')
 
-    return NextResponse.json({ evidence: evidence ?? [] })
+    // Sanitize file_path to prevent path traversal in responses
+    const sanitized = (evidence ?? []).map((e: Record<string, unknown>) => ({
+      ...e,
+      file_path: typeof e.file_path === 'string'
+        ? e.file_path.replace(/\.\./g, '').replace(/^\/+/, '')
+        : e.file_path,
+    }))
+
+    return NextResponse.json({ evidence: sanitized })
   } catch (err) {
     return serverError(err, 'GET /api/systems/[id]/evidence')
   }
@@ -49,7 +59,9 @@ const createEvidenceSchema = z.object({
   item_type: z.enum(['document', 'log', 'test', 'declaration', 'note']),
   title: z.string().min(1).max(500),
   content: z.string().max(50000).nullable().optional(),
-  file_path: z.string().max(1000).nullable().optional(),
+  file_path: z.string().max(1000).nullable().optional().transform(
+    (v) => v ? v.replace(/\.\./g, '').replace(/^\/+/, '') : v
+  ),
   file_name: z.string().max(500).nullable().optional(),
   ai_drafted: z.boolean().optional().default(false),
 }).refine(
@@ -61,6 +73,7 @@ const createEvidenceSchema = z.object({
 export async function POST(req: NextRequest, context: RouteContext) {
   try {
     const { id: systemId } = await context.params
+    const idErr = validateUuid(systemId); if (idErr) return idErr
     const auth = await getAuthContext()
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth
@@ -120,6 +133,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
       .from('obligations')
       .update({ is_complete: true })
       .eq('id', parsed.data.obligation_id)
+      .eq('system_id', systemId)
 
     // Recompute system pct_complete
     const { data: allObligations } = await supabase
@@ -138,6 +152,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', systemId)
+        .eq('organization_id', orgId)
     }
 
     return NextResponse.json({ evidence: evidenceItem }, { status: 201 })

@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { checkPublicRateLimit } from '@/lib/ratelimit'
+import { extractIp } from '@/lib/security'
+import { rateLimited } from '@/lib/api-error'
 
 export async function GET(request: NextRequest) {
+  try {
+    const ip = extractIp(request.headers)
+    const { allowed, resetAt } = await checkPublicRateLimit(ip)
+    if (!allowed) return rateLimited(resetAt)
+  } catch {
+    // proceed without rate limiting if Redis is unavailable
+  }
+
   const { searchParams, origin } = request.nextUrl
   const code = searchParams.get('code')
   const rawRedirect = searchParams.get('redirect') ?? '/dashboard'
@@ -42,8 +53,8 @@ export async function GET(request: NextRequest) {
 
   if (!existing?.organization_id) {
     // First-time user — auto-create org + profile
-    const displayName = user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email?.split('@')[0] ?? 'User'
-    const orgName = user.user_metadata?.company ?? `${displayName}'s Organisation`
+    const displayName = (user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email?.split('@')[0] ?? 'User').slice(0, 200)
+    const orgName = (user.user_metadata?.company ?? `${displayName}'s Organisation`).slice(0, 200)
 
     const { data: org, error: orgError } = await admin
       .from('organizations')

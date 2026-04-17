@@ -122,7 +122,8 @@ export async function generateDeployerPack(input: DeployerInput): Promise<Deploy
     .join('\n')
   const contextsText = input.workplaceContexts.map((c) => `- ${sanitizeInput(c, 100)}`).join('\n')
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 ${safeOrg}
 
 ## High-risk / limited-risk AI systems operated
@@ -130,6 +131,7 @@ ${systemsText || 'No classified systems yet.'}
 
 ## Deployment contexts
 ${contextsText || '- internal-operations'}
+</user_data>
 
 Draft the Article 26 deployer obligations pack. Return JSON only.`
 

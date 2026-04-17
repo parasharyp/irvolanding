@@ -68,12 +68,14 @@ export async function classifySystem(
     .map((a, i) => `Q${i + 1} [${a.questionId}]: ${sanitizeInput(a.answer)}`)
     .join('\n')
 
-  const userMessage = `## AI System
+  const userMessage = `<user_data>
+## AI System
 Name: ${safeName}
 Description: ${safeDesc}
 
 ## Questionnaire Answers
 ${answersFormatted}
+</user_data>
 
 Classify this system under the EU AI Act. Return JSON only.`
 

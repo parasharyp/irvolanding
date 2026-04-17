@@ -13,9 +13,9 @@ const riskReviewSchema = z.object({
   identifiedRisks: z.array(z.object({
     risk: z.string(),
     source: z.string(),
-    severity: z.string(),
-    likelihood: z.string(),
-    status: z.string(),
+    severity: z.enum(['Low', 'Medium', 'High']).catch('Medium'),
+    likelihood: z.enum(['Low', 'Medium', 'High']).catch('Medium'),
+    status: z.enum(['Open', 'Mitigated', 'Monitored', 'Closed']).catch('Open'),
   })).min(1),
   incidentsReviewed: z.string().min(1),
   postMarketMonitoring: z.string().min(1),
@@ -89,7 +89,8 @@ export async function generateRiskReview(input: RiskReviewInput): Promise<RiskRe
   const safeAnnex = input.annexCategory ? sanitizeInput(input.annexCategory, 200) : 'not specified'
   const safeIncidents = sanitizeInput(input.incidentNotes ?? '', 1000)
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 ${safeOrg}
 
 ## System
@@ -103,6 +104,7 @@ ${safePeriod}
 
 ## Incident notes
 ${safeIncidents || 'No incident notes supplied.'}
+</user_data>
 
 Draft the Article 9 annual risk-management review. Return JSON only.`
 

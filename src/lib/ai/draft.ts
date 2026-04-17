@@ -33,7 +33,8 @@ export async function draftEvidenceSection(
         existingContent: context.existingContent,
       }
 
-  const userMessage = `## System
+  const userMessage = `<user_data>
+## System
 Name: ${sanitizeInput(normalized.systemName)}
 Description: ${sanitizeInput(normalized.systemDescription)}
 
@@ -45,6 +46,7 @@ Description: ${sanitizeInput(normalized.obligationDescription)}
 ${sanitizeInput(normalized.evidenceRequired)}
 
 ${normalized.existingContent ? `## Existing Content (revise and improve)\n${sanitizeInput(normalized.existingContent, 10000)}` : '## No existing content — draft from scratch.'}
+</user_data>
 
 Draft this evidence section now.`
 
@@ -60,7 +62,10 @@ Draft this evidence section now.`
       ],
     })
 
-    return response.choices[0]?.message?.content ?? ''
+    const draft = response.choices[0]?.message?.content ?? ''
+    if (!draft || draft.length > 10000) return ''
+    if (draft.includes('IMPORTANT: The user-provided content')) return ''
+    return draft
   } catch {
     throw new Error(
       'Failed to generate evidence draft. Please try again or draft manually.'

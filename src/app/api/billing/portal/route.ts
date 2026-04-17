@@ -14,8 +14,9 @@ export async function GET(request: NextRequest) {
     return rateLimited(rateCheck.resetAt)
   }
 
-  const { data: org } = await supabase.from('organizations').select('stripe_customer_id').eq('id', orgId).single()
+  const { data: org } = await supabase.from('organizations').select('stripe_customer_id, owner_user_id').eq('id', orgId).single()
   if (!org?.stripe_customer_id) return NextResponse.json({ error: 'No billing account found' }, { status: 400 })
+  if (org.owner_user_id !== user.id) return NextResponse.json({ error: 'Only the organization owner can access billing.' }, { status: 403 })
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-02-25.clover' })
 

@@ -4,6 +4,7 @@ import { badRequest, notFound, serverError, rateLimited } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import { parseBody, requireJson } from '@/lib/validate-body'
+import { validateUuid } from '@/lib/validate-params'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -11,6 +12,7 @@ type RouteContext = { params: Promise<{ id: string }> }
 export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
+    const idErr = validateUuid(id); if (idErr) return idErr
     const auth = await getAuthContext()
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth
@@ -56,6 +58,7 @@ const updateSystemSchema = z.object({
 export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
+    const idErr = validateUuid(id); if (idErr) return idErr
     const auth = await getAuthContext()
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth
@@ -92,6 +95,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
+    const idErr = validateUuid(id); if (idErr) return idErr
     const auth = await getAuthContext()
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth

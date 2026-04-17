@@ -30,7 +30,7 @@ const registrationSchema = z.object({
   deployerFriaReference: z.string().min(1),
   submissionChecklist: z.array(z.object({
     item: z.string(),
-    ready: z.string(),
+    ready: z.enum(['Yes', 'No', 'Yes/No', 'Partial']).catch('No'),
     evidence: z.string(),
   })).min(1),
   notes: z.string().min(1),
@@ -100,7 +100,8 @@ export async function generateRegistrationDossier(input: RegistrationInput): Pro
   const safeProvider = sanitizeInput(input.providerName, 200)
   const safeStates = sanitizeInput(input.memberStates, 300)
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 ${safeOrg} — role: ${input.role}
 
 ## System
@@ -114,6 +115,7 @@ ${safeProvider || 'not specified'}
 
 ## Member States where the system is placed / put into service
 ${safeStates || 'not specified'}
+</user_data>
 
 Draft the Article 49 / Annex VIII registration dossier. Return JSON only.`
 

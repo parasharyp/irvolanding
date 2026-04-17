@@ -85,7 +85,8 @@ export async function generateLiteracyBriefing(input: LiteracyInput): Promise<Li
     .join('\n')
   const rolesText = input.roles.map((r) => `- ${sanitizeInput(r, 100)}`).join('\n')
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 ${safeOrg}
 
 ## AI Systems in use
@@ -93,6 +94,7 @@ ${systemsText || 'No classified systems yet.'}
 
 ## Roles to address
 ${rolesText}
+</user_data>
 
 Draft the Article 4 AI literacy briefing. Return JSON only.`
 

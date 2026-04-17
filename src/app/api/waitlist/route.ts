@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
 import { checkPublicRateLimit } from '@/lib/ratelimit'
+import { parseBody, requireJson } from '@/lib/validate-body'
 
 const Schema = z.object({
   email: z.string().email().max(254),
@@ -37,8 +38,8 @@ export async function POST(req: NextRequest) {
     console.warn('[waitlist] Rate limit check failed, proceeding without:', rateLimitErr)
   }
 
-  const raw = await req.json().catch(() => null)
-  if (!raw) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  const ctErr = requireJson(req); if (ctErr) return ctErr
+  const { data: raw, error: bodyErr } = await parseBody(req); if (bodyErr) return bodyErr
 
   const parsed = Schema.safeParse(raw)
   if (!parsed.success) {

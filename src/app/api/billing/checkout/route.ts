@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: PRICE_IDS[parsed.data.plan], quantity: 1 }],
+    subscription_data: { metadata: { organization_id: orgId } },
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?billing=success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?billing=cancelled`,
   })

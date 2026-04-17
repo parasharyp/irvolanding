@@ -4,6 +4,7 @@ import { badRequest, notFound, serverError, rateLimited } from '@/lib/api-error'
 import { getAuthContext } from '@/lib/auth'
 import { checkAuthenticatedRateLimit } from '@/lib/ratelimit'
 import { parseBody, requireJson } from '@/lib/validate-body'
+import { validateUuid } from '@/lib/validate-params'
 import { generateEvidencePack } from '@/lib/pdf'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -16,6 +17,7 @@ const exportSchema = z.object({
 export async function POST(req: NextRequest, context: RouteContext) {
   try {
     const { id: systemId } = await context.params
+    const idErr = validateUuid(systemId); if (idErr) return idErr
     const auth = await getAuthContext()
     if ('error' in auth) return auth.error
     const { supabase, user, orgId } = auth
@@ -76,6 +78,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
       .from('systems')
       .update({ status: 'exported', updated_at: new Date().toISOString() })
       .eq('id', systemId)
+      .eq('organization_id', orgId)
 
     // Record export
     await supabase
@@ -85,7 +88,8 @@ export async function POST(req: NextRequest, context: RouteContext) {
         format: 'pdf',
       })
 
-    const fileName = `${system.name.replace(/[^a-zA-Z0-9-_ ]/g, '')}-evidence-pack.pdf`
+    const sanitizedName = system.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim() || 'system'
+    const fileName = `${sanitizedName}-evidence-pack.pdf`
 
     const uint8 = new Uint8Array(pdfBuffer)
     return new NextResponse(uint8, {

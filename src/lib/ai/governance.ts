@@ -95,11 +95,13 @@ const DEFAULT_PACK = (input: GovernanceInput): GovernancePack => ({
 export async function generateGovernancePack(input: GovernanceInput): Promise<GovernancePack> {
   const safeOrg = sanitizeInput(input.organisationName, 200)
 
-  const userMessage = `## Organisation
+  const userMessage = `<user_data>
+## Organisation
 Name: ${safeOrg}
 Scale: ${input.organisationScale}
 Classified AI systems on record: ${input.systemsCount}
 Any high-risk systems: ${input.hasHighRiskSystems ? 'yes' : 'no'}
+</user_data>
 
 Draft the AI Governance Pack. Return JSON only.`
 

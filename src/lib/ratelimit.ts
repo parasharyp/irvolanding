@@ -12,25 +12,32 @@ function getRedis(): Redis {
   return _redis
 }
 
+const LUA_SLIDING_WINDOW = `
+redis.call('zremrangebyscore', KEYS[1], 0, ARGV[1])
+local count = redis.call('zcard', KEYS[1])
+if count >= tonumber(ARGV[2]) then return 0 end
+redis.call('zadd', KEYS[1], ARGV[3], ARGV[4])
+redis.call('expire', KEYS[1], ARGV[5])
+return 1`
+
 async function slidingWindow(key: string, maxRequests: number, windowSeconds: number) {
   const redis = getRedis()
   const now = Math.floor(Date.now() / 1000)
   const windowStart = now - windowSeconds
+  const member = `${now}-${Math.random()}`
 
-  await redis.zremrangebyscore(key, 0, windowStart)
-  const count = await redis.zcard(key)
+  const result = await redis.eval(
+    LUA_SLIDING_WINDOW,
+    [key],
+    [windowStart, maxRequests, now, member, windowSeconds],
+  )
 
-  if (count >= maxRequests) {
-    const oldest = await redis.zrange(key, 0, 0, { withScores: true })
-    const resetAt = oldest.length > 0
-      ? Math.ceil(Number(oldest[1]) + windowSeconds)
-      : now + windowSeconds
-    return { allowed: false, remaining: 0, resetAt }
+  const allowed = result === 1
+  return {
+    allowed,
+    remaining: allowed ? Math.max(0, maxRequests - 1) : 0,
+    resetAt: now + windowSeconds,
   }
-
-  await redis.zadd(key, { score: now, member: `${now}-${Math.random()}` })
-  await redis.expire(key, windowSeconds)
-  return { allowed: true, remaining: maxRequests - count - 1, resetAt: now + windowSeconds }
 }
 
 // 5 requests per hour per IP for public paid endpoints (legal demand / CCJ pack)
@@ -72,5 +79,10 @@ export async function checkClassifyRateLimit(orgId: string): Promise<{ allowed: 
 export async function checkDraftRateLimit(orgId: string): Promise<{ allowed: boolean; resetAt: number }> {
   const result = await slidingWindow(`ai_draft:${orgId}`, 30, 3600)
   return { allowed: result.allowed, resetAt: result.resetAt }
+}
+
+export async function clearWebhookProcessed(eventId: string): Promise<void> {
+  const redis = getRedis()
+  await redis.del(`webhook_seen:${eventId}`)
 }
 
